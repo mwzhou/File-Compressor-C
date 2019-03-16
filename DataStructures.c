@@ -8,7 +8,7 @@ DataStructures.c holds all the structures necessary to be used in FileCompressio
 
 
 
-//AVLFREQNODE methods/////////////////////////////////////////////////////////////////////////////////////////////
+//AVLFREQNODE methods/////////////////////////////////////////////////////////////////
 
 /**
 Initializes an AVLFreqNode structure
@@ -92,7 +92,7 @@ void enqueue(struct TreeQueue* head, struct TreeNode* node){ //TODO
 
 
 
-//MINHEAP methods//////////////////////
+//MINHEAP methods/////////////////////////////////////////////////////////////////
 
 /**
 creates a minheap from an AVL Frequency Tree 
@@ -119,5 +119,4 @@ returns from top of the heap and then updates the heap (sifts up)
 struct WordFreq* getMin(struct minheap* heap){ //TODO
 	return NULL;
 }
-
 
