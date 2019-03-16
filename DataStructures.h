@@ -43,10 +43,10 @@
 
 
 	/**
-	minheap to keep track of Words and their Frequencies.
+	MinHeap to keep track of Words and their Frequencies.
 	Ordered based on the Frequencies of elements.
 	**/
-	struct minheap{
+	struct MinHeap{
 		struct WordFreq** heapArr; //array of WordFreq pointers
 		int length;
 	}; 
@@ -65,10 +65,10 @@
 	struct TreeNode* dequeue(struct TreeQueue* head);
 	void enqueue(struct TreeQueue* head, struct TreeNode* node);
 	
-	struct minheap* createMinheap(struct AVLNode* root);
-	int initializeMinheapArr(struct AVLNode* tree, struct WordFreq** heapArr, int i);
-	void heapify(struct minheap* heap);
-	struct WordFreq* getMin(struct minheap* heap);
+	struct MinHeap* createMinHeap(struct AVLNode* root);
+	int initializeMinHeapArr(struct AVLNode* tree, struct WordFreq** heapArr, int i);
+	void heapify(struct MinHeap* heap);
+	struct WordFreq* getMin(struct MinHeap* heap);
 
 
 
