@@ -8,20 +8,7 @@ DataStructures.c holds all the structures necessary to be used in FileCompressio
 
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////
-
-/**
-A search structure to keep track of frequencies of a word in a file. 
-Ordered lexiographically by each word
-**/
-struct AVLFreqNode{
-	char* word;
-	int frequency;
-
-	struct AVLFreqNode* left;
-	struct AVLFreqNode* right;
-};
-
+//AVLFREQNODE methods/////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
 Initializes an AVLFreqNode structure
@@ -49,16 +36,7 @@ void insertAndUpdate(struct AVLFreqNode* root, char* word){ //TODO
 }
 
 
-///////////////////////////////////////////////////////////////////
-
-/**
-structure to associate a word with a frequency.
-**/
-struct WordFreq{
-	char* word;
-	int frequency;
-};
-
+//WORDFREQ methods/////////////////////////////////////////////////////////////////
 
 /**
 Initializes a node structure
@@ -72,16 +50,9 @@ struct WordFreq* createWordFreq(char* word, int frequency){
 	return ret;
 }
 
-///////////////////////////////////////////////////////////////////
 
-struct TreeNode{
-	struct WordFreq* element;
-	//Note: If element->word==NULL, it represents an combined frequency of the left and right subtrees
-	
-	struct TreeNode* left;
-	struct TreeNode* right;
-};
 
+//TREENODE methods/////////////////////////////////////////////////////////////////
 
 /**
 Initializes a TreeNode structure and returns a pointer
@@ -103,13 +74,8 @@ struct TreeNode* mergeTrees(struct TreeNode* t1, struct TreeNode* t2){ //TODO
 }
 
 
-///////////////////////////////////////////////////////////////////
 
-struct TreeQueue{
-	struct TreeNode* root;
-	struct TreeQueue* next;
-};
-
+//TREEQUEUE methods////////////////////////////////////////////////////////////////
 
 /**
 **/
@@ -125,16 +91,8 @@ void enqueue(struct TreeQueue* head, struct TreeNode* node){ //TODO
 }
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////
 
-/**
-minheap to keep track of Words and their Frequencies.
-Ordered based on the Frequencies of elements.
-**/
-struct minheap{
-	struct WordFreq** heapArray; //array of WordFreq pointers
-}; 
-
+//MINHEAP methods//////////////////////
 
 /**
 creates a minheap from an AVL Frequency Tree 
