@@ -66,7 +66,7 @@
 	void enqueue(struct TreeQueue* head, struct TreeNode* node);
 	
 	struct minheap* createMinheap(struct AVLNode* root);
-	int initializeMinheapArr(struct AVLNode* tree, struct WordFreq*** heapArr, int* i);
+	int initializeMinheapArr(struct AVLNode* tree, struct WordFreq** heapArr, int i);
 	void heapify(struct minheap* heap);
 	struct WordFreq* getMin(struct minheap* heap);
 

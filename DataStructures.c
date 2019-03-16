@@ -115,32 +115,29 @@ struct minheap* createMinheap(struct AVLNode* node){
 	ret->length = sizeOfAVL(node);
 	
 	ret->heapArr = (struct WordFreq**)malloc( (ret->length) * sizeof(struct WordFreq*) ); //initializes heapArr to number of nodes in given AVL tree
-	initializeMinheapArr(node, &(ret->heapArr), 0); //inserts each node of AVLtree into heapArr	
+	initializeMinheapArr(node, ret->heapArr, 0); //inserts each node of AVLtree into heapArr	
 	heapify(ret);
-	
-	printf("%s\n",ret->heapArr[0]->word);
+		
 	return ret;
 }
 
 
 /**
+Serializes an AVL tree into an array.
 Traverses through an AVL tree and inserts each WordFreq element into the heapArr
+i is the current index of heapArr
 **/
-int initializeMinheapArr(struct AVLNode* node, struct WordFreq***heapArr, int i){ //TODO:fix
-	if(node==NULL || heapArr==NULL){
+int initializeMinheapArr(struct AVLNode* node, struct WordFreq** heapArr, int i){ 
+	if(node==NULL || heapArr==NULL)
 		return i;
-	}
 	
-	*(heapArr[i++]) = node->element;
-	
-	if(node->left != NULL){
+	if(node->left != NULL)
 		i= initializeMinheapArr(node->left, heapArr, i);
-	}else if(node->right != NULL){
+	heapArr[i++]= node->element;
+	if(node->right != NULL)
 		i = initializeMinheapArr(node->right, heapArr, i);
-	}
 	
 	return i;
-	
 }
 
 
