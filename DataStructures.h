@@ -4,6 +4,7 @@
 	#define PRINT_ERROR(txt) (printf("%s in file:%s on line:%d\n",txt,__FILE__, __LINE__))
 	#define PRINT_WORDFREQ(wf,txt) (printf("%s:%d %s",wf->word,wf->frequency,txt))
 	
+	
 	/**
 	structure to associate a word with a frequency.
 	**/
@@ -51,7 +52,7 @@
 	**/
 	struct MinHeap{
 		WordFreq* heapArr; //array of WordFreq pointers
-		int length;
+		int size;
 	}; 
 
 	
@@ -71,9 +72,12 @@
 	struct MinHeap* createMinHeap(struct AVLNode* root);
 	int initializeMinHeapArr(struct AVLNode* tree, WordFreq* heapArr, int i);
 	void heapify(struct MinHeap* heap);
-	void siftDown(WordFreq* heapArr, int length, int ind);
+	void siftDown(WordFreq* heapArr, int size, int ind);
 	void swap(WordFreq* element1, WordFreq* element2);
 	WordFreq removeMin(struct MinHeap* heap);
+	
+	void printHeap(struct MinHeap* heap);
+	void printHeapArray(WordFreq* arr, int size);
 
 
 

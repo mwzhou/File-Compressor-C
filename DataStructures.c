@@ -113,9 +113,9 @@ creates a MinHeap from an AVL Frequency Tree
 struct MinHeap* createMinHeap(struct AVLNode* tree){ 
 	struct MinHeap* ret = (struct MinHeap*)malloc(sizeof(struct MinHeap));
 	
-	ret->length = sizeOfAVL(tree);
+	ret->size = sizeOfAVL(tree);
 	
-	ret->heapArr = (WordFreq*)malloc( (ret->length) * sizeof(WordFreq) ); //initializes heapArr to number of nodes in given AVL tree
+	ret->heapArr = (WordFreq*)malloc( (ret->size) * sizeof(WordFreq) ); //initializes heapArr to number of nodes in given AVL tree
 	initializeMinHeapArr(tree, ret->heapArr, 0); //inserts each node of AVLtree into heapArr	
 	heapify(ret);
 		
@@ -143,12 +143,13 @@ int initializeMinHeapArr(struct AVLNode* node, WordFreq* heapArr, int i){
 
 
 /**
+linear heapify
 takes initialized MinHeap array and heapifies it with the O(n) time algorithm
 **/
 void heapify(struct MinHeap* heap){ 
-	int currind = (heap->length)/2 - 1;
+	int currind = (heap->size)/2 - 1;
 	while(currind>=0){
-		siftDown(heap->heapArr, heap->length, currind);
+		siftDown(heap->heapArr, heap->size, currind);
 		currind--;
 	}
 }
@@ -157,19 +158,23 @@ void heapify(struct MinHeap* heap){
 /**
 sifts down given index in a heapArray to mantain minheap structure
 **/
-void siftDown(WordFreq* heapArr, int length, int ind){ 
-	if(heapArr==NULL||length<=ind){
-		PRINT_ERROR("either heapArr uninitialized or faulty index/length passed");
+void siftDown(WordFreq* heapArr, int size, int ind){ 
+	if(heapArr==NULL||size<=ind){
+		PRINT_ERROR("either heapArr uninitialized or faulty index/size passed");
 		return;
 	}
 	
-	while(ind < (length/2)){ //until ind is a leafnode
+	while(ind < (size/2)){ //while ind is not a leaf node index
 		int l = 2*ind + 1; //left node index
 		int r = 2*ind + 2; //right node index
-		
-		if(r>=length){ //curr node has no right child
-			swap(&heapArr[ind], &heapArr[l]);
-			ind = l;
+			
+		if(r>=size){ //if curr node has no right child
+			if(((heapArr[ind]->frequency)>(heapArr[l]->frequency))){//if currnode greater than left node
+				swap(&heapArr[ind], &heapArr[l]);
+				ind = l;
+			}else{ //no more comparisons left
+				return;
+			}
 		}else{ //curr node has two children
 			int minChildInd = (heapArr[l]->frequency <= heapArr[r]->frequency)? l:r; //index of smallest child
 			
@@ -197,8 +202,18 @@ void swap(WordFreq* element1, WordFreq* element2){
 /**
 returns from top of the heap and then updates the heap (sifts up)
 **/
-WordFreq removeMin(struct MinHeap* heap){ //TODO
+WordFreq removeMin(struct MinHeap* heap){ 
+	if(heap==NULL||heap->size==0){
+		PRINT_ERROR("cannot remove min from empty or null heap");
+		return NULL;
+	}
+	
 	WordFreq min= heap->heapArr[0];
+	swap(&(heap->heapArr[0]), &(heap->heapArr[heap->size-1]));
+	heap->size--;
+	if(heap->size!=0){
+		siftDown(heap->heapArr,heap->size,0);	
+	}
 	return min;
 }
 
@@ -207,14 +222,22 @@ WordFreq removeMin(struct MinHeap* heap){ //TODO
 //PRINT methods/////////////////////////////////////////////////////////////
 
 
-void printHeap(struct MinHeap* heap){
-	printf("\nHEAP:\n");	
+void printHeap(struct MinHeap* heap){	
+	if(heap==NULL)
+		printf("NULL\n");return;	
+	
+
+	printf("\nHEAP:\n");
+	if(heap->size==0)
+		printf("EMPTY\n");return;
+		
+	
 	int i;
-	for(i=0; i<(heap->length); i++){
+	for(i=0; i<(heap->size); i++){
 		int level = 1<<i;//current level
 		
 		int j = 0;
-		for(j=0; j<level && (j+level)<=(heap->length); j++){
+		for(j=0; j<level && (j+level)<=(heap->size); j++){
 			int j_ind = j+level-1;
 			PRINT_WORDFREQ(heap->heapArr[j_ind], "	");
 		}
@@ -223,9 +246,9 @@ void printHeap(struct MinHeap* heap){
 }
 
 
-void printHeapArray(WordFreq* arr, int length){
+void printHeapArray(WordFreq* arr, int size){
 	int i;
-	for(i=0; i<length; i++){
+	for(i=0; i<size; i++){
 		PRINT_WORDFREQ(arr[i],"  ");
 	}
 	printf("\n");
@@ -235,25 +258,6 @@ void printHeapArray(WordFreq* arr, int length){
 
 
 int main(){
-	struct AVLNode* root = createAVLNode("hello");
-	root->left = createAVLNode("hellol");
-	root->right = createAVLNode("hellor");
-	root->left->left = createAVLNode("nahh");
-	//root->left->left->left = createAVLNode("wog");
-	root->left->element->frequency = 0; //ERROR
-	root->right->element->frequency = 3;
-	root->left->left->element->frequency = 10;
-	//root->left->left->left->element->frequency = 7;
-	
-	WordFreq* arr = (WordFreq*)malloc(sizeOfAVL(root)*sizeof(WordFreq));
-	initializeMinHeapArr(root, arr, 0);
-	//printHeapArray(arr,sizeOfAVL(root));
-	
-	
-	struct MinHeap* heap = createMinHeap(root);
-	printHeapArray(heap->heapArr,sizeOfAVL(root));
-	printHeap(heap);
-	
 	return 0;
 }
 
