@@ -1,7 +1,7 @@
 #ifndef DS_H
 #define DS_H
 
-	#define PRINT_ERROR(txt) (printf("%s in file:%s on line:%d\n",txt,__FILE__, __LINE__))
+	#define PRINT_ERROR(txt) (printf("ERROR: %s in file:%s on line:%d\n",txt,__FILE__, __LINE__))
 	#define PRINT_WORDFREQ(wf,txt) (printf("%s:%d %s",wf->word,wf->frequency,txt))
 	
 	
@@ -14,70 +14,88 @@
 	};
 	typedef struct WordFreq* WordFreq;
 	
+	
 	/**
 	A search structure to keep track of frequencies of a word in a file. 
 	Ordered lexiographically by each word
 	**/
-	struct AVLNode{
+	typedef struct AVLNode{
 		WordFreq element;
 
 		struct AVLNode* left;
 		struct AVLNode* right;
-	};
+	}AVLNode;
 
 
 	/**
 	structure to combine frequencies of each WordFreq element for huffman coding
 	**/
-	struct TreeNode{
+	typedef struct TreeNode{
 		WordFreq element;
 		//Note: If element->word==NULL, it represents an combined frequency of the left and right subtrees
 		
 		struct TreeNode* left;
 		struct TreeNode* right;
-	};
+	}TreeNode;
+
 
 	/**
-	Queue of TreeNodes
+	QueueItems of Trees. Implemented with a doubly-linkedlist to save on time efficiency
 	**/
-	struct TreeQueue{
-		struct TreeNode* root;
-		struct TreeQueue* next;
-	};
+	typedef struct QueueItem{
+		struct TreeNode* tree;
+		struct QueueItem* prev;
+		struct QueueItem* next;
+	}QueueItem;
+	
+	
+	/**
+	Queue that keeps track of head and tail
+	**/
+	typedef struct Queue{
+		QueueItem* head;
+		QueueItem* tail;
+	}Queue;
 
 
 	/**
 	MinHeap to keep track of Words and their Frequencies.
 	Ordered based on the Frequencies of elements.
 	**/
-	struct MinHeap{
+	typedef struct MinHeap{
 		WordFreq* heapArr; //array of WordFreq pointers
 		int size;
-	}; 
+	}MinHeap; 
 
 	
 	//Method Signatures
 	WordFreq createWordFreq(char* word, int frequency);
+	void freeWordFreq(WordFreq element);
 	
-	struct AVLNode* createAVLNode(char* word);
-	void insertAndUpdate(struct AVLNode* root, char* word);
-	int sizeOfAVL(struct AVLNode* root);
+	AVLNode* createAVLNode(char* word);
+	void insertOrUpdateAVL(AVLNode** root_ptr, char* word);
+	int sizeOfAVL(AVLNode* root);
+	void freeAVLNode(AVLNode* root);
 	
-	struct TreeNode* createTreeNode(WordFreq element);
-	struct TreeNode* mergeTrees(struct TreeNode* t1, struct TreeNode* t2);
+	TreeNode* createTreeNode(WordFreq element);
+	TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2);
+	void freeTreeNode(TreeNode* root); //also free's WordFreq
 	
-	struct TreeNode* dequeue(struct TreeQueue* head);
-	void enqueue(struct TreeQueue* head, struct TreeNode* node);
+	QueueItem* createQueueItem(TreeNode* tree);	
+	TreeNode* dequeue(Queue* q);
+	void enqueue(Queue* q, TreeNode* tree);
+	void freeQueue(Queue* q);
 	
-	struct MinHeap* createMinHeap(struct AVLNode* root);
-	int initializeMinHeapArr(struct AVLNode* tree, WordFreq* heapArr, int i);
-	void heapify(struct MinHeap* heap);
+	MinHeap* createMinHeap(AVLNode* root);
+	int initializeMinHeapArr(AVLNode* tree, WordFreq* heapArr, int i);
+	void heapify(MinHeap* heap);
 	void siftDown(WordFreq* heapArr, int size, int ind);
 	void swap(WordFreq* element1, WordFreq* element2);
-	WordFreq removeMin(struct MinHeap* heap);
+	WordFreq removeMin(MinHeap* heap);
 	
-	void printHeap(struct MinHeap* heap);
+	void printHeap(MinHeap* heap);
 	void printHeapArray(WordFreq* arr, int size);
+	void printQueue(Queue q);
 
 
 
