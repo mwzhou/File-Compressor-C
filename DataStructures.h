@@ -35,9 +35,10 @@
 		
 		struct TreeNode* left;
 		struct TreeNode* right;
-	}TreeNode;
+	}TreeNode;	
 
-
+	
+	
 	/**
 	QueueItems of Trees. Implemented with a doubly-linkedlist to save on time efficiency
 	**/
@@ -94,6 +95,7 @@
 	
 	void printHeap(MinHeap heap);
 	void printHeapArray(WordFreq** arr, int size);
+	void printTree(TreeNode* root, int space);
 	void printQueue(Queue q);
 
 

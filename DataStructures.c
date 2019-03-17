@@ -387,29 +387,65 @@ void printHeapArray(WordFreq** arr, int size){
 }
 
 
-void printTree(TreeNode* t){ //TODO printTree
+void printTree(TreeNode* root, int space){ //prints horizontally not vertically. In order
+  	if (root == NULL)return;
+  	 
+  	int count = 10;
+  	int i;
+  	space += count; //increases space inbetween elements
+  	
+    printTree(root->right, space); 
+  
+    printf("\n"); 
+    for (i = count; i < space; i++){ printf(" ");} 
+    PRINT_WORDFREQ(root->element,"\n");
+    
+    printTree(root->left, space); 
+}
 
+void printAVLTree(AVLNode* root, int space){ //prints horizontally not vertically. In order
+  	if (root == NULL)return;
+  	 
+  	int count = 10;
+  	int i;
+  	space += count; //increases space inbetween elements
+  	
+    printAVLTree(root->right, space); 
+  
+    printf("\n"); 
+    for (i = count; i < space; i++){ printf(" ");} 
+    PRINT_WORDFREQ(root->element,"\n");
+    
+    printAVLTree(root->left, space); 
 }
 
 
-void printQueue(Queue q){
+void printQueue(Queue q){ 
 	if(q.end==NULL||q.front==NULL){
 		printf("\nNULL\n\n");
 		return;
 	}
 	
+	printf("/////////////////////////////////////////////////\n");
 	printf("\nQUEUE:\n");
 	QueueItem* ptr = q.front;
 	while(ptr!=NULL){
-		PRINT_WORDFREQ(ptr->tree->element, ""); //TODO: print entire tree
-		
-		if(ptr->prev==NULL) printf("\tfront");
-		if(ptr->next==NULL) printf("\tend");
+	printf("---------------------------------------\n");
+		//front and end indicators
+		if(ptr->prev==NULL && ptr->next==NULL) 
+			printf("[front&end]");
+		else if(ptr->next==NULL) 
+			printf("[end]");
+		else if(ptr->prev==NULL)
+			printf("[front]");
+
+		printTree(ptr->tree, 0);
 		printf("\n");
-		
 		ptr = ptr->next;
+	printf("---------------------------------------\n");
 	}
-	printf("\n");
+	
+	printf("/////////////////////////////////////////////////\n");
 }
 
 ///////////////////////////////////////////////////////////////
@@ -417,10 +453,14 @@ void printQueue(Queue q){
 
 int main(){	//TODO get rid of this in final prod
 	WordFreq* wf = createWordFreq("hi",2);
+	TreeNode* ptr = createTreeNode(wf);
+	ptr->left = createTreeNode(createWordFreq("hio",3));
+	ptr->right = createTreeNode(createWordFreq("hiright",5));
+	
 	Queue q = {NULL,NULL};
-	enqueue(&q, createTreeNode(wf));
-	enqueue(&q, createTreeNode(createWordFreq("hio",3)));
-	enqueue(&q, createTreeNode(wf));
+	enqueue(&q, ptr);
+	enqueue(&q, ptr->left);
+	enqueue(&q, ptr);
 	enqueue(&q, createTreeNode(createWordFreq("hig",5)));
 	printQueue(q);
 	
