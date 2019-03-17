@@ -52,8 +52,8 @@
 	Queue that keeps track of head and tail
 	**/
 	typedef struct Queue{
-		QueueItem* head;
-		QueueItem* tail;
+		QueueItem* front;
+		QueueItem* end;
 	}Queue;
 
 
@@ -92,7 +92,7 @@
 	void swap(WordFreq** element1, WordFreq** element2);
 	WordFreq* removeMin(MinHeap* heap);
 	
-	void printHeap(MinHeap* heap);
+	void printHeap(MinHeap heap);
 	void printHeapArray(WordFreq** arr, int size);
 	void printQueue(Queue q);
 

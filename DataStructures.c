@@ -36,7 +36,7 @@ void freeWordFreq(WordFreq* element){
 /**
 Initializes an AVLNode structure
 @params - the word (the frequency is always 1 at first)
-@ret - initialized AVLNode*.
+@ret - initialized AVLNode pointer to created AVLNode.
 **/
 AVLNode* createAVLNode(char* word){
 	AVLNode* ret = (AVLNode*)malloc(sizeof(AVLNode));
@@ -52,7 +52,7 @@ Searches through AVL tree.
 If found: Updates word's frquency
 If not found: Creates a WordFreq element and inserts it into the tree.
 MAINTAINS AVL properties of the tree and balances if necessary
-@params: root_ptr - pointer to root of AVL Tree root (neccesary to survive the scope of the function)
+@params: root_ptr - address of the pointer to the AVL Tree root (neccesary to survive the scope of the function)
 **/
 void insertOrUpdateAVL(AVLNode** root_ptr, char* word){ //TODO
 	if(root_ptr==NULL){
@@ -91,7 +91,7 @@ int sizeOfAVL(AVLNode* root){
 
 /**
 free's all nodes in an AVLTree
-Note: DOES NOT free WordFreq element
+Note: DOES NOT free the WordFreq element
 **/
 void freeAVLNode(AVLNode* root){
 	if(root==NULL) return;
@@ -104,7 +104,7 @@ void freeAVLNode(AVLNode* root){
 //TREENODE methods/////////////////////////////////////////////////////////////////
 
 /**
-Initializes a TreeNode structure and returns a pointer
+Initializes a TreeNode structure and returns a pointer to the created TreeNode
 **/
 TreeNode* createTreeNode(WordFreq* element){
 	TreeNode* ret = (TreeNode*)malloc(sizeof(TreeNode));
@@ -117,7 +117,7 @@ TreeNode* createTreeNode(WordFreq* element){
 
 /**
 merges two trees into one and returns the root (the combined frequency)
-Note: the root->element->word=NULL (because if only represents a frequency!)
+Note: the root->element->word=NULL (because it only represents a frequency!)
 **/
 TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2){ //TODO
 	if(t1==NULL||t2==NULL||t1->element==NULL||t2->element==NULL){
@@ -152,7 +152,7 @@ void freeTreeNode(TreeNode* root){
 //TREEQUEUE methods////////////////////////////////////////////////////////////////
 
 /**
-Initializes a QueueItem given an existing tree and returns a pointer
+Initializes a QueueItem given an existing tree and returns a pointer to that QueueItem
 **/
 QueueItem* createQueueItem(TreeNode* tree){
 	QueueItem* ret = (QueueItem*)malloc(sizeof(QueueItem));
@@ -164,29 +164,30 @@ QueueItem* createQueueItem(TreeNode* tree){
 
 
 /**
-dequeue's tree from Queue
-free's queue pointer when dequeuing
-updates q's tail
-@params: q - pointer to a Queue that contains pointer to tail
+takes first tree from the Queue's front
+(free's queue pointer that was removed from the queue (but not the tree pointer))
+updates q's front
+@params: q - address of a Queue that contains pointer to front
+@returns: TreeNode* at front 
 **/
 TreeNode* dequeue(Queue* q){ 
-	if(q==NULL||(q->tail) ==NULL||(q->head) ==NULL){
+	if(q==NULL||(q->front) ==NULL||(q->end) ==NULL){
 		PRINT_ERROR("passed in NULL Queue into dequeue");
 		return NULL;
 	}
 	
-	QueueItem* temp = (q->tail); //for freeing later
-	TreeNode* ret = (q->tail)->tree;
+	QueueItem* temp = (q->front); //for freeing later
+	TreeNode* ret = (q->front)->tree;
 	
-	if((q->tail)->prev == NULL){ //only one element left in Queue
-		(q->head) = NULL; 
-		(q->tail) = NULL; //update tail
+	if((q->front)->next == NULL){ //only one element left in Queue
+		(q->front) = NULL; //update front
+		(q->end) = NULL; //update end
 		free(temp);
 		return ret;
 	}
 	
-	(q->tail->prev)->next=NULL;
-	(q->tail) = (q->tail)->prev;//update tail
+	((q->front)->next)->prev=NULL;
+	(q->front) = (q->front)->next;//update front of q
 	free(temp);
 	return ret;
 		
@@ -194,20 +195,20 @@ TreeNode* dequeue(Queue* q){
 
 
 /**
-enqueues tree onto the front of the queue, updates head
-@params: q - pointer to a Queue that contains a pointer to the head
+enqueues a tree onto the back of the queue, updates end of queue
+@params: q - address of Queue that contains a pointer to the end
 **/
 void enqueue(Queue* q, TreeNode* tree){ 
-	if(q==NULL||(q->head)==NULL||(q->tail) == NULL){ //Queue has no elements
-		(q->head) = createQueueItem(tree);
-		(q->tail) = (q->head);
+	if(q==NULL||(q->end)==NULL||(q->front) == NULL){ //Queue has no elements yet
+		(q->front) = createQueueItem(tree);
+		(q->end) = (q->front);
 		return;
 	}
 	
-	QueueItem* new_head = createQueueItem(tree);
-	new_head->next = (q->head);
-	(q->head)->prev = new_head;
-	(q->head) = new_head; //update head
+	QueueItem* addEl = createQueueItem(tree);
+	addEl->prev = (q->end);
+	(q->end)->next = addEl;
+	(q->end) = addEl; //update end of queue
 }
 
 
@@ -216,9 +217,9 @@ free's all Queue nodes if necessary (does not touch the trees because it is nece
 however, if implemented correctly, FileCompression.c will not need to call upon this method
 **/
 void freeQueue(Queue* q){
-	if(q==NULL||(q->tail)==NULL||(q->head)==NULL) return;
+	if(q==NULL||(q->end)==NULL||(q->front)==NULL) return;
 	
-	QueueItem* ptr = (q->head);
+	QueueItem* ptr = (q->front);
 	while(ptr!=NULL){
 		QueueItem* temp = ptr;
 		ptr = ptr->next;
@@ -356,24 +357,21 @@ WordFreq* removeMin(MinHeap* heap){
 //PRINT methods/////////////////////////////////////////////////////////////
 
 
-void printHeap(MinHeap* heap){	
-	if(heap==NULL){
-		printf("\nNULL\n\n");
-		return;
-	}else if(heap->size==0||heap->heapArr==NULL){
+void printHeap(MinHeap heap){	
+	if(heap.size==0||heap.heapArr==NULL){
 		printf("\nHEAP:\nEMPTY\n\n");
 		return;
 	}
 
 	printf("\nHEAP:\n");	
 	int i;
-	for(i=0; i<(heap->size); i++){
+	for(i=0; i<(heap.size); i++){
 		int level = 1<<i;//current level
 		
 		int j = 0;
-		for(j=0; j<level && (j+level)<=(heap->size); j++){ //prints children on current level
+		for(j=0; j<level && (j+level)<=(heap.size); j++){ //prints children on current level
 			int j_ind = j+level-1;
-			PRINT_WORDFREQ(heap->heapArr[j_ind], "	");
+			PRINT_WORDFREQ(heap.heapArr[j_ind], "	");
 		}
 		printf("\n");
 	}
@@ -389,21 +387,26 @@ void printHeapArray(WordFreq** arr, int size){
 }
 
 
-void printTree(TreeNode* t){
+void printTree(TreeNode* t){ //TODO printTree
 
 }
 
 
 void printQueue(Queue q){
-	if(q.tail==NULL||q.head==NULL){
+	if(q.end==NULL||q.front==NULL){
 		printf("\nNULL\n\n");
 		return;
 	}
 	
 	printf("\nQUEUE:\n");
-	QueueItem* ptr = q.head;
+	QueueItem* ptr = q.front;
 	while(ptr!=NULL){
-		PRINT_WORDFREQ(ptr->tree->element, "\n"); //TODO
+		PRINT_WORDFREQ(ptr->tree->element, ""); //TODO: print entire tree
+		
+		if(ptr->prev==NULL) printf("\tfront");
+		if(ptr->next==NULL) printf("\tend");
+		printf("\n");
+		
 		ptr = ptr->next;
 	}
 	printf("\n");
@@ -412,7 +415,57 @@ void printQueue(Queue q){
 ///////////////////////////////////////////////////////////////
 
 
-int main(){	
+int main(){	//TODO get rid of this in final prod
+	WordFreq* wf = createWordFreq("hi",2);
+	Queue q = {NULL,NULL};
+	enqueue(&q, createTreeNode(wf));
+	enqueue(&q, createTreeNode(createWordFreq("hio",3)));
+	enqueue(&q, createTreeNode(wf));
+	enqueue(&q, createTreeNode(createWordFreq("hig",5)));
+	printQueue(q);
+	
+	dequeue(&q);
+	printQueue(q);
+	dequeue(&q);
+	printQueue(q);
+	dequeue(&q);
+	printQueue(q);
+	dequeue(&q);
+	printQueue(q);
+	dequeue(&q);
+	
+	
+	AVLNode* root = createAVLNode("hello");
+	root->left = createAVLNode("hellol");
+	root->right = createAVLNode("hellor");
+	root->right->left = createAVLNode("righton");
+	root->left->left = createAVLNode("nahh");
+	root->left->left->left = createAVLNode("wog");
+	root->left->element->frequency = 0; //ERROR
+	root->right->element->frequency = 3;
+	root->left->left->element->frequency = 10;
+	root->left->left->left->element->frequency = 7;
+	root->right->left->element->frequency=4;
+	
+	WordFreq** arr = (WordFreq**)malloc(sizeOfAVL(root)*sizeof(WordFreq*));
+	initializeMinHeapArr(root, arr, 0);
+	printHeapArray(arr,sizeOfAVL(root));
+
+	MinHeap heap = createMinHeap(root);
+	
+	printHeap(heap);
+	removeMin(&heap);
+	printHeap(heap);
+	removeMin(&heap);
+	printHeap(heap);
+	removeMin(&heap);
+	printHeap(heap);
+	removeMin(&heap);
+	printHeap(heap);
+	removeMin(&heap);
+	printHeap(heap);
+	removeMin(&heap);
+	printHeap(heap);	
 	return 0;
 }
 
