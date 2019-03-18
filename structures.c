@@ -4,7 +4,7 @@ DataStructures.c holds all the structures necessary to be used in FileCompressio
 #include <stdio.h>
 #include <stdlib.h> 
 #include <string.h> 
-#include "DataStructures_priv.h"
+#include "structures_priv.h"
 
 	
 //WORDFREQ methods/////////////////////////////////////////////////////////////////
