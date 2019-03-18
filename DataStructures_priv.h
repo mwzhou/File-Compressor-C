@@ -17,6 +17,6 @@ private methods only meant to be accessed by DataStructures.c
 	
 	static void printHeapRec(MinHeap heap, int root, int space);
 	static void printTreeRec(TreeNode* root, int space);
-	static void printHeapArray(WordFreq** arr, int size);
+	void printHeapArray(WordFreq** arr, int size);
 
 #endif

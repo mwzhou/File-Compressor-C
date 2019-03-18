@@ -402,8 +402,8 @@ static void printHeapRec(MinHeap heap, int root, int space){
  	printHeapRec(heap, 2*root+1, space);
 }
 
-//[private method] for testing
-static void printHeapArray(WordFreq** arr, int size){
+//printsHeapArray for testing
+void printHeapArray(WordFreq** arr, int size){
 	int i;
 	for(i=0; i<size; i++){
 		printWordFreq(arr[i],"\t");
@@ -483,7 +483,6 @@ int main(){	//TODO get rid of this in final prod
 	root->left->left->left->element->frequency = 7;
 	
 	printTree(root);	
-	printHeapArray(NULL,0);
 	return 0;
 }
 
