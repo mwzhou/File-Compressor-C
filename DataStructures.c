@@ -33,21 +33,7 @@ void freeWordFreq(WordFreq* element){
 
 
 
-//AVLNode methods/////////////////////////////////////////////////////////////////////////////////////////////
-
-/**
-Initializes an AVLNode structure
-@params - the word (the frequency is always 1 at first)
-@ret - initialized AVLNode pointer to created AVLNode.
-**/
-AVLNode* createAVLNode(char* word){
-	AVLNode* ret = (AVLNode*)malloc(sizeof(AVLNode));
-	ret->element = createWordFreq(word, 1);
-	ret->left = NULL;
-	ret->right = NULL;
-	return ret;
-}
-
+//AVLNode methods (note this is the same type as TreeNode by typedef)////////////////////////////////////////////////
 
 /**
 Searches through AVL tree. 
@@ -67,9 +53,11 @@ void insertOrUpdateAVL(AVLNode** root_ptr, char* word){ //TODO
 		return;
 	}
 	
-	//1. search for word
-	//2. if found - update frequency and return
-	//3. if not found - add to Tree, then balance
+	/*DELETE
+	1. search for word
+	2. if found - update frequency and return
+	3. if not found - add to Tree, then balance
+	*/
 }
 
 
@@ -78,9 +66,12 @@ balances nodes in AVL after one insert
 **/
 /*static*/ void balanceAVL(/*insert parameters here*/){ //TODO
 
-	//REMEMBER to add this into the header file, or else it won't compile
-	//static means it's private, only meant to be accessed within DataStructures.c - should be static
-	//add it into DataStructures_priv.h
+	/*DELETE
+	REMEMBER to add this into the header file, or else it won't compile
+	static means it's private, only meant to be accessed within DataStructures.c 
+	it should be static, uncomment it later
+	add it into DataStructures_priv.h
+	*/
 	
 }
 
@@ -88,11 +79,11 @@ balances nodes in AVL after one insert
 /**
 gets number of nodes in an AVL Frequency Tree
 **/
-int sizeOfAVL(AVLNode* root){
+int sizeOfTree(AVLNode* root){
 	if(root==NULL)
 		return 0;
 		
-	return 1+sizeOfAVL(root->left)+sizeOfAVL(root->right);
+	return 1+sizeOfTree(root->left)+sizeOfTree(root->right);
 }
 
 
@@ -253,8 +244,8 @@ MinHeap createMinHeap(AVLNode* tree){
 		return ret;
 	}
 	
-	ret.size = sizeOfAVL(tree);
-	ret.heapArr = (WordFreq**)malloc( (ret.size) * sizeof(WordFreq*) ); //creates array with sizeOfAVL(tree) size
+	ret.size = sizeOfTree(tree);
+	ret.heapArr = (WordFreq**)malloc( (ret.size) * sizeof(WordFreq*) ); //creates array big enough to hold all elements in AVLTree
 	initializeMinHeapArr(tree, ret.heapArr, 0); //inserts each node of AVLtree into heapArr	
 	heapify(&ret); //turns array into a heap
 		
@@ -365,6 +356,23 @@ WordFreq* removeMin(MinHeap* heap){
 
 //PRINT methods/////////////////////////////////////////////////////////////
 
+/**
+prints out WordFreq
+@params: s is any additional parameters to add to the string
+**/
+void printWordFreq(WordFreq* wf, char* s){
+	if(wf==NULL){
+		printf("NULL %s",s);
+		return;
+	}
+	
+	if(wf->word==NULL){
+		printf("NULL:%d %s",wf->frequency,s);
+	}else{
+		printf("%s:%d %s",wf->word,wf->frequency,s);
+	}
+}
+
 void printHeap(MinHeap heap){
 	if(heap.heapArr==NULL){
 		printf("NULL\n");
@@ -372,11 +380,10 @@ void printHeap(MinHeap heap){
 	}
 
 	printf("/////////////////////////////////////////////////\n");
-	printf("HEAP:(horizontal)\n");
+	printf("[HEAP:(horizontal)]\n");
 	printHeapRec(heap,0,0);
 	printf("/////////////////////////////////////////////////\n");
 }
-
 
 //[private method] recursively prints heap(horizontally)
 static void printHeapRec(MinHeap heap, int root, int space){	
@@ -387,10 +394,10 @@ static void printHeapRec(MinHeap heap, int root, int space){
   	space += count; //increases space inbetween elements
   	
     printHeapRec(heap, 2*root+2, space); 
-  
+    
     printf("\n"); 
     for (i = count; i < space; i++){ printf(" ");} 
-    PRINT_WORDFREQ(heap.heapArr[root],"\n");
+    printWordFreq(heap.heapArr[root],"\n");
     
  	printHeapRec(heap, 2*root+1, space);
 }
@@ -399,11 +406,10 @@ static void printHeapRec(MinHeap heap, int root, int space){
 static void printHeapArray(WordFreq** arr, int size){
 	int i;
 	for(i=0; i<size; i++){
-		PRINT_WORDFREQ(arr[i],"  ");
+		printWordFreq(arr[i],"\t");
 	}
 	printf("\n");
 }
-
 
 void printTree(TreeNode* root){
 	if(root==NULL){
@@ -417,7 +423,6 @@ void printTree(TreeNode* root){
 	printf("---------------------------------------------\n");
 }
 
-
 //[private method] prints Tree recursively (horizontally). Root on far left. In order Traversal.
 static void printTreeRec(TreeNode* root, int space){ 
   	if (root == NULL)return;
@@ -430,42 +435,10 @@ static void printTreeRec(TreeNode* root, int space){
   
     printf("\n"); 
     for (i = count; i < space; i++){ printf(" ");} 
-    PRINT_WORDFREQ(root->element,"\n");
+    printWordFreq(root->element,"\n");
     
     printTreeRec(root->left, space); 
 }
-
-
-void printAVLTree(AVLNode* root){
-	if(root==NULL){
-		printf("NULL\n");
-		return;
-	}
-
-	printf("---------------------------------------------\n");
-	printf("[AVLTREE(horizontal)]\n");
-	printAVLTreeRec(root,0);
-	printf("---------------------------------------------\n");
-}
-
-
-//[private method] prints Tree recursively (horizontally). Root on far left. In order Traversal.
-static void printAVLTreeRec(AVLNode* root, int space){ //prints horizontally not vertically (root on left). In order traversal.
-  	if (root == NULL)return;
-  	 
-  	int count = 10;
-  	int i;
-  	space += count; //increases space inbetween elements
-  	
-    printAVLTreeRec(root->right, space); 
-  
-    printf("\n"); 
-    for (i = count; i < space; i++){ printf(" ");} 
-    PRINT_WORDFREQ(root->element,"\n");
-    
-    printAVLTreeRec(root->left, space); 
-}
-
 
 void printQueue(Queue q){ 
 	if(q.end==NULL||q.front==NULL){
@@ -509,17 +482,8 @@ int main(){	//TODO get rid of this in final prod
 	root->left->left->element->frequency = 10;
 	root->left->left->left->element->frequency = 7;
 	
-	printAVLTree(root);
-	
-	WordFreq** arr = (WordFreq**)malloc(sizeOfAVL(root)*sizeof(WordFreq*));
-	initializeMinHeapArr(root, arr, 0);
-	printHeapArray(arr,sizeOfAVL(root));
-
-	MinHeap heap = createMinHeap(root);
-	
-	printHeap(heap);
-	removeMin(&heap);
-
+	printTree(root);	
+	printHeapArray(NULL,0);
 	return 0;
 }
 

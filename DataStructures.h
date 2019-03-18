@@ -2,7 +2,7 @@
 #define DS_H
 
 	#define PRINT_ERROR(txt) (printf("ERROR: %s in: %s on line:%d\n",txt,__FILE__, __LINE__))
-	#define PRINT_WORDFREQ(wf,txt) (printf("%s:%d %s",wf->word,wf->frequency,txt))
+	#define createAVLNode(s) (createTreeNode(createWordFreq(s,1)))
 	
 	/**
 	structure to associate a word with a frequency.
@@ -14,18 +14,6 @@
 	
 	
 	/**
-	A search structure to keep track of frequencies of a word in a file. 
-	Ordered lexiographically by each word
-	**/
-	typedef struct AVLNode{
-		WordFreq* element;
-
-		struct AVLNode* left;
-		struct AVLNode* right;
-	}AVLNode;
-
-
-	/**
 	structure to combine frequencies of each WordFreq element for huffman coding
 	**/
 	typedef struct TreeNode{
@@ -35,6 +23,10 @@
 		struct TreeNode* left;
 		struct TreeNode* right;
 	}TreeNode;	
+
+
+	//AVLNode is same type as TreeNode, just made a distinction for more clarity
+	typedef TreeNode AVLNode;
 
 
 	/**
@@ -67,13 +59,13 @@
 	}MinHeap; 
 
 	
+	
 	//Method Signatures
 	WordFreq* createWordFreq(char* word, int frequency);
 	void freeWordFreq(WordFreq* element);
 	
-	AVLNode* createAVLNode(char* word);
 	void insertOrUpdateAVL(AVLNode** root_ptr, char* word);
-	int sizeOfAVL(AVLNode* root);
+	int sizeOfTree(AVLNode* root);
 	void freeAVLNode(AVLNode* root);
 	
 	TreeNode* createTreeNode(WordFreq* element);
@@ -87,9 +79,9 @@
 	MinHeap createMinHeap(AVLNode* root);
 	WordFreq* removeMin(MinHeap* heap);
 	
+	void printWordFreq(WordFreq* element, char* s);
 	void printHeap(MinHeap heap);
 	void printTree(TreeNode* root);
-	void printAVLTree(AVLNode* root);
 	void printQueue(Queue q);
 
 #endif
