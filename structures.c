@@ -1,5 +1,5 @@
 /**
-DataStructures.c holds all the structures necessary to be used in FileCompression.c
+structures.c holds all the structures necessary to be used in fileCompression.c
 **/
 #include <stdio.h>
 #include <stdlib.h> 
@@ -11,7 +11,7 @@ DataStructures.c holds all the structures necessary to be used in FileCompressio
 
 /**
 Initializes a WordFreq pointer to a word frequency object because it will be passed around in many structs.
-To avoid time spent copying, WordFreq is represented by a pointer
+To avoid time spent copying, WordFreq is represented by a pointer to a WordFreq object because it is reused in so many structs.
 @params - char* word, int frequency
 @ret - WordFreq pointer
 **/
@@ -121,7 +121,7 @@ TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2){ //TODO
 
 
 /**
-frees all nodes in a Tree
+frees all nodes in a Tree. PostOrder Traversal.
 Note: DOES NOT free the WordFreq element
 **/
 void freeTreeOnly(TreeNode* root){
@@ -134,7 +134,7 @@ void freeTreeOnly(TreeNode* root){
 
 
 /**
-frees all nodes in a Tree
+frees all nodes in a Tree. PostOrder Traversal.
 Note: Frees WordFreq AND its string. Be careful if you want to use the String for further use.
 **/
 void freeTreeAndWF(TreeNode* root){
@@ -199,7 +199,9 @@ enqueues a tree onto the back of the queue, updates end of queue
 @params: q - address of Queue that contains a pointer to the end
 **/
 void enqueue(Queue* q, TreeNode* tree){ 
-	if(q==NULL||(q->end)==NULL||(q->front) == NULL){ //Queue has no elements yet
+	if(q==NULL) return;
+	
+	if((q->end)==NULL||(q->front) == NULL){ //Queue has no elements yet
 		(q->front) = createQueueItem(tree);
 		(q->end) = (q->front);
 		return;
@@ -471,7 +473,7 @@ void printQueue(Queue q){
 ///////////////////////////////////////////////////////////////
 
 
-int main(){	//TODO get rid of this in final prod	
+int main(){//TODO get rid of this in final prod	
 	AVLNode* root = createAVLNode("hello");
 	root->left = createAVLNode("hellol");
 	root->right = createAVLNode("hellor");
