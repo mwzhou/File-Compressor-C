@@ -87,19 +87,6 @@ int sizeOfTree(AVLNode* root){
 }
 
 
-/**
-free's all nodes in an AVLTree
-Note: DOES NOT free the WordFreq element
-**/
-void freeAVLNode(AVLNode* root){
-	if(root==NULL) return;
-	
-	freeAVLNode(root->left);
-	freeAVLNode(root->right);
-	free(root);
-}
-
-
 
 //TREENODE methods/////////////////////////////////////////////////////////////////
 
@@ -134,14 +121,27 @@ TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2){ //TODO
 
 
 /**
-free's all nodes in a Tree
-Note: Frees WordFreq AND its string. Be careful if you want to use the String for further use.
+frees all nodes in a Tree
+Note: DOES NOT free the WordFreq element
 **/
-void freeTreeNodeAndWF(TreeNode* root){
+void freeTreeOnly(TreeNode* root){
 	if(root==NULL) return;
 	
-	freeTreeNodeAndWF(root->left);
-	freeTreeNodeAndWF(root->right);
+	freeTreeOnly(root->left);
+	freeTreeOnly(root->right);
+	free(root);
+}
+
+
+/**
+frees all nodes in a Tree
+Note: Frees WordFreq AND its string. Be careful if you want to use the String for further use.
+**/
+void freeTreeAndWF(TreeNode* root){
+	if(root==NULL) return;
+	
+	freeTreeAndWF(root->left);
+	freeTreeAndWF(root->right);
 	
 	freeWordFreq(root->element);
 	free(root);
@@ -213,13 +213,13 @@ void enqueue(Queue* q, TreeNode* tree){
 
 
 /**
-free's all Queue nodes if necessary (does not touch the trees because it is necessary for future use)
+free's all Queue nodes if necessary (does not touch the trees in case of future use)
 however, if implemented correctly, FileCompression.c will not need to call upon this method
 **/
-void freeQueue(Queue* q){
-	if(q==NULL||(q->end)==NULL||(q->front)==NULL) return;
+void freeQueue(Queue q){
+	if((q.front)==NULL) return;
 	
-	QueueItem* ptr = (q->front);
+	QueueItem* ptr = (q.front);
 	while(ptr!=NULL){
 		QueueItem* temp = ptr;
 		ptr = ptr->next;
