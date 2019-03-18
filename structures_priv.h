@@ -4,7 +4,7 @@ private methods only meant to be accessed by DataStructures.c
 #ifndef priv
 #define	priv
 
-#include "DataStructures.h"	
+#include "structures.h"	
 
 	//static void balanceAVL(/*insert parameters here*/)	
 	
