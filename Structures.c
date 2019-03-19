@@ -1,17 +1,17 @@
 /**
-DataStructures.c holds all the structures necessary to be used in FileCompression.c
+structures.c holds all the structures necessary to be used in fileCompression.c
 **/
 #include <stdio.h>
 #include <stdlib.h> 
 #include <string.h> 
-#include "DataStructures_priv.h"
+#include "structures_priv.h"
 
 	
 //WORDFREQ methods/////////////////////////////////////////////////////////////////
 
 /**
 Initializes a WordFreq pointer to a word frequency object because it will be passed around in many structs.
-To avoid time spent copying, WordFreq is represented by a pointer
+To avoid time spent copying, WordFreq is represented by a pointer to a WordFreq object because it is reused in so many structs.
 @params - char* word, int frequency
 @ret - WordFreq pointer
 **/
@@ -29,6 +29,18 @@ Frees a WordFrequency and its String
 void freeWordFreq(WordFreq* element){
 	free(element->word);
 	free(element);
+}
+
+/**
+Initializes AVLNode
+**/
+AVLNode* createAVLNode(char* word){
+	AVLNode* ret = (AVLNode*)malloc(sizeof(AVLNode));
+	ret->element = createWordFreq(word,1);
+	ret->height = 1;
+	ret->left = NULL;
+	ret->right = NULL;
+	return ret;
 }
 
 
@@ -50,21 +62,84 @@ void insertOrUpdateAVL(AVLNode** root_ptr, char* word){ //TODO
 		 
 	if(*root_ptr==NULL){ //no elements in AVLTree yet
 		*root_ptr = createAVLNode(word);
+		AVLNode* temp = *root_ptr;
+		temp->height = 0;
+		*root_ptr = temp;
 		return;
 	}
 	
-	/*DELETE
-	1. search for word
-	2. if found - update frequency and return
-	3. if not found - add to Tree, then balance
-	*/
+	//Search for word.
+	int found = searchAVL(*root_ptr, word);
+
+	if(found==0)
+		return;
+	else{
+		insert(*root_ptr, word);
+	}
 }
 
+/**[private method]
+searches for node in tree. If found, updates frequency and returns 0. If not found, returns 1.
+**/
+static int searchAVL(AVLNode* root, char* word){	
+	while(root!=NULL){
+		if(strcmp(root->element->word,word)==0){
+			root->element->frequency++;
+			return 0;
+		}
+		if(strcmp(root->element->word,word)>0)//1 is greater than 2
+			root = root->left;
+		else if(strcmp(root->element->word,word)<0)//2 is greater than 1
+			root = root->right;
+	}
+	return 1;
+}
+
+/**[private method]
+inserts nodes in tree. Re-Arranges Heights, set up balance factor to balance tree after inertion.
+**/
+static AVLNode* insert(AVLNode* root, char* word){
+	if(root == NULL)
+		return createAVLNode(word);
+	
+	if(strcmp(root->element->word,word)>0)
+		root->left = insert(root->left,word);
+	else if(strcmp(root->element->word,word)<0)
+		root->right = insert(root->right,word);
+	else
+		return root;
+
+	int testLeft,testRight;
+
+	if(root->left!=NULL)
+		testLeft = root->left->height;
+	else
+		testLeft = 0;
+	if(root->right!=NULL)
+		testRight = root->right->height;
+	else
+		testRight = 0;
+
+	if(testLeft >= testRight)
+		root->height = 1+testLeft;
+	else if(testLeft < testRight)
+		root->height = 1+testRight;
+	
+	int balanceFactor;
+	if(root==NULL)
+		balanceFactor = 0;
+	else
+		balanceFactor = testLeft - testRight;
+
+	balanceAVL(root,balanceFactor);
+	
+	return root;		
+}
 
 /**[private method]
 balances nodes in AVL after one insert
 **/
-/*static*/ void balanceAVL(/*insert parameters here*/){ //TODO
+/*static*/ void balanceAVL(AVLNode* toBalance, int balanceFactor){ //TODO
 
 	/*DELETE
 	REMEMBER to add this into the header file, or else it won't compile
@@ -121,7 +196,7 @@ TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2){ //TODO
 
 
 /**
-frees all nodes in a Tree
+frees all nodes in a Tree. PostOrder Traversal.
 Note: DOES NOT free the WordFreq element
 **/
 void freeTreeOnly(TreeNode* root){
@@ -134,7 +209,7 @@ void freeTreeOnly(TreeNode* root){
 
 
 /**
-frees all nodes in a Tree
+frees all nodes in a Tree. PostOrder Traversal.
 Note: Frees WordFreq AND its string. Be careful if you want to use the String for further use.
 **/
 void freeTreeAndWF(TreeNode* root){
@@ -199,7 +274,9 @@ enqueues a tree onto the back of the queue, updates end of queue
 @params: q - address of Queue that contains a pointer to the end
 **/
 void enqueue(Queue* q, TreeNode* tree){ 
-	if(q==NULL||(q->end)==NULL||(q->front) == NULL){ //Queue has no elements yet
+	if(q==NULL) return;
+	
+	if((q->end)==NULL||(q->front) == NULL){ //Queue has no elements yet
 		(q->front) = createQueueItem(tree);
 		(q->end) = (q->front);
 		return;
@@ -402,8 +479,8 @@ static void printHeapRec(MinHeap heap, int root, int space){
  	printHeapRec(heap, 2*root+1, space);
 }
 
-//[private method] for testing
-static void printHeapArray(WordFreq** arr, int size){
+//printsHeapArray for testing
+void printHeapArray(WordFreq** arr, int size){
 	int i;
 	for(i=0; i<size; i++){
 		printWordFreq(arr[i],"\t");
@@ -411,7 +488,7 @@ static void printHeapArray(WordFreq** arr, int size){
 	printf("\n");
 }
 
-void printTree(TreeNode* root){
+void printTree(AVLNode* root){
 	if(root==NULL){
 		printf("NULL\n");
 		return;
@@ -424,7 +501,7 @@ void printTree(TreeNode* root){
 }
 
 //[private method] prints Tree recursively (horizontally). Root on far left. In order Traversal.
-static void printTreeRec(TreeNode* root, int space){ 
+static void printTreeRec(AVLNode* root, int space){ 
   	if (root == NULL)return;
   	 
   	int count = 10;
@@ -471,20 +548,18 @@ void printQueue(Queue q){
 ///////////////////////////////////////////////////////////////
 
 
-int main(){	//TODO get rid of this in final prod	
-	AVLNode* root = createAVLNode("hello");
-	root->left = createAVLNode("hellol");
-	root->right = createAVLNode("hellor");
-	root->left->left = createAVLNode("nahh");
-	root->left->left->left = createAVLNode("wog");
-	root->left->element->frequency = 0; //ERROR
-	root->right->element->frequency = 3;
-	root->left->left->element->frequency = 10;
-	root->left->left->left->element->frequency = 7;
+int main(){//TODO get rid of this in final prod	
+	AVLNode** root = (AVLNode**)malloc(sizeof(AVLNode*));
+	insertOrUpdateAVL(root,"Happy");
+	insertOrUpdateAVL(root,"Happy");
+	insertOrUpdateAVL(root,"Hot");
+	insertOrUpdateAVL(root,"Happy");
+	insertOrUpdateAVL(root,"Hog");
+	insertOrUpdateAVL(root,"Happy");
+	insertOrUpdateAVL(root,"Hogy");
+	insertOrUpdateAVL(root,"Hot");
+	insertOrUpdateAVL(root,"Hot");
 	
-	printTree(root);	
-	printHeapArray(NULL,0);
+	printTree(*root);	
 	return 0;
 }
-
-
