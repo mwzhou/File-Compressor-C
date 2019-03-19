@@ -74,6 +74,8 @@
 	
 
 	AVLNode* createAVLNode(char* word);	
+	void insertOrUpdateAVL(AVLNode** root_ptr, char* word);
+	int sizeOfTree(AVLNode* root);	
 
 	void insertOrUpdateAVL(AVLNode** root_ptr, char* word);
 	int sizeOfAVLTree(AVLNode* root);
