@@ -2,7 +2,6 @@
 #define DS_H
 
 	#define PRINT_ERROR(txt) (printf("ERROR: %s in: %s on line:%d\n",txt,__FILE__, __LINE__))
-	#define createAVLNode(s) (createTreeNode(createWordFreq(s,1)))
 	
 	/**
 	structure to associate a word with a frequency.
@@ -25,7 +24,9 @@
 	}TreeNode;	
 
 
-	//AVLNode is same type as TreeNode, just made a distinction for more clarity
+	/**
+	structure to order tokens in a file lexiographically in a balanced tree and keep track of its frequencies
+	**/
 	typedef struct AVLNode{
 		WordFreq* element;
 		int height;
@@ -88,6 +89,7 @@
 	void printWordFreq(WordFreq* element, char* s);
 	void printHeap(MinHeap heap);
 	void printTree(TreeNode* root);
+	void printAVLTree(TreeNode* root);
 	void printQueue(Queue q);
 
 #endif
