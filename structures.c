@@ -36,6 +36,19 @@ void freeWordFreq(WordFreq* element){
 //AVLNode methods (note this is the same type as TreeNode by typedef)////////////////////////////////////////////////
 
 /**
+Initializes AVLNode
+**/
+AVLNode* createAVLNode(char* word){
+	AVLNode* ret = (AVLNode*)malloc(sizeof(AVLNode));
+	ret->element = createWordFreq(word,1);
+	ret->height = 1;
+	ret->left = NULL;
+	ret->right = NULL;
+	return ret;
+}
+
+
+/**
 Searches through AVL tree. 
 If found: Updates word's frquency
 If not found: Creates a WordFreq element and inserts it into the tree.
@@ -50,21 +63,88 @@ void insertOrUpdateAVL(AVLNode** root_ptr, char* word){ //TODO
 		 
 	if(*root_ptr==NULL){ //no elements in AVLTree yet
 		*root_ptr = createAVLNode(word);
+		AVLNode* temp = *root_ptr;
+		temp->height = 0;
+		*root_ptr = temp;
 		return;
 	}
 	
-	/*DELETE
-	1. search for word
-	2. if found - update frequency and return
-	3. if not found - add to Tree, then balance
-	*/
+	//Search for word.
+	int found = searchAVL(*root_ptr, word);
+
+	if(found==0)
+		return;
+	else{
+		insert(*root_ptr, word);
+	}
 }
+
+
+/**[private method]
+searches for node in tree. If found, updates frequency and returns 0. If not found, returns 1.
+**/
+static int searchAVL(AVLNode* root, char* word){	
+	while(root!=NULL){
+		if(strcmp(root->element->word,word)==0){
+			root->element->frequency++;
+			return 0;
+		}
+		if(strcmp(root->element->word,word)>0)//1 is greater than 2
+			root = root->left;
+		else if(strcmp(root->element->word,word)<0)//2 is greater than 1
+			root = root->right;
+	}
+	return 1;
+}
+
+
+/**[private method]
+inserts nodes in tree. Re-Arranges Heights, set up balance factor to balance tree after inertion.
+**/
+static AVLNode* insert(AVLNode* root, char* word){
+	if(root == NULL)
+		return createAVLNode(word);
+	
+	if(strcmp(root->element->word,word)>0)
+		root->left = insert(root->left,word);
+	else if(strcmp(root->element->word,word)<0)
+		root->right = insert(root->right,word);
+	else
+		return root;
+
+	int testLeft,testRight;
+
+	if(root->left!=NULL)
+		testLeft = root->left->height;
+	else
+		testLeft = 0;
+	if(root->right!=NULL)
+		testRight = root->right->height;
+	else
+		testRight = 0;
+
+	if(testLeft >= testRight)
+		root->height = 1+testLeft;
+	else if(testLeft < testRight)
+		root->height = 1+testRight;
+	
+	int balanceFactor;
+	if(root==NULL)
+		balanceFactor = 0;
+	else
+		balanceFactor = testLeft - testRight;
+
+	balanceAVL(root,balanceFactor);
+	
+	return root;		
+}
+
 
 
 /**[private method]
 balances nodes in AVL after one insert
 **/
-/*static*/ void balanceAVL(/*insert parameters here*/){ //TODO
+/*static*/ void balanceAVL(AVLNode* toBalance, int balanceFactor){ //TODO
 
 	/*DELETE
 	REMEMBER to add this into the header file, or else it won't compile
@@ -79,7 +159,7 @@ balances nodes in AVL after one insert
 /**
 gets number of nodes in an AVL Frequency Tree
 **/
-int sizeOfTree(AVLNode* root){
+int sizeOfAVLTree(AVLNode* root){
 	if(root==NULL)
 		return 0;
 		
@@ -413,7 +493,8 @@ void printHeapArray(WordFreq** arr, int size){
 	printf("\n");
 }
 
-void printTree(TreeNode* root){
+
+void printAVLTree(AVLNode* root){
 	if(root==NULL){
 		printf("NULL\n");
 		return;
@@ -425,8 +506,8 @@ void printTree(TreeNode* root){
 	printf("---------------------------------------------\n");
 }
 
-//[private method] prints Tree recursively (horizontally). Root on far left. In order Traversal.
-static void printTreeRec(TreeNode* root, int space){ 
+//[private method] prints AVLTree recursively (horizontally). Root on far left. In order Traversal.
+static void printAVLTreeRec(AVLNode* root, int space){ 
   	if (root == NULL)return;
   	 
   	int count = 10;
@@ -474,18 +555,18 @@ void printQueue(Queue q){
 
 
 int main(){//TODO get rid of this in final prod	
-	AVLNode* root = createAVLNode("hello");
-	root->left = createAVLNode("hellol");
-	root->right = createAVLNode("hellor");
-	root->left->left = createAVLNode("nahh");
-	root->left->left->left = createAVLNode("wog");
-	root->left->element->frequency = 0; //ERROR
-	root->right->element->frequency = 3;
-	root->left->left->element->frequency = 10;
-	root->left->left->left->element->frequency = 7;
+	AVLNode** root = (AVLNode**)malloc(sizeof(AVLNode*));
+	insertOrUpdateAVL(root,"Happy");
+	insertOrUpdateAVL(root,"Happy");
+	insertOrUpdateAVL(root,"Hot");
+	insertOrUpdateAVL(root,"Happy");
+	insertOrUpdateAVL(root,"Hog");
+	insertOrUpdateAVL(root,"Happy");
+	insertOrUpdateAVL(root,"Hogy");
+	insertOrUpdateAVL(root,"Hot");
+	insertOrUpdateAVL(root,"Hot");
 	
-	printTree(root);	
+	printTree(*root);	
 	return 0;
 }
-
 

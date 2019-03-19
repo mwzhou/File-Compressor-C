@@ -6,7 +6,10 @@ private methods only meant to be accessed by DataStructures.c
 
 #include "structures.h"	
 
-	//static void balanceAVL(/*insert parameters here*/)	
+
+	static int searchAVL(AVLNode* root, char* word);
+	static AVLNode* insert(AVLNode* root, char* word)
+	//static void balanceAVL(AVLNode* toBalance, int balanceFactor);
 	
 	static QueueItem* createQueueItem(TreeNode* tree);	
 
@@ -16,7 +19,7 @@ private methods only meant to be accessed by DataStructures.c
 	static void swap(WordFreq** element1, WordFreq** element2);
 	
 	static void printHeapRec(MinHeap heap, int root, int space);
-	static void printTreeRec(TreeNode* root, int space);
+	static void printAVLTreeRec(TreeNode* root, int space);
 	void printHeapArray(WordFreq** arr, int size);
 
 #endif
