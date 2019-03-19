@@ -26,7 +26,12 @@
 
 
 	//AVLNode is same type as TreeNode, just made a distinction for more clarity
-	typedef TreeNode AVLNode;
+	typedef struct AVLNode{
+		WordFreq* element;
+		int height;
+		struct AVLNode* left;
+		struct AVLNode* right;
+	}AVLNode;
 
 
 	/**
@@ -64,6 +69,7 @@
 	WordFreq* createWordFreq(char* word, int frequency);
 	void freeWordFreq(WordFreq* element);
 	
+	AVLNode* createAVLNode(char* word);	
 	void insertOrUpdateAVL(AVLNode** root_ptr, char* word);
 	int sizeOfTree(AVLNode* root);
 	
