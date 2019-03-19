@@ -59,7 +59,7 @@ int main(int argc, char** argv){
 		char flag = str_flag[0];
 		bool isRecursive =false;
 		char* path_file = argv[2];
-		char* codebook = (argc==4)? argv[4]:NULL; //if codebook was passed in as argument	
+		char* codebook = (argc==4)? argv[3]:NULL; //if codebook was passed in as argument	
 			
 	/*checking length of str_flag*/
 		if(length_flg>2){
