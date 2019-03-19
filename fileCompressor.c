@@ -11,7 +11,7 @@
 Takes in a AVLTree of words and their frequencies in a file and performs huffman coding
 returns a huffman tree to be used in encoding
 **/
-TreeNode* huffmancoding(AVLNode* frequencies){
+TreeNode* huffmancoding(AVLNode* frequencies){ //TODO
 	if(frequencies==NULL){
 		return NULL;
 	}
@@ -32,6 +32,11 @@ void compress(){ //TODO: add params and return
 void decompress(){ //TODO: add params and return
 }
 
+
+/**
+Runs a single flag operation.
+Returns true if succesful, returns false if not.
+**/
 bool singleFlag(char* flag, char* path_file, char* codebook){ //TODO
 	switch(flag){
 		case 'b': //TODO
@@ -45,6 +50,7 @@ bool singleFlag(char* flag, char* path_file, char* codebook){ //TODO
 	}
 	return true;
 }
+
 
 int main(int argc, char** argv){
 	//INPUT CHECKS
