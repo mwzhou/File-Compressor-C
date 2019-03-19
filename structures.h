@@ -25,16 +25,13 @@
 	}TreeNode;	
 
 
-	/**
-	structure to sort each word lexiographically to keep track of frequencies of each word
-	**/
+	//AVLNode is same type as TreeNode, just made a distinction for more clarity
 	typedef struct AVLNode{
 		WordFreq* element;
 		int height;
 		struct AVLNode* left;
 		struct AVLNode* right;
 	}AVLNode;
-
 
 
 	/**
@@ -72,13 +69,9 @@
 	WordFreq* createWordFreq(char* word, int frequency);
 	void freeWordFreq(WordFreq* element);
 	
-
 	AVLNode* createAVLNode(char* word);	
 	void insertOrUpdateAVL(AVLNode** root_ptr, char* word);
-	int sizeOfTree(AVLNode* root);	
-
-	void insertOrUpdateAVL(AVLNode** root_ptr, char* word);
-	int sizeOfAVLTree(AVLNode* root);
+	int sizeOfTree(AVLNode* root);
 	
 	TreeNode* createTreeNode(WordFreq* element);
 	TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2);
@@ -94,7 +87,7 @@
 	
 	void printWordFreq(WordFreq* element, char* s);
 	void printHeap(MinHeap heap);
-	void printAVLTree(TreeNode* root);
+	void printTree(TreeNode* root);
 	void printQueue(Queue q);
 
 #endif
