@@ -4,9 +4,11 @@ private methods only meant to be accessed by DataStructures.c
 #ifndef priv
 #define	priv
 
-#include "DataStructures.h"	
+#include "structures.h"	
 
-	//static void balanceAVL(/*insert parameters here*/)	
+	static int searchAVL(AVLNode* root, char* word);
+	static AVLNode* insert(AVLNode* root, char* word)
+	//static void balanceAVL(AVLNode* toBalance, int balanceFactor);
 	
 	static QueueItem* createQueueItem(TreeNode* tree);	
 
@@ -17,6 +19,6 @@ private methods only meant to be accessed by DataStructures.c
 	
 	static void printHeapRec(MinHeap heap, int root, int space);
 	static void printTreeRec(TreeNode* root, int space);
-	static void printHeapArray(WordFreq** arr, int size);
+	void printHeapArray(WordFreq** arr, int size);
 
 #endif
