@@ -5,12 +5,14 @@ private methods only meant to be accessed by DataStructures.c
 #define	priv
 
 #include "structures.h"	
+	
+	#define heightAVL(node) (((node)==NULL)? 0: (node)->height)
+	
+	static AVLNode* BalanceAVL(AVLNode* root, int balance_factor, char* word);
+	static void Case1Balance(AVLNode** root_ptr, bool isLeft);
+	static void Case2Balance(AVLNode** root_ptr, bool isLeftRight);
+	static int greaterHeight(AVLNode* parent);
 
-	static int searchAVL(AVLNode* root, char* word);
-	static AVLNode* insert(AVLNode* root, char* word)
-	static AVLNode* balanceAVL(AVLNode* toBalance, int balanceFactor, char*);
-	static int greater(AVLNode* parent);
-	static int height(AVLNode* findFor);
 	
 	static QueueItem* createQueueItem(TreeNode* tree);	
 

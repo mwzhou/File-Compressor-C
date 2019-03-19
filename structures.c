@@ -4,6 +4,8 @@ structures.c holds all the structures necessary to be used in fileCompression.c
 #include <stdio.h>
 #include <stdlib.h> 
 #include <string.h> 
+#include <stdbool.h>
+
 #include "structures_priv.h"
 
 	
@@ -48,190 +50,161 @@ AVLNode* createAVLNode(char* word){
 }
 
 /**
-Searches through AVL tree. 
+Searches through AVL tree recursively O(logn)
 If found: Updates word's frquency
 If not found: Creates a WordFreq element and inserts it into the tree.
 MAINTAINS AVL properties of the tree and balances if necessary
-@params: root_ptr - address of the pointer to the AVL Tree root (neccesary to survive the scope of the function)
+@params: root - root of AVL Tree
+@returns: updated root after one insert/update
 **/
-void insertOrUpdateAVL(AVLNode** root_ptr, char* word){ //TODO
-	if(root_ptr==NULL){
-		PRINT_ERROR("can't pass in NULL pointer into insertOrUpdateAVL()");
-		return;
-	}
-		 
-	if(*root_ptr==NULL){ //no elements in AVLTree yet
-		*root_ptr = createAVLNode(word);
-		return;
-	}
-	
-	int found = searchAVL(*root_ptr, word);
-
-	//if the word is found, exit, otherwise insert the word
-	if(found==0)
-		return;
-	else{
-		*root_ptr = insert(*root_ptr, word);
-	}
-}
-
-/**[private method]
-searches for node in tree. If found, updates frequency and returns 0. If not found, returns 1.
-**/
-static int searchAVL(AVLNode* root, char* word){	
-	while(root!=NULL){
-		if(strcmp(root->element->word,word)==0){
-			root->element->frequency++;
-			return 0;
-		}
-		if(strcmp(root->element->word,word)>0)//1 is greater than 2
-			root = root->left;
-		else if(strcmp(root->element->word,word)<0)//2 is greater than 1
-			root = root->right;
-	}
-	return 1;
-}
-
-/**[private method]
-inserts nodes in tree. Re-Arranges Heights, set up balance factor to balance tree after inertion.
-**/
-static AVLNode* insert(AVLNode* root, char* word){
-	AVLNode* root_ptr = root;
-
-	if(root_ptr == NULL)
+AVLNode* insertOrUpdateAVL(AVLNode* root, char* word){
+	if(root ==NULL){ //no elements in the AVLTree yet
 		return createAVLNode(word);
+	}
+
+	int strcmp_word = strcmp(root->element->word,word); 
 	
-	if(strcmp(root_ptr->element->word,word)>0)
-		root_ptr->left = insert(root_ptr->left,word);
-	else if(strcmp(root_ptr->element->word,word)<0)
-		root_ptr->right = insert(root_ptr->right,word);
-	else
-		return root_ptr;
-
-	root_ptr->height = greater(root_ptr)+1;
-
-	int balanceFactor;
-	if(root_ptr==NULL)
-		balanceFactor = 0;
-	else
-		balanceFactor = height(root_ptr->left)- height(root_ptr->right);
-
-	root = balanceAVL(root_ptr,balanceFactor,word);
+	if(strcmp_word<0){ //word passed in is greater than current node
+		root->left = insertOrUpdateAVL((root->left) , word);
+	}else if(strcmp_word>0){ //word passed in is less than current node
+		root->right = insertOrUpdateAVL((root->right) , word);
+	}else{
+		root->element->frequency++;
+		return root;
+	}
+		
+	//update height
+	root->height = greaterHeight(root)+1;
 	
-	return root;	
+	//Balancing the tree
+	
+	int balance_factor = (root==NULL)? 0 : (heightAVL(root->left)) - (heightAVL(root->right));
+	root = BalanceAVL(root , balance_factor, word);
+	return root;
 }
 
+
+/** [private method]
+Balances AVL Tree given a root after one insert (Constant time)
+returns updated pointer to root
+**/
+static AVLNode* BalanceAVL(AVLNode* root, int balance_factor, char* word){
+	if(root==NULL||balance_factor==1|| balance_factor==0 ||word==NULL){
+		return root;
+	}
+	
+	int strcmp_left = (root->left==NULL)? 0 : strcmp((root->left)->element->word , word);
+	int strcmp_right = (root->right==NULL)? 0 : strcmp((root->right)->element->word , word);
+	
+	
+	if(balance_factor>1 && strcmp_left<0){ //Case: left-left
+		Case1Balance(&root,true);
+	}else if(balance_factor>1 && strcmp_left>0){ //Case: left-right
+		Case2Balance(&root,true);
+	}else if(balance_factor<-1 && strcmp_right<0){ //Case: right-right
+		Case1Balance(&root,false);
+	}else if(balance_factor<-1 && strcmp_right>0){ //Case: right-left
+		Case2Balance(&root,false);
+	}
+	
+	return root;
+}
+
+
 /**[private method]
-balances nodes in AVL after one insert*/
-static AVLNode* balanceAVL(AVLNode* toBalance, int balanceFactor,char* word){
+Balances Tree if Case1: i.e. left-left or left-right
+@params: isLeft - meaning is Case Left-Left
+**/
+static void Case1Balance(AVLNode** root_ptr, bool isLeft){
+	if(root_ptr==NULL||*root_ptr==NULL) return;
+	
+	//Case with Left-Left
+	if (isLeft ){
+		AVLNode* x = (*root_ptr)->left;
+		AVLNode* T2 = x->right; //x's right subtree
+		x->right = (*root_ptr);
+		(*root_ptr)->left = T2;
 
-	//Case with Left Left
-	if(balanceFactor>1 && strcmp(toBalance->left->element->word,word)>0){
-		AVLNode* x = toBalance->left;
-		AVLNode* T2 = x->right;
+		//update heights
+		(*root_ptr)->height = greaterHeight((*root_ptr))+1;
+		x->height = greaterHeight(x)+1;
 
-		x->right = toBalance;
-		toBalance->left = T2;
-
-		toBalance->height = greater(toBalance)+1;
-		x->height = greater(x)+1;
-
-		return x;
-	}
-	//Case with Left Right
-	else if(balanceFactor>1 && strcmp(toBalance->left->element->word,word)<0){
-		AVLNode* x = toBalance->left->right;
-		AVLNode* T2 = x->left;
-
-		x->left = toBalance->left;
-		toBalance->left->right = T2;
-
-		toBalance->left->height = greater(toBalance->left)+1;
-		x->height = greater(x)+1;
-
-		toBalance->left = x;
-
-		AVLNode* x1 = toBalance->left;
-		AVLNode* T21 = x1->right;
-
-		x1->right = toBalance;
-		toBalance->left = T21;
-
-		toBalance->height = greater(toBalance)+1;
-		x1->height = greater(x1)+1;
-
-		return x1;
-	}
-	//Case with Right Right
-	else if(balanceFactor<-1 && strcmp(toBalance->right->element->word,word)<0){
-		AVLNode* x = toBalance->right;
-		AVLNode* T2 = x->left;
-
-		x->left = toBalance;
-		toBalance->right = T2;
-
-		toBalance->height = greater(toBalance)+1;		
-		x->height = greater(x)+1;
-
-		return x;
-	}
-	//Case with Right Left
-	else if(balanceFactor<-1 && strcmp(toBalance->right->element->word,word)>0){
-		AVLNode* x = toBalance->right->left;
-		AVLNode* T2 = x->right;
-
-		toBalance->right->left = T2;		
-		x->right = toBalance->right;
-
-		toBalance->right->height = greater(toBalance->right)+1;			
-		x->height = greater(x)+1;			
-
-		toBalance->right = x;
-
-		AVLNode* x1 = toBalance->right;
-		AVLNode* T21 = x1->left;
-
-		toBalance->right = T21;
-		x1->left = toBalance;
+		(*root_ptr) = x; //update root
 		
-		toBalance->height = greater(toBalance)+1;
-		x1->height = greater(x1)+1;
+	//Case with Right-Right
+	}else{
+		AVLNode* x = (*root_ptr)->right;
+		AVLNode* T2 = x->left; //x's left-subtree
+		x->left = (*root_ptr);
+		(*root_ptr)->right = T2;
+		
+		//update heights
+		(*root_ptr)->height = greaterHeight((*root_ptr))+1;		
+		x->height = greaterHeight(x)+1;
 
-		return x1;
+		(*root_ptr) = x; //update root
 	}
+}
 
-	return toBalance;	
+
+/**[private method]
+Balances Tree if Case2: i.e. left-right or right-left
+@params: isLeftRight - meaning is Case Left-Right
+**/
+static void Case2Balance(AVLNode** root_ptr, bool isLeftRight){
+	if(root_ptr==NULL||*root_ptr==NULL) return;
+	
+	//Case with Left Right
+	if(isLeftRight){
+		//turn into Left-Left Case1
+			AVLNode* x = ((*root_ptr)->left)->right;
+			AVLNode* T2 = x->left; //x's left subtree
+			x->left = (*root_ptr)->left;
+			(*root_ptr)->left->right = T2;
+			
+			//update height
+			(*root_ptr)->left->height = greaterHeight((*root_ptr)->left)+1;
+			x->height = greaterHeight(x)+1;
+
+			(*root_ptr)->left = x;
+			
+		Case1Balance(root_ptr, true);
+		
+	}else{
+		//turn into Right-Right Case1
+			AVLNode* x = (*root_ptr)->right->left;
+			AVLNode* T2 = x->right; //x's right subtree
+			(*root_ptr)->right->left = T2;		
+			x->right = (*root_ptr)->right;
+
+			//update heights
+			(*root_ptr)->right->height = greaterHeight((*root_ptr)->right)+1;			
+			x->height = greaterHeight(x)+1;			
+
+			(*root_ptr)->right = x;
+		
+		Case1Balance(root_ptr, false);
+	}
 }
 
 
 /**[private method]
 returns height that is greater between the children Nodes of the node passed in, accounts for if node passed in is NULL*/
-static int greater(AVLNode* parent){
-	int testLeft = height(parent->left);
-	int testRight = height(parent->right);
-
-	if(testLeft >= testRight)
-		return testLeft;
-	return testRight;
-}
-
-/**[private method]
-returns height of a node in order to account for if the node is NULL or not*/
-static int height(AVLNode* findFor){
-	if(findFor == NULL)
-		return 0;
-	return findFor->height;
+static int greaterHeight(AVLNode* parent){
+	int left_h = heightAVL(parent->left);
+	int right_h = heightAVL(parent->right);
+	return (left_h > right_h)? left_h : right_h;
 }
 
 
 /**
 gets number of nodes in an AVL Frequency Tree
 **/
-int sizeOfTree(AVLNode* root){
+int sizeOfAVLTree(AVLNode* root){
 	if(root==NULL)
 		return 0;
 		
-	return 1+sizeOfTree(root->left)+sizeOfTree(root->right);
+	return 1+sizeOfAVLTree(root->left)+sizeOfAVLTree(root->right);
 }
 
 
@@ -394,7 +367,7 @@ MinHeap createMinHeap(AVLNode* tree){
 		return ret;
 	}
 	
-	ret.size = sizeOfTree(tree);
+	ret.size = sizeOfAVLTree(tree);
 	ret.heapArr = (WordFreq**)malloc( (ret.size) * sizeof(WordFreq*) ); //creates array big enough to hold all elements in AVLTree
 	initializeMinHeapArr(tree, ret.heapArr, 0); //inserts each node of AVLtree into heapArr	
 	heapify(&ret); //turns array into a heap
@@ -561,7 +534,7 @@ void printHeapArray(WordFreq** arr, int size){
 	printf("\n");
 }
 
-void printTree(AVLNode* root){
+void printTree(TreeNode* root){
 	if(root==NULL){
 		printf("NULL\n");
 		return;
@@ -574,7 +547,7 @@ void printTree(AVLNode* root){
 }
 
 //[private method] prints Tree recursively (horizontally). Root on far left. In order Traversal.
-static void printTreeRec(AVLNode* root, int space){ 
+static void printTreeRec(TreeNode* root, int space){ 
   	if (root == NULL)return;
   	 
   	int count = 10;
@@ -598,7 +571,7 @@ void printAVLTree(AVLNode* root){
 
 	printf("---------------------------------------------\n");
 	printf("[AVLTREE:(horizontal)]\n");
-	printTreeRec(root,0);
+	printAVLTreeRec(root,0);
 	printf("---------------------------------------------\n");
 }
 
@@ -610,13 +583,15 @@ static void printAVLTreeRec(AVLNode* root, int space){
   	int i;
   	space += count; //increases space inbetween elements
   	
-    printTreeRec(root->right, space); 
+
+    printAVLTreeRec(root->right, space);   
   
     printf("\n"); 
     for (i = count; i < space; i++){ printf(" ");} 
     printWordFreq(root->element,"\n");
     
-    printTreeRec(root->left, space); 
+    printAVLTreeRec(root->left, space); 
+
 }
 
 void printQueue(Queue q){ 
@@ -651,23 +626,25 @@ void printQueue(Queue q){
 
 
 int main(){//TODO get rid of this in final prod	
-	AVLNode** root = (AVLNode**)malloc(sizeof(AVLNode*));
-	insertOrUpdateAVL(root,"Happy");
-	insertOrUpdateAVL(root,"Happy");
-	insertOrUpdateAVL(root,"Hot");
-	insertOrUpdateAVL(root,"Happy");
-	insertOrUpdateAVL(root,"Hog");
-	insertOrUpdateAVL(root,"Happy");
-	insertOrUpdateAVL(root,"Hogy");
-	insertOrUpdateAVL(root,"Hot");
-	insertOrUpdateAVL(root,"Hot");
-	insertOrUpdateAVL(root,"apple");
-	insertOrUpdateAVL(root,"top");
-	insertOrUpdateAVL(root,"Apple");
-	insertOrUpdateAVL(root,"Corn");
-	insertOrUpdateAVL(root,"Apple");
-	insertOrUpdateAVL(root,"Apple");
+
+	AVLNode* root = NULL;
+	root = insertOrUpdateAVL(root,"Happy");
+	root = insertOrUpdateAVL(root,"Happy");
+	root = insertOrUpdateAVL(root,"Hot");
+	root =insertOrUpdateAVL(root,"Happy");
+	root =insertOrUpdateAVL(root,"Hog");
+	root =insertOrUpdateAVL(root,"Happy");
+	root =insertOrUpdateAVL(root,"Hogy");
+	root =insertOrUpdateAVL(root,"Hot");
+	root =insertOrUpdateAVL(root,"Hot");
+	root =insertOrUpdateAVL(root,"apple");
+	root =insertOrUpdateAVL(root,"top");
+	root =insertOrUpdateAVL(root,"Apple");
+	root =insertOrUpdateAVL(root,"Corn");
+	root =insertOrUpdateAVL(root,"Apple");
+	root =insertOrUpdateAVL(root,"Apple");
 	
-	printAVLTree(*root);	
+	printAVLTree(root);	
+
 	return 0;
 }
