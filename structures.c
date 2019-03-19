@@ -31,6 +31,10 @@ void freeWordFreq(WordFreq* element){
 	free(element);
 }
 
+
+
+//AVLNode methods (note this is the same type as TreeNode by typedef)////////////////////////////////////////////////
+
 /**
 Initializes AVLNode
 **/
@@ -43,9 +47,6 @@ AVLNode* createAVLNode(char* word){
 	return ret;
 }
 
-
-
-//AVLNode methods (note this is the same type as TreeNode by typedef)////////////////////////////////////////////////
 
 /**
 Searches through AVL tree. 
@@ -78,6 +79,7 @@ void insertOrUpdateAVL(AVLNode** root_ptr, char* word){ //TODO
 	}
 }
 
+
 /**[private method]
 searches for node in tree. If found, updates frequency and returns 0. If not found, returns 1.
 **/
@@ -94,6 +96,7 @@ static int searchAVL(AVLNode* root, char* word){
 	}
 	return 1;
 }
+
 
 /**[private method]
 inserts nodes in tree. Re-Arranges Heights, set up balance factor to balance tree after inertion.
@@ -136,6 +139,8 @@ static AVLNode* insert(AVLNode* root, char* word){
 	return root;		
 }
 
+
+
 /**[private method]
 balances nodes in AVL after one insert
 **/
@@ -154,7 +159,7 @@ balances nodes in AVL after one insert
 /**
 gets number of nodes in an AVL Frequency Tree
 **/
-int sizeOfTree(AVLNode* root){
+int sizeOfAVLTree(AVLNode* root){
 	if(root==NULL)
 		return 0;
 		
@@ -488,7 +493,8 @@ void printHeapArray(WordFreq** arr, int size){
 	printf("\n");
 }
 
-void printTree(AVLNode* root){
+
+void printAVLTree(AVLNode* root){
 	if(root==NULL){
 		printf("NULL\n");
 		return;
@@ -500,8 +506,8 @@ void printTree(AVLNode* root){
 	printf("---------------------------------------------\n");
 }
 
-//[private method] prints Tree recursively (horizontally). Root on far left. In order Traversal.
-static void printTreeRec(AVLNode* root, int space){ 
+//[private method] prints AVLTree recursively (horizontally). Root on far left. In order Traversal.
+static void printAVLTreeRec(AVLNode* root, int space){ 
   	if (root == NULL)return;
   	 
   	int count = 10;
@@ -563,3 +569,4 @@ int main(){//TODO get rid of this in final prod
 	printTree(*root);	
 	return 0;
 }
+
