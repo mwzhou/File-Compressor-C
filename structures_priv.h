@@ -20,6 +20,7 @@ private methods only meant to be accessed by DataStructures.c
 	static void swap(WordFreq** element1, WordFreq** element2);
 	
 	static void printHeapRec(MinHeap heap, int root, int space);
+	static void printAVLTreeRec(AVLNode* root, int space);
 	static void printTreeRec(TreeNode* root, int space);
 	void printHeapArray(WordFreq** arr, int size);
 
