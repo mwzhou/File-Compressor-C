@@ -31,6 +31,10 @@ void freeWordFreq(WordFreq* element){
 	free(element);
 }
 
+
+
+//AVLNode methods (note this is the same type as TreeNode by typedef)////////////////////////////////////////////////
+
 /**
 Initializes AVLNode
 **/
@@ -42,10 +46,6 @@ AVLNode* createAVLNode(char* word){
 	ret->right = NULL;
 	return ret;
 }
-
-
-
-//AVLNode methods (note this is the same type as TreeNode by typedef)////////////////////////////////////////////////
 
 /**
 Searches through AVL tree. 
@@ -123,7 +123,6 @@ static AVLNode* insert(AVLNode* root, char* word){
 
 /**[private method]
 balances nodes in AVL after one insert*/
-
 static AVLNode* balanceAVL(AVLNode* toBalance, int balanceFactor,char* word){
 
 	//Case with Left Left
@@ -202,8 +201,8 @@ static AVLNode* balanceAVL(AVLNode* toBalance, int balanceFactor,char* word){
 	}
 
 	return toBalance;	
-	
 }
+
 
 /**[private method]
 returns height that is greater between the children Nodes of the node passed in, accounts for if node passed in is NULL*/
@@ -591,6 +590,35 @@ static void printTreeRec(AVLNode* root, int space){
     printTreeRec(root->left, space); 
 }
 
+void printAVLTree(AVLNode* root){
+	if(root==NULL){
+		printf("NULL\n");
+		return;
+	}
+
+	printf("---------------------------------------------\n");
+	printf("[AVLTREE:(horizontal)]\n");
+	printTreeRec(root,0);
+	printf("---------------------------------------------\n");
+}
+
+//[private method] prints Tree recursively (horizontally). Root on far left. In order Traversal.
+static void printAVLTreeRec(AVLNode* root, int space){ 
+  	if (root == NULL)return;
+  	 
+  	int count = 10;
+  	int i;
+  	space += count; //increases space inbetween elements
+  	
+    printTreeRec(root->right, space); 
+  
+    printf("\n"); 
+    for (i = count; i < space; i++){ printf(" ");} 
+    printWordFreq(root->element,"\n");
+    
+    printTreeRec(root->left, space); 
+}
+
 void printQueue(Queue q){ 
 	if(q.end==NULL||q.front==NULL){
 		printf("\nNULL\n\n");
@@ -640,6 +668,6 @@ int main(){//TODO get rid of this in final prod
 	insertOrUpdateAVL(root,"Apple");
 	insertOrUpdateAVL(root,"Apple");
 	
-	printTree(*root);	
+	printAVLTree(*root);	
 	return 0;
 }
