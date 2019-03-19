@@ -12,6 +12,7 @@ private methods only meant to be accessed by DataStructures.c
 	static void Case1Balance(AVLNode** root_ptr, bool isLeft);
 	static void Case2Balance(AVLNode** root_ptr, bool isLeftRight);
 	static int greaterHeight(AVLNode* parent);
+
 	
 	static QueueItem* createQueueItem(TreeNode* tree);	
 

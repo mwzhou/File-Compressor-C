@@ -5,6 +5,7 @@ structures.c holds all the structures necessary to be used in fileCompression.c
 #include <stdlib.h> 
 #include <string.h> 
 #include <stdbool.h>
+
 #include "structures_priv.h"
 
 	
@@ -47,7 +48,6 @@ AVLNode* createAVLNode(char* word){
 	ret->right = NULL;
 	return ret;
 }
-
 
 /**
 Searches through AVL tree recursively O(logn)
@@ -583,13 +583,15 @@ static void printAVLTreeRec(AVLNode* root, int space){
   	int i;
   	space += count; //increases space inbetween elements
   	
-    printAVLTreeRec(root->right, space); 
+
+    printAVLTreeRec(root->right, space);   
   
     printf("\n"); 
     for (i = count; i < space; i++){ printf(" ");} 
     printWordFreq(root->element,"\n");
     
     printAVLTreeRec(root->left, space); 
+
 }
 
 void printQueue(Queue q){ 
@@ -624,6 +626,7 @@ void printQueue(Queue q){
 
 
 int main(){//TODO get rid of this in final prod	
+
 	AVLNode* root = NULL;
 	root = insertOrUpdateAVL(root,"Happy");
 	root = insertOrUpdateAVL(root,"Happy");
@@ -642,5 +645,6 @@ int main(){//TODO get rid of this in final prod
 	root =insertOrUpdateAVL(root,"Apple");
 	
 	printAVLTree(root);	
+
 	return 0;
 }

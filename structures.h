@@ -73,6 +73,7 @@
 	AVLNode* createAVLNode(char* word);	
 	AVLNode* insertOrUpdateAVL(AVLNode* root, char* word);
 	int sizeOfAVLTree(AVLNode* root);
+
 	
 	TreeNode* createTreeNode(WordFreq* element);
 	TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2);
@@ -90,6 +91,7 @@
 	void printHeap(MinHeap heap);
 	void printTree(TreeNode* root);
 	void printAVLTree(AVLNode* root);
+
 	void printQueue(Queue q);
 
 #endif
