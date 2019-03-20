@@ -31,7 +31,6 @@ TreeNode* huffmancoding(AVLNode* frequencies){
 		enqueue(&trees, mergeTrees(t1,t2));	
 	}
 	
-
 	free(tokens.heapArr);		
 	return dequeue(&trees);
 }
@@ -97,7 +96,7 @@ int main(int argc, char** argv){
 			return 0; 
 		} 
 		
-	//Variables
+	//DECLARING VARIABLES
 		char* str_flag = argv[1]; 
 		int length_flag = strlen(str_flag);
 		if(length_flag>2){
@@ -110,14 +109,14 @@ int main(int argc, char** argv){
 		char* path_file = argv[2];
 		char* codebook = (argc==4)? argv[3]:NULL; //if codebook was passed in as argument	
 			
-			
-	//TEST
 	//Running the respective flag operation
+
 		if(isRecursive){ //recursive
 			//TODO
 		}else{
 			runFlag(flag, path_file, codebook);
 		}
 		
+	
 	return 0;
 }
