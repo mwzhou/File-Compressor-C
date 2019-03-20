@@ -5,7 +5,7 @@ structures.c holds all the structures necessary to be used in fileCompression.c
 #include <stdlib.h> 
 #include <string.h> 
 #include <stdbool.h>
-
+#include <limits.h>
 #include "structures_priv.h"
 
 	
@@ -48,6 +48,7 @@ AVLNode* createAVLNode(char* word){
 	ret->right = NULL;
 	return ret;
 }
+
 
 /**
 Searches through AVL tree recursively O(logn)
@@ -336,13 +337,38 @@ void enqueue(Queue* q, TreeNode* tree){
 
 
 /**
+returns the frequency of the root from the front of Queue.
+If q is NULL, tree at front of q is NULL, or element at the root of the tree is NULL, returns INT_MAX;
+**/
+int peekQueue(Queue* q){
+	if(q==NULL || q->front->tree==NULL || q->front->tree->element==NULL){
+		return INT_MAX;
+	} 
+	return q->front->tree->element->frequency;
+}
+
+/**
+checks if Queue has one element left
+**/
+bool hasSizeOne(Queue* q){
+	if(q==NULL||q->front==NULL)
+		return false;
+	else if(q->front->next==NULL && q->front->prev==NULL)
+		return true;
+		
+	return false;
+}
+
+
+/**
 free's all Queue nodes if necessary (does not touch the trees in case of future use)
 however, if implemented correctly, FileCompression.c will not need to call upon this method
 **/
-void freeQueue(Queue q){
-	if((q.front)==NULL) return;
+void freeQueue(Queue* q){
+	if(q==NULL||(q->front)==NULL||q->end==NULL) 
+		return;
 	
-	QueueItem* ptr = (q.front);
+	QueueItem* ptr = (q->front);
 	while(ptr!=NULL){
 		QueueItem* temp = ptr;
 		ptr = ptr->next;
@@ -476,6 +502,18 @@ WordFreq* removeMin(MinHeap* heap){
 }
 
 
+/**
+returns frequency from min item on heap
+If heap is NULL or element on heap is NULL, returns INT_MAX;
+**/
+int peekMinHeap(MinHeap* heap){
+	if(heap==NULL|| heap->heapArr[0]==NULL){
+		return INT_MAX;
+	} 
+	
+	return heap->heapArr[0]->frequency;
+}
+
 
 //PRINT methods/////////////////////////////////////////////////////////////
 
@@ -496,33 +534,33 @@ void printWordFreq(WordFreq* wf, char* s){
 	}
 }
 
-void printHeap(MinHeap heap){
-	if(heap.heapArr==NULL){
+void printHeap(MinHeap* heap_ptr){
+	if(heap_ptr==NULL || heap_ptr->heapArr==NULL){
 		printf("NULL\n");
 		return;
 	}
 
 	printf("/////////////////////////////////////////////////\n");
 	printf("[HEAP:(horizontal)]\n");
-	printHeapRec(heap,0,0);
+	printHeapRec(heap_ptr,0,0);
 	printf("/////////////////////////////////////////////////\n");
 }
 
 //[private method] recursively prints heap(horizontally)
-static void printHeapRec(MinHeap heap, int root, int space){	
-  	if (root>=heap.size)return;
+static void printHeapRec(MinHeap* heap_ptr, int root, int space){	
+  	if (root>=heap_ptr->size)return;
   	 
   	int count = 10;
   	int i;
   	space += count; //increases space inbetween elements
   	
-    printHeapRec(heap, 2*root+2, space); 
+    printHeapRec(heap_ptr, 2*root+2, space); 
     
     printf("\n"); 
     for (i = count; i < space; i++){ printf(" ");} 
-    printWordFreq(heap.heapArr[root],"\n");
+    printWordFreq(heap_ptr->heapArr[root],"\n");
     
- 	printHeapRec(heap, 2*root+1, space);
+ 	printHeapRec(heap_ptr, 2*root+1, space);
 }
 
 //printsHeapArray for testing
@@ -583,18 +621,18 @@ static void printAVLTreeRec(AVLNode* root, int space){
   	int i;
   	space += count; //increases space inbetween elements
   	
-
-    printAVLTreeRec(root->right, space);   
+    printAVLTreeRec(root->right, space); 
   
     printf("\n"); 
     for (i = count; i < space; i++){ printf(" ");} 
     printWordFreq(root->element,"\n");
     
     printAVLTreeRec(root->left, space); 
-
 }
 
-void printQueue(Queue q){ 
+void printQueue(Queue* q_ptr){ 
+	Queue q = *q_ptr;
+	
 	if(q.end==NULL||q.front==NULL){
 		printf("\nNULL\n\n");
 		return;
@@ -618,33 +656,4 @@ void printQueue(Queue q){
 	}
 	
 	printf("/////////////////////////////////////////////////\n");
-}
-
-
-
-///////////////////////////////////////////////////////////////
-
-
-int main(){//TODO get rid of this in final prod	
-
-	AVLNode* root = NULL;
-	root = insertOrUpdateAVL(root,"Happy");
-	root = insertOrUpdateAVL(root,"Happy");
-	root = insertOrUpdateAVL(root,"Hot");
-	root =insertOrUpdateAVL(root,"Happy");
-	root =insertOrUpdateAVL(root,"Hog");
-	root =insertOrUpdateAVL(root,"Happy");
-	root =insertOrUpdateAVL(root,"Hogy");
-	root =insertOrUpdateAVL(root,"Hot");
-	root =insertOrUpdateAVL(root,"Hot");
-	root =insertOrUpdateAVL(root,"apple");
-	root =insertOrUpdateAVL(root,"top");
-	root =insertOrUpdateAVL(root,"Apple");
-	root =insertOrUpdateAVL(root,"Corn");
-	root =insertOrUpdateAVL(root,"Apple");
-	root =insertOrUpdateAVL(root,"Apple");
-	
-	printAVLTree(root);	
-
-	return 0;
 }

@@ -2,21 +2,58 @@
 #include <stdlib.h> 
 #include <string.h> 
 #include <stdbool.h> 
-#include "structures.h"
+#include "fileCompressor.h"
 
-#define EXIT_ERROR(txt) do{PRINT_ERROR(txt);return 0;} while(0)
+
+/**
+goes through a file, tokenizes it, and gets the frequency of each token
+**/
+AVLNode* getFrequencies(FILE* FP){ //TODO
+	return NULL;
+}
 
 
 /**
 Takes in a AVLTree of words and their frequencies in a file and performs huffman coding
 returns a huffman tree to be used in encoding
 **/
-TreeNode* huffmancoding(AVLNode* frequencies){ //TODO
+TreeNode* huffmancoding(AVLNode* frequencies){ 
 	if(frequencies==NULL){
 		return NULL;
 	}
 	
-	MinHeap leafs = createMinHeap(frequencies);
+	MinHeap tokens = createMinHeap(frequencies);
+	Queue trees = {NULL,NULL};
+	
+	while( !(tokens.size==0 && hasSizeOne(&trees)) ){ //stops when heap is empty and only one element left in tree		
+		TreeNode* t1 = pickMinTree(&tokens, &trees);
+		TreeNode* t2 = pickMinTree(&tokens, &trees);
+		enqueue(&trees, mergeTrees(t1,t2));	
+	}
+	
+
+	free(tokens.heapArr);		
+	return dequeue(&trees);
+}
+
+
+/**
+picks minimum frequency from top of Heap or top of Queue, removes the min from the data structure
+@returns: the tree of the minimum frequency
+**/
+static TreeNode* pickMinTree(MinHeap* heap, Queue* q){
+	if((heap==NULL || heap->size==0) && q==NULL){
+		PRINT_ERROR("Nothing to compare");
+		return NULL;
+	}
+	
+	if(heap==NULL || heap->size==0){
+		return dequeue(q);
+	}else if(q==NULL || (q->front==NULL&& q->end==NULL)){
+		return createTreeNode( removeMin(heap) );
+	}
+	
+	return (peekMinHeap(heap) < peekQueue(q))? createTreeNode( removeMin(heap) ) : dequeue(q);
 }
 
 
@@ -37,7 +74,7 @@ void decompress(){ //TODO: add params and return
 Runs a single flag operation.
 Returns true if succesful, returns false if not.
 **/
-bool singleFlag(char* flag, char* path_file, char* codebook){ //TODO
+bool runFlag(char flag, char* path_file, char* codebook){ //TODO
 	switch(flag){
 		case 'b': //TODO
 			break;
@@ -46,6 +83,7 @@ bool singleFlag(char* flag, char* path_file, char* codebook){ //TODO
 		case 'd': //TODO
 			break;
 		default:
+			PRINT_ERROR("first letter of flag must be 'b', 'c', or 'd'");
 			return false;
 	}
 	return true;
@@ -54,28 +92,29 @@ bool singleFlag(char* flag, char* path_file, char* codebook){ //TODO
 
 int main(int argc, char** argv){
 	//INPUT CHECKS
-		if(argc!=3||argc!=4){
-			EXIT_ERROR("Not the correct number of arguments"); 
+		if(argc!=3 && argc!=4){
+			PRINT_ERROR("Not the correct number of arguments");
+			return 0; 
 		} 
 		
 	//Variables
-		char* str_flg = argv[1]; 
-		int length_flg = strlen(str_flg);
+		char* str_flag = argv[1]; 
+		int length_flag = strlen(str_flag);
+		if(length_flag>2){
+			PRINT_ERROR("Flag must be one to two characters");
+			return 0; 		
+		}
 			
 		char flag = str_flag[0];
-		bool isRecursive =false;
+		bool isRecursive = (length_flag==2 && str_flag[1]=='R')? true : false;	
 		char* path_file = argv[2];
 		char* codebook = (argc==4)? argv[3]:NULL; //if codebook was passed in as argument	
 			
-	/*checking length of str_flag*/
-		if(length_flg>2){
-			EXIT_ERROR("flag must be one to two characters");
-		}else if(length_flg==2){
-			if(str_flag[1]=='R'){
-				isRecursive=true;
-			}else{
-				EXIT_ERROR("second char in flag can only be 'R'");
-			}
+	//Running the respective flag operation
+		if(isRecursive){ //recursive
+			//TODO
+		}else{
+			runFlag(flag, path_file, codebook);
 		}
 		
 	return 0;
