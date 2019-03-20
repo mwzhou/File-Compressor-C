@@ -229,10 +229,15 @@ merges two trees into one and returns the root (the combined frequency)
 Note: the root->element->word=NULL (because it only represents a frequency!)
 **/
 TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2){ //TODO
-	if(t1==NULL||t2==NULL||t1->element==NULL||t2->element==NULL){
-		PRINT_ERROR("cannot pass in null TreeNodes or uninitialized TreeNodes into mergeTrees()");
+	if((t1==NULL&&t2==NULL)){
+		PRINT_ERROR("cannot pass in two NULL TreeNodes into mergeTrees()");
 		return NULL;
+	}else if(t1==NULL){
+		return t2;
+	}else if(t2==NULL){
+		return t1;
 	}
+	
 	WordFreq* root_wordf = createWordFreq(NULL, (t1->element->frequency + t2->element->frequency) );
 	TreeNode* root = createTreeNode(root_wordf);
 	
@@ -293,10 +298,8 @@ updates q's front
 @returns: TreeNode* at front 
 **/
 TreeNode* dequeue(Queue* q){ 
-	if(q==NULL||(q->front) ==NULL||(q->end) ==NULL){
-		PRINT_ERROR("passed in NULL Queue into dequeue");
+	if(q==NULL||((q->front) ==NULL||(q->end) ==NULL))
 		return NULL;
-	}
 	
 	QueueItem* temp = (q->front); //for freeing later
 	TreeNode* ret = (q->front)->tree;
