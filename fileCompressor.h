@@ -7,7 +7,7 @@
 	static TreeNode* pickMinTree(MinHeap* heap, Queue* q);
 	
 	static char* combinedPath(char* path, char* file);
-	int typePath(struct dirent* dp, DIR* curr_dir);
+	int typeDirent(char* path);
 	
 	bool runFlag(char* path_file);
 	void Recursive(char* path_file);

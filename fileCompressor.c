@@ -10,13 +10,12 @@
 //GLOBALS
 
 #define is_DIRnum 35841
-#define is_REGnum 1238726
-#define is_LNKnum 237582
+#define is_REGnum 12338726
+#define is_LNKnum 23700582
 
 char flag ='\0';
 bool isRecursive = false;
-char* orig_pathfile = NULL;
-char* codebook = NULL;
+char* files [2] = {NULL, NULL};
 
 
 
@@ -98,33 +97,39 @@ void decompress(){ //TODO: add params and return
 /**
 Runs the flag multiple times in all subdirectories of a given path
 **/
-void Recursive(char* path_file){
-	DIR* curr_dir = opendir(path_file);
+void Recursive(char* path){
+	DIR* curr_dir = opendir(path);
 	struct dirent* dp;
-		
-	if(curr_dir==NULL){ //if invalid file, or opendir() failes
-		perror("call to opendir() failed");
+	
+	if(curr_dir==NULL){ //if opendir() failed or if not a directory - return
+		perror(path);
 		closedir(curr_dir);
 		return;
 	}
 		
-	//goes through all subdirectories in current path	
+		
+	//TRAVERSES THROUGH CURRENT DIRECTORY TO FIND ALL SUBDIRECTORIES
 	while((dp = readdir(curr_dir))!=NULL){
 		if(strcmp(dp->d_name, ".")==0 || strcmp(dp->d_name, "..")==0) //if current/parent directory(ignore)
 			continue;	
 
-
-		int type = typePath(dp,curr_dir); //checks what type the current item is
-		if(type ==-1){//error from typePath
+		//Checks type of dp
+		char* new_path = combinedPath(path, dp->d_name);
+		int type = typeDirent(new_path);
+		
+		if(type ==-1){//error from calling typeDirent
+			if(strcmp(new_path, path)!=0) //if not original string (was malloced)
+				free(new_path); 			
 			continue;
 			
 		}else if(type == is_DIRnum){ //dp is a directory
-			//TODO check for symbollic link as well?
-			char* new_pathfile = combinedPath(path_file, dp->d_name);
-			printf("%s\t%s\n", dp -> d_name, new_pathfile); //TODO: del
+			//TODO check for symbolic link as well?			
+			printf("%s\t%s\n", dp -> d_name, new_path); //TODO: del
 			
-			runFlag(new_pathfile);
-			Recursive(new_pathfile);
+			runFlag(new_path);
+			Recursive(new_path);
+			if(strcmp(new_path, path)!=0) //if not original string (was malloced)
+				free(new_path); 
 		}
 	}
 							
@@ -133,15 +138,13 @@ void Recursive(char* path_file){
 
 
 /**
-Combines a path with a file and returns the new path
+Combines a path string with a file string and returns the new path
 **/
 static char* combinedPath(char* path, char* file){
 	char* ret = (char*)malloc(2 + strlen(path) + strlen(file));
 	
-	//ret copies path + "/" + file
-	strcpy(ret, path);
-	if(strcmp(path, orig_pathfile)!=0) //if not original path
-		free(path);
+	//ret copies (path + "/" + file)
+	strcpy(ret, path);	
 	strcat(ret, "/");
 	strcat(ret, file);
 	
@@ -155,36 +158,43 @@ static char* combinedPath(char* path, char* file){
 
 
 /**
-returns the type of the file 
-@params: TODO
+returns the type of the dirent given in
+@params: dirent*dp and curr_dir to check if valid
 @returns:
 	DIR - directory
 	REG - regular file
 	LINK - link
 	-1 - error
 **/
-int typePath(struct dirent* dp, DIR* curr_dir){
-	if(dp==NULL||curr_dir==NULL){ //passed in NULL dirent or curr_dir
-		PRINT_ERROR("passed in null dirent or DIR*");
+int typeDirent(char* path){
+	if(path==NULL){ //passed in NULL dirent or curr_dir
+		PRINT_ERROR("passed in NULL path");
 		return -1;
 	}
-		
-		
+			
 	struct stat dpstat;
-	if(fstatat(dirfd(curr_dir), dp->d_name, &dpstat, 0) < 0){
-		perror(dp->d_name);
+	if(stat( path , &dpstat) < 0){ //error calling lstat
+		perror("lstat failed");
 		return -1;
 	}
 	
 	//check if DIR, REG, or LINK, and returns the respective number (defined in macro)
-	if(S_ISDIR(dpstat.st_mode)) //directory or file
-		return is_DIRnum;
-	else if(S_ISREG(dpstat.st_mode))
+	if(S_ISREG(dpstat.st_mode)) //directory or file
 		return is_REGnum;
 	else if(S_ISLNK(dpstat.st_mode))
 		return is_LNKnum;
-	
-	return -1;
+	else if(S_ISDIR(dpstat.st_mode))
+		return is_DIRnum;
+	else
+		return -1;
+}
+
+
+/**
+checks if file meets huffman codebook properties
+**/
+bool isHuffmanCodebook(char* file_name){
+	return false;
 }
 
 
@@ -213,43 +223,92 @@ bool runFlag(char* path_file){ //TODO
 }
 
 
-bool initializeGlobals(int argc, char** argv){
-	if(argc!=3 && argc!=4){
-		PRINT_ERROR("Not the correct number of arguments");
-		return 0; 
+/**
+checks inputs of items passed through terminal and initializes globals
+**/
+bool inputCheck(int argc, char** argv){
+	if(argc<3 || argc>5){ 
+		PRINT_ERROR("Must pass inbetween 2 to 4 arguments in addition to the executable");
+		return false; 
 	} 
 	
-	//LOOPING THROUGH THE ARGUMENTS
+	//LOOPING THROUGH EACH ARGUMENT (excluding executable)
 	int i;
-	for(i=0; i<argc; i++){
-		char* s = argv[i];
-		int len_s = strlen(s);
+	for(i=1; i<argc; i++){
+		char* s = argv[i];	
 		
-		if(len_s == 2 && s[0]=='-'){ //check if is a flag
-			if(s[1]=='b'||s[1]=='c'||s[1]=='d'){ //regular flag
-				if(flag!='\0'){ //already initialized
+		//CHECK IF FLAG
+		if(strlen(s) == 2 && s[0]=='-'){
+		 
+			//is a regular flag
+			if( s[1]=='b'||s[1]=='c'||s[1]=='d' ){ 
+				if(flag!='\0'){ //already came across a flag
 					PRINT_ERROR("cannot have multiple flags");
 					return false;
 				}
-				
 				flag = s[1];
-				continue;
 				
-			}else if(s[1]=='R'){ //recursive flag
-				if(isRecursive){
+			//is a recursive flag	
+			}else if( s[1]=='R' ){ 
+				if(isRecursive){ //already came across '-R' flag
 					PRINT_ERROR("cannot have multiple '-R' flags");
 					return false;
 				}	
-				
 				isRecursive = true;			
-				continue;
 			}
-		}else{ //check if path/file exists
-			//TODO
-			//typePath(struct dirent* dp, DIR* curr_dir)
-		}
 			
+		//CHECK IF IS PATH/FILE and that it exists
+		}else{ 
+		
+			//Initializing the directory and dirent structs - also checking if valid
+				DIR* curr_dir = opendir(argv[i]);
+				if(curr_dir==NULL){
+					perror("invalid argument passed, should be an existing file/directory");
+					return false;
+				}
+				struct dirent* dp = readdir(curr_dir);
+				if(dp==NULL){
+					perror("error calling readdir()");
+					closedir(curr_dir); 
+					return false;
+				}
+		
+		
+			//checking type of file, if it's not a directory, file, or symb_link, return false
+				if( typeDirent(argv[i]) == -1){
+					closedir(curr_dir); 
+					return false;
+				}
+				
+				
+			//File is valid - Initializing global files[] array
+				if(files[0]==NULL)
+					files[0] = argv[i];
+				else if(files[1]==NULL)
+					files[1] = argv[i];
+				else{
+					PRINT_ERROR("more than two files/paths passed in");
+					closedir(curr_dir);
+					return false;
+				}
+				
+				closedir(curr_dir);
+		}	
 	}
+	
+	
+	//check if all necessary globals have been initialized
+	if(flag=='\0'){
+		PRINT_ERROR("must specify a flag as an argument"); 
+		return false;
+	}
+	if( files[0] == NULL){
+		PRINT_ERROR("must give in a path or a file as an argument"); 
+		return false;
+	}
+	//TODO: 
+	//make sure files[0]=path/file and files[1]=huffman_codebook. 
+	//Then make sure the flag matches number of arguments passed in
 	
 	return true;
 }
@@ -257,15 +316,14 @@ bool initializeGlobals(int argc, char** argv){
 
 int main(int argc, char** argv){
 	//INPUT CHECKS
-
-		
-	//INITIALIZE GLOBALS
-		orig_pathfile = "/ilab/users/mwz7/Desktop";
+		if(!inputCheck(argc, argv))
+			return 0;
+					
 	//Running the respective flag operation
 		if(isRecursive){ //recursive
-			Recursive(orig_pathfile);
+			Recursive(files[0]);
 		}else{
-			runFlag(orig_pathfile);
+			runFlag(files[0]);
 		}
 		
 	return 0;
