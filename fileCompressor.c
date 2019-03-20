@@ -109,7 +109,8 @@ int main(int argc, char** argv){
 		char* path_file = argv[2];
 		char* codebook = (argc==4)? argv[3]:NULL; //if codebook was passed in as argument	
 			
-	//RUNNING the respective flag operation
+	//Running the respective flag operation
+
 		if(isRecursive){ //recursive
 			//TODO
 		}else{
