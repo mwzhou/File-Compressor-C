@@ -19,7 +19,7 @@ char* files [2] = {NULL, NULL};
 
 
 
-//BUILD_CODEBOOK methods////////////////////////////////////////////
+//BUILD_CODEBOOK methods////////////////////////////////////////////////////////////////////////////////////////
 
 void buildcodebook(){ //TODO: add params and return
 
@@ -78,21 +78,21 @@ static TreeNode* pickMinTree(MinHeap* heap, Queue* q){
 }
 
 
-//COMPRESS METHODS////////////////////////////////////////////
+//COMPRESS METHODS////////////////////////////////////////////////////////////////////////////////////////
 
 void compress(TreeNode* huffman_tree){ //TODO: add params and return
 }
 
 
 
-//DECOMPRESS methods////////////////////////////////////////////
+//DECOMPRESS methods////////////////////////////////////////////////////////////////////////////////////////
 
 void decompress(){ //TODO: add params and return
 }
 
 
 
-//RECURSIVE methods////////////////////////////////////////////
+//RECURSIVE methods////////////////////////////////////////////////////////////////////////////////////////
 
 /**
 Runs the flag multiple times in all subdirectories of a given path
@@ -193,7 +193,7 @@ int typeDirent(char* path){
 /**
 checks if file meets huffman codebook properties
 **/
-bool isHuffmanCodebook(char* file_name){
+bool isHuffmanCodebook(char* file_name){ //TODO
 	return false;
 }
 
@@ -260,39 +260,39 @@ bool inputCheck(int argc, char** argv){
 		//CHECK IF IS PATH/FILE and that it exists
 		}else{ 
 		
-			//Initializing the directory and dirent structs - also checking if valid
-				DIR* curr_dir = opendir(argv[i]);
-				if(curr_dir==NULL){
-					perror("invalid argument passed, should be an existing file/directory");
-					return false;
-				}
-				struct dirent* dp = readdir(curr_dir);
-				if(dp==NULL){
-					perror("error calling readdir()");
-					closedir(curr_dir); 
-					return false;
-				}
+		//Initializing the directory and dirent structs - also checking if valid
+			DIR* curr_dir = opendir(argv[i]);
+			if(curr_dir==NULL){
+				perror("invalid argument passed, should be an existing file/directory");
+				return false;
+			}
+			struct dirent* dp = readdir(curr_dir);
+			if(dp==NULL){
+				perror("error calling readdir()");
+				closedir(curr_dir); 
+				return false;
+			}
 		
-		
-			//checking type of file, if it's not a directory, file, or symb_link, return false
-				if( typeDirent(argv[i]) == -1){
-					closedir(curr_dir); 
-					return false;
-				}
+	
+		//checking type of file, if it's not a directory, file, or symb_link, return false
+			if( typeDirent(argv[i]) == -1){
+				closedir(curr_dir); 
+				return false;
+			}
 				
 				
-			//File is valid - Initializing global files[] array
-				if(files[0]==NULL)
-					files[0] = argv[i];
-				else if(files[1]==NULL)
-					files[1] = argv[i];
-				else{
-					PRINT_ERROR("more than two files/paths passed in");
-					closedir(curr_dir);
-					return false;
-				}
-				
+		//File is valid - Initializing global files[] array
+			if(files[0]==NULL)
+				files[0] = argv[i];
+			else if(files[1]==NULL)
+				files[1] = argv[i];
+			else{ //already initialized
+				PRINT_ERROR("more than two files/paths passed in");
 				closedir(curr_dir);
+				return false;
+			}
+				
+			closedir(curr_dir);
 		}	
 	}
 	
