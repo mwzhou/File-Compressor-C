@@ -5,10 +5,10 @@
 
 	TreeNode* huffmancoding(AVLNode* frequencies);
 	static TreeNode* pickMinTree(MinHeap* heap, Queue* q);
-	
+
 	static char* combinedPath(char* path, char* file);
-	int typeDirent(char* path);
-	
+	int typeStat(char* filepath_name);
+
 	bool runFlag(char* path_file);
 	void Recursive(char* path_file);
 

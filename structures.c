@@ -2,13 +2,13 @@
 structures.c holds all the structures necessary to be used in fileCompression.c
 **/
 #include <stdio.h>
-#include <stdlib.h> 
-#include <string.h> 
+#include <stdlib.h>
+#include <string.h>
 #include <stdbool.h>
 #include <limits.h>
 #include "structures_priv.h"
 
-	
+
 //WORDFREQ methods/////////////////////////////////////////////////////////////////
 
 /**
@@ -63,8 +63,8 @@ AVLNode* insertOrUpdateAVL(AVLNode* root, char* word){
 		return createAVLNode(word);
 	}
 
-	int strcmp_word = strcmp(root->element->word,word); 
-	
+	int strcmp_word = strcmp(root->element->word,word);
+
 	if(strcmp_word<0){ //word passed in is greater than current node
 		root->left = insertOrUpdateAVL((root->left) , word);
 	}else if(strcmp_word>0){ //word passed in is less than current node
@@ -73,12 +73,12 @@ AVLNode* insertOrUpdateAVL(AVLNode* root, char* word){
 		root->element->frequency++;
 		return root;
 	}
-		
+
 	//update height
 	root->height = greaterHeight(root)+1;
-	
+
 	//Balancing the tree
-	
+
 	int balance_factor = (root==NULL)? 0 : (heightAVL(root->left)) - (heightAVL(root->right));
 	root = BalanceAVL(root , balance_factor, word);
 	return root;
@@ -93,11 +93,11 @@ static AVLNode* BalanceAVL(AVLNode* root, int balance_factor, char* word){
 	if(root==NULL||balance_factor==1|| balance_factor==0 ||word==NULL){
 		return root;
 	}
-	
+
 	int strcmp_left = (root->left==NULL)? 0 : strcmp((root->left)->element->word , word);
 	int strcmp_right = (root->right==NULL)? 0 : strcmp((root->right)->element->word , word);
-	
-	
+
+
 	if(balance_factor>1 && strcmp_left<0){ //Case: left-left
 		Case1Balance(&root,true);
 	}else if(balance_factor>1 && strcmp_left>0){ //Case: left-right
@@ -107,7 +107,7 @@ static AVLNode* BalanceAVL(AVLNode* root, int balance_factor, char* word){
 	}else if(balance_factor<-1 && strcmp_right>0){ //Case: right-left
 		Case2Balance(&root,false);
 	}
-	
+
 	return root;
 }
 
@@ -118,7 +118,7 @@ Balances Tree if Case1: i.e. left-left or left-right
 **/
 static void Case1Balance(AVLNode** root_ptr, bool isLeft){
 	if(root_ptr==NULL||*root_ptr==NULL) return;
-	
+
 	//Case with Left-Left
 	if (isLeft ){
 		AVLNode* x = (*root_ptr)->left;
@@ -131,16 +131,16 @@ static void Case1Balance(AVLNode** root_ptr, bool isLeft){
 		x->height = greaterHeight(x)+1;
 
 		(*root_ptr) = x; //update root
-		
+
 	//Case with Right-Right
 	}else{
 		AVLNode* x = (*root_ptr)->right;
 		AVLNode* T2 = x->left; //x's left-subtree
 		x->left = (*root_ptr);
 		(*root_ptr)->right = T2;
-		
+
 		//update heights
-		(*root_ptr)->height = greaterHeight((*root_ptr))+1;		
+		(*root_ptr)->height = greaterHeight((*root_ptr))+1;
 		x->height = greaterHeight(x)+1;
 
 		(*root_ptr) = x; //update root
@@ -154,7 +154,7 @@ Balances Tree if Case2: i.e. left-right or right-left
 **/
 static void Case2Balance(AVLNode** root_ptr, bool isLeftRight){
 	if(root_ptr==NULL||*root_ptr==NULL) return;
-	
+
 	//Case with Left Right
 	if(isLeftRight){
 		//turn into Left-Left Case1
@@ -162,28 +162,28 @@ static void Case2Balance(AVLNode** root_ptr, bool isLeftRight){
 			AVLNode* T2 = x->left; //x's left subtree
 			x->left = (*root_ptr)->left;
 			(*root_ptr)->left->right = T2;
-			
+
 			//update height
 			(*root_ptr)->left->height = greaterHeight((*root_ptr)->left)+1;
 			x->height = greaterHeight(x)+1;
 
 			(*root_ptr)->left = x;
-			
+
 		Case1Balance(root_ptr, true);
-		
+
 	}else{
 		//turn into Right-Right Case1
 			AVLNode* x = (*root_ptr)->right->left;
 			AVLNode* T2 = x->right; //x's right subtree
-			(*root_ptr)->right->left = T2;		
+			(*root_ptr)->right->left = T2;
 			x->right = (*root_ptr)->right;
 
 			//update heights
-			(*root_ptr)->right->height = greaterHeight((*root_ptr)->right)+1;			
-			x->height = greaterHeight(x)+1;			
+			(*root_ptr)->right->height = greaterHeight((*root_ptr)->right)+1;
+			x->height = greaterHeight(x)+1;
 
 			(*root_ptr)->right = x;
-		
+
 		Case1Balance(root_ptr, false);
 	}
 }
@@ -204,10 +204,22 @@ gets number of nodes in an AVL Frequency Tree
 int sizeOfAVLTree(AVLNode* root){
 	if(root==NULL)
 		return 0;
-		
+
 	return 1+sizeOfAVLTree(root->left)+sizeOfAVLTree(root->right);
 }
 
+
+/**
+frees all nodes in a AVLTree. PostOrder Traversal.
+Note: DOES NOT free the WordFreq element
+**/
+void freeAVLTree(AVLNode* root){
+	if(root==NULL) return;
+
+	freeAVLTree(root->left);
+	freeAVLTree(root->right);
+	free(root);
+}
 
 
 //TREENODE methods/////////////////////////////////////////////////////////////////
@@ -237,10 +249,10 @@ TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2){ //TODO
 	}else if(t2==NULL){
 		return t1;
 	}
-	
+
 	WordFreq* root_wordf = createWordFreq(NULL, (t1->element->frequency + t2->element->frequency) );
 	TreeNode* root = createTreeNode(root_wordf);
-	
+
 	root->left = t1;
 	root->right = t2;
 	return root;
@@ -253,7 +265,7 @@ Note: DOES NOT free the WordFreq element
 **/
 void freeTreeOnly(TreeNode* root){
 	if(root==NULL) return;
-	
+
 	freeTreeOnly(root->left);
 	freeTreeOnly(root->right);
 	free(root);
@@ -266,10 +278,10 @@ Note: Frees WordFreq AND its string. Be careful if you want to use the String fo
 **/
 void freeTreeAndWF(TreeNode* root){
 	if(root==NULL) return;
-	
+
 	freeTreeAndWF(root->left);
 	freeTreeAndWF(root->right);
-	
+
 	freeWordFreq(root->element);
 	free(root);
 }
@@ -295,27 +307,27 @@ takes first tree from the Queue's front
 (free's queue pointer that was removed from the queue (but not the tree pointer))
 updates q's front
 @params: q - address of a Queue that contains pointer to front
-@returns: TreeNode* at front 
+@returns: TreeNode* at front
 **/
-TreeNode* dequeue(Queue* q){ 
+TreeNode* dequeue(Queue* q){
 	if(q==NULL||((q->front) ==NULL||(q->end) ==NULL))
 		return NULL;
-	
+
 	QueueItem* temp = (q->front); //for freeing later
 	TreeNode* ret = (q->front)->tree;
-	
+
 	if((q->front)->next == NULL){ //only one element left in Queue
 		(q->front) = NULL; //update front
 		(q->end) = NULL; //update end
 		free(temp);
 		return ret;
 	}
-	
+
 	((q->front)->next)->prev=NULL;
 	(q->front) = (q->front)->next;//update front of q
 	free(temp);
 	return ret;
-		
+
 }
 
 
@@ -323,15 +335,15 @@ TreeNode* dequeue(Queue* q){
 enqueues a tree onto the back of the queue, updates end of queue
 @params: q - address of Queue that contains a pointer to the end
 **/
-void enqueue(Queue* q, TreeNode* tree){ 
+void enqueue(Queue* q, TreeNode* tree){
 	if(q==NULL) return;
-	
+
 	if((q->end)==NULL||(q->front) == NULL){ //Queue has no elements yet
 		(q->front) = createQueueItem(tree);
 		(q->end) = (q->front);
 		return;
 	}
-	
+
 	QueueItem* addEl = createQueueItem(tree);
 	addEl->prev = (q->end);
 	(q->end)->next = addEl;
@@ -346,7 +358,7 @@ If q is NULL, tree at front of q is NULL, or element at the root of the tree is 
 int peekQueue(Queue* q){
 	if(q==NULL || q->front->tree==NULL || q->front->tree->element==NULL){
 		return INT_MAX;
-	} 
+	}
 	return q->front->tree->element->frequency;
 }
 
@@ -358,7 +370,7 @@ bool hasSizeOne(Queue* q){
 		return false;
 	else if(q->front->next==NULL && q->front->prev==NULL)
 		return true;
-		
+
 	return false;
 }
 
@@ -368,9 +380,9 @@ free's all Queue nodes if necessary (does not touch the trees in case of future 
 however, if implemented correctly, FileCompression.c will not need to call upon this method
 **/
 void freeQueue(Queue* q){
-	if(q==NULL||(q->front)==NULL||q->end==NULL) 
+	if(q==NULL||(q->front)==NULL||q->end==NULL)
 		return;
-	
+
 	QueueItem* ptr = (q->front);
 	while(ptr!=NULL){
 		QueueItem* temp = ptr;
@@ -384,23 +396,23 @@ void freeQueue(Queue* q){
 //MINHEAP methods//////////////////////
 
 /**
-creates a MinHeap from an AVL Frequency Tree 
-@params: tree - AVL tree root that keeps track of frequencies of each word 
+creates a MinHeap from an AVL Frequency Tree
+@params: tree - AVL tree root that keeps track of frequencies of each word
 @ret : a MinHeap w/ an initialized heap array, or if passed in tree is faulty, a Minheap with a NULL array and size 0
 **/
-MinHeap createMinHeap(AVLNode* tree){ 
+MinHeap createMinHeap(AVLNode* tree){
 	MinHeap ret = {NULL,0};
-	
+
 	if(tree==NULL){
 		PRINT_ERROR("cannot create a heap from a NULL tree");
 		return ret;
 	}
-	
+
 	ret.size = sizeOfAVLTree(tree);
 	ret.heapArr = (WordFreq**)malloc( (ret.size) * sizeof(WordFreq*) ); //creates array big enough to hold all elements in AVLTree
-	initializeMinHeapArr(tree, ret.heapArr, 0); //inserts each node of AVLtree into heapArr	
+	initializeMinHeapArr(tree, ret.heapArr, 0); //inserts each node of AVLtree into heapArr
 	heapify(&ret); //turns array into a heap
-		
+
 	return ret;
 }
 
@@ -411,13 +423,13 @@ Traverses through an AVL tree and inserts each WordFreq element into the heapArr
 @params: i is the current index of the next element in heapArr (updated recursively)
 @returns: an int to keep track of the index
 **/
-static int initializeMinHeapArr(AVLNode* node, WordFreq** heapArr, int i){ 	
+static int initializeMinHeapArr(AVLNode* node, WordFreq** heapArr, int i){
 	if(node->left != NULL)
 		i= initializeMinHeapArr(node->left, heapArr, i);
 	heapArr[i++]= node->element;
 	if(node->right != NULL)
 		i = initializeMinHeapArr(node->right, heapArr, i);
-	
+
 	return i;
 }
 
@@ -426,12 +438,12 @@ static int initializeMinHeapArr(AVLNode* node, WordFreq** heapArr, int i){
 linear heapify
 takes initialized MinHeap pointer and heapifies it with the O(n) time algorithm. Starts from first non-leaf node and sifts-down
 **/
-static void heapify(MinHeap* heap){ 
+static void heapify(MinHeap* heap){
 	if(heap==NULL||heap->heapArr==NULL){
 		PRINT_ERROR("can't pass in null heap or uninitialized heap");
 		return;
 	}
-	
+
 	int currind = (heap->size)/2 - 1;
 	while(currind>=0){
 		siftDown(heap->heapArr, heap->size, currind);
@@ -445,16 +457,16 @@ sift-down algorithm for heaps
 given an index in a heapArray, siftDown() checks if all nodes in the subtree are smaller than that element
 performs the necessary swaps to mantain a minheap structure
 **/
-static void siftDown(WordFreq** heapArr, int size, int ind){ 
+static void siftDown(WordFreq** heapArr, int size, int ind){
 	if(heapArr==NULL||size<=ind){
 		PRINT_ERROR("either heapArr uninitialized or faulty index/size passed");
 		return;
 	}
-	
+
 	while(ind < (size/2)){ //while ind is not a leaf node index
 		int l = 2*ind + 1; //left node index
 		int r = 2*ind + 2; //right node index
-			
+
 		if(r>=size){ //if curr node has no right child
 			if(((heapArr[ind]->frequency)>(heapArr[l]->frequency))){//if currnode is greater than left node
 				swap(&heapArr[ind], &heapArr[l]);
@@ -464,7 +476,7 @@ static void siftDown(WordFreq** heapArr, int size, int ind){
 			}
 		}else{ //curr node has two children
 			int minChildInd = (heapArr[l]->frequency <= heapArr[r]->frequency)? l:r; //index of smallest child
-			
+
 			if((heapArr[ind]->frequency)>(heapArr[minChildInd]->frequency)){//if currnode is greater than smallest child node
 				swap(&heapArr[ind], &heapArr[minChildInd]);
 				ind = minChildInd;
@@ -489,18 +501,18 @@ static void swap(WordFreq** element1, WordFreq** element2){
 /**
 returns from top of the heap and then updates the heap (sifts up)
 **/
-WordFreq* removeMin(MinHeap* heap){ 
+WordFreq* removeMin(MinHeap* heap){
 	if(heap==NULL||heap->size==0){
 		PRINT_ERROR("cannot remove min from empty or null heap");
 		return NULL;
 	}
-	
+
 	WordFreq* min= heap->heapArr[0];
 	swap(&(heap->heapArr[0]), &(heap->heapArr[heap->size-1])); //swaps last element to the top
 	heap->heapArr[heap->size-1]=NULL; //removes element from heapArray
 	heap->size--; //decreases accesible elements in a heap
-	if(heap->size!=0)siftDown(heap->heapArr,heap->size,0);	
-	
+	if(heap->size!=0)siftDown(heap->heapArr,heap->size,0);
+
 	return min;
 }
 
@@ -512,8 +524,8 @@ If heap is NULL or element on heap is NULL, returns INT_MAX;
 int peekMinHeap(MinHeap* heap){
 	if(heap==NULL|| heap->heapArr[0]==NULL){
 		return INT_MAX;
-	} 
-	
+	}
+
 	return heap->heapArr[0]->frequency;
 }
 
@@ -529,7 +541,7 @@ void printWordFreq(WordFreq* wf, char* s){
 		printf("NULL %s",s);
 		return;
 	}
-	
+
 	if(wf->word==NULL){
 		printf("NULL:%d %s",wf->frequency,s);
 	}else{
@@ -550,19 +562,19 @@ void printHeap(MinHeap* heap_ptr){
 }
 
 //[private method] recursively prints heap(horizontally)
-static void printHeapRec(MinHeap* heap_ptr, int root, int space){	
+static void printHeapRec(MinHeap* heap_ptr, int root, int space){
   	if (root>=heap_ptr->size)return;
-  	 
+
   	int count = 10;
   	int i;
   	space += count; //increases space inbetween elements
-  	
-    printHeapRec(heap_ptr, 2*root+2, space); 
-    
-    printf("\n"); 
-    for (i = count; i < space; i++){ printf(" ");} 
+
+    printHeapRec(heap_ptr, 2*root+2, space);
+
+    printf("\n");
+    for (i = count; i < space; i++){ printf(" ");}
     printWordFreq(heap_ptr->heapArr[root],"\n");
-    
+
  	printHeapRec(heap_ptr, 2*root+1, space);
 }
 
@@ -588,20 +600,20 @@ void printTree(TreeNode* root){
 }
 
 //[private method] prints Tree recursively (horizontally). Root on far left. In order Traversal.
-static void printTreeRec(TreeNode* root, int space){ 
+static void printTreeRec(TreeNode* root, int space){
   	if (root == NULL)return;
-  	 
+
   	int count = 10;
   	int i;
   	space += count; //increases space inbetween elements
-  	
-    printTreeRec(root->right, space); 
-  
-    printf("\n"); 
-    for (i = count; i < space; i++){ printf(" ");} 
+
+    printTreeRec(root->right, space);
+
+    printf("\n");
+    for (i = count; i < space; i++){ printf(" ");}
     printWordFreq(root->element,"\n");
-    
-    printTreeRec(root->left, space); 
+
+    printTreeRec(root->left, space);
 }
 
 void printAVLTree(AVLNode* root){
@@ -617,38 +629,38 @@ void printAVLTree(AVLNode* root){
 }
 
 //[private method] prints Tree recursively (horizontally). Root on far left. In order Traversal.
-static void printAVLTreeRec(AVLNode* root, int space){ 
+static void printAVLTreeRec(AVLNode* root, int space){
   	if (root == NULL)return;
-  	 
+
   	int count = 10;
   	int i;
   	space += count; //increases space inbetween elements
-  	
-    printAVLTreeRec(root->right, space); 
-  
-    printf("\n"); 
-    for (i = count; i < space; i++){ printf(" ");} 
+
+    printAVLTreeRec(root->right, space);
+
+    printf("\n");
+    for (i = count; i < space; i++){ printf(" ");}
     printWordFreq(root->element,"\n");
-    
-    printAVLTreeRec(root->left, space); 
+
+    printAVLTreeRec(root->left, space);
 }
 
-void printQueue(Queue* q_ptr){ 
+void printQueue(Queue* q_ptr){
 	Queue q = *q_ptr;
-	
+
 	if(q.end==NULL||q.front==NULL){
 		printf("\nNULL\n\n");
 		return;
 	}
-	
+
 	printf("/////////////////////////////////////////////////\n");
 	printf("\nQUEUE:\n");
 	QueueItem* ptr = q.front;
 	while(ptr!=NULL){
 		//front and end indicators
-		if(ptr->prev==NULL && ptr->next==NULL) 
+		if(ptr->prev==NULL && ptr->next==NULL)
 			printf("[front&end]");
-		else if(ptr->next==NULL) 
+		else if(ptr->next==NULL)
 			printf("[end]");
 		else if(ptr->prev==NULL)
 			printf("[front]");
@@ -657,6 +669,6 @@ void printQueue(Queue* q_ptr){
 		printf("\n");
 		ptr = ptr->next;
 	}
-	
+
 	printf("/////////////////////////////////////////////////\n");
 }
