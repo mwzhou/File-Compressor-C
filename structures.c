@@ -1,5 +1,5 @@
 /**
-structures.c holds all the structures necessary to be used in fileCompression.c
+structures.c  is a self-made library that holds all the structures necessary to be used in fileCompression.c
 **/
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +19,7 @@ To avoid time spent copying, WordFreq is represented by a pointer to a WordFreq 
 **/
 WordFreq* createWordFreq(char* word, int frequency){
 	WordFreq* ret = (WordFreq*)malloc(sizeof(WordFreq));
+	if( ret == NULL ){ ALLOC_ERROR; }
 	ret->word = word;
 	ret->frequency = frequency;
 	return ret;
@@ -42,17 +43,20 @@ Initializes AVLNode
 **/
 AVLNode* createAVLNode(char* word){
 	AVLNode* ret = (AVLNode*)malloc(sizeof(AVLNode));
+	if( ret== NULL){ ALLOC_ERROR; }
+	
 	ret->element = createWordFreq(word,1);
 	ret->height = 1;
 	ret->left = NULL;
 	ret->right = NULL;
+	
 	return ret;
 }
 
 
 /**
 Searches through AVL tree recursively O(logn)
-If found: Updates word's frquency
+If found: Updates frequency
 If not found: Creates a WordFreq element and inserts it into the tree.
 MAINTAINS AVL properties of the tree and balances if necessary
 @params: root - root of AVL Tree
@@ -71,6 +75,7 @@ AVLNode* insertOrUpdateAVL(AVLNode* root, char* word){
 		root->right = insertOrUpdateAVL((root->right) , word);
 	}else{
 		root->element->frequency++;
+		//printWordFreq( root->element, "\n");//TODO: free duplicates
 		return root;
 	}
 
@@ -222,6 +227,13 @@ void freeAVLTree(AVLNode* root){
 }
 
 
+
+//HUFFMAN SEARCH NODE methods/////////////////////////////////////////////////////////////////
+//TODO
+
+
+
+
 //TREENODE methods/////////////////////////////////////////////////////////////////
 
 /**
@@ -229,6 +241,7 @@ Initializes a TreeNode structure and returns a pointer to the created TreeNode
 **/
 TreeNode* createTreeNode(WordFreq* element){
 	TreeNode* ret = (TreeNode*)malloc(sizeof(TreeNode));
+	if(ret==NULL){ ALLOC_ERROR; }
 	ret->element = element;
 	ret->left = NULL;
 	ret->right = NULL;
@@ -295,6 +308,7 @@ Initializes a QueueItem given an existing tree and returns a pointer to that Que
 **/
 static QueueItem* createQueueItem(TreeNode* tree){
 	QueueItem* ret = (QueueItem*)malloc(sizeof(QueueItem));
+	if( ret == NULL ){ ALLOC_ERROR; }
 	ret->tree = tree;
 	ret->prev = NULL;
 	ret->next = NULL;
@@ -530,22 +544,47 @@ int peekMinHeap(MinHeap* heap){
 }
 
 
+
+//MISC methods/////////////////////////////////////////////////////////////
+
+/**
+method to be used for huffman coding.
+picks minimum frequency from top of Heap or top of Queue, removes the min from the data structure
+@returns: the tree of the minimum frequency
+**/
+TreeNode* pickMinTree(MinHeap* heap, Queue* q){
+	if((heap==NULL || heap->size==0) && q==NULL){
+		PRINT_ERROR("Nothing to compare");
+		return NULL;
+	}
+
+	if(heap==NULL || heap->size==0){
+		return dequeue(q);
+	}else if(q==NULL || (q->front==NULL&& q->end==NULL)){
+		return createTreeNode( removeMin(heap) );
+	}
+
+	return (peekMinHeap(heap) < peekQueue(q))? createTreeNode( removeMin(heap) ) : dequeue(q);
+}
+
+
+
 //PRINT methods/////////////////////////////////////////////////////////////
 
 /**
 prints out WordFreq
-@params: s is any additional parameters to add to the string
+@params: formatting is any additional parameters to add to the string output
 **/
-void printWordFreq(WordFreq* wf, char* s){
+void printWordFreq(WordFreq* wf, char* formatting){
 	if(wf==NULL){
-		printf("NULL %s",s);
+		printf("NULL %s",formatting);
 		return;
 	}
 
 	if(wf->word==NULL){
-		printf("NULL:%d %s",wf->frequency,s);
+		printf("NULL:%d %s",wf->frequency,formatting);
 	}else{
-		printf("%s:%d %s",wf->word,wf->frequency,s);
+		printf("%s:%d %s",wf->word,wf->frequency,formatting);
 	}
 }
 

@@ -11,19 +11,11 @@
 
 #include "fileCompressor.h"
 
-
-//DEFINE STATEMENTS
-#define is_DIRnum 358410 //is directory
-#define is_REGnum 12338726 //is regular file
-#define is_LNKnum 23700582 //is symbolic link
-#define WHITESPACE_DELIM " \t\n"
-
 //GLOBALS
 char flag ='\0';
 bool isRecursive = false;
 char* orig_pathfile = NULL;
 char* codebook = NULL;
-
 
 
 //BUILD_CODEBOOK methods////////////////////////////////////////////
@@ -33,56 +25,48 @@ void buildcodebook(){ //TODO: add params and return
 }
 
 
-/**
-return unique string representation for a char whitespace
-**/
-char* getStringRep( char c ){
-	switch(c){
-		case ' ':
-			return "SPACE_str";
-		case '\t':
-			return "TAB_str";
-		case '\n':
-			return "NEWLINE_str";
-		default:
-			PRINT_ERROR("not a whitespace");
-			return NULL;
-	}
-	return NULL;
-}
-
 
 /**
 goes through a file, tokenizes it, and gets the frequency of each token
 @returns AVLTree* based on frquencies of each element
 @returns NULL is file wasn't passed in, or there were no tokens
 **/
-AVLNode* getFrequencies(char* file_name){ //TODO: freeing item not allocated by malloc?
-	char* s = readFile(file_name);
-	if(s==NULL) return NULL;
-
-	AVLNode* freq_tree = NULL;
-
-/* TODO: sorry, got tired, will update later
-	//int orig_len = strlen(s);
-	int break_ind;
-	int i = 0;
-	//finds first space where first whitespace shows up
-	while( (s[i] != '\0'){
-		//Initializing and Declating tokens
-		char* tok = malloc( break_ind + 1 ); //TODO check malloc null EVERYWHERE
-			if(tok==NULL){}
-			tok[break_ind] = '\0';
-			memcpy(tok, s, break_ind); //copy string over
-		char* tok2 = getStringRep(s[break_ind]);
-
-		s =  strdup(s+break_ind); //UPDATES String - moves pointer number of bytes away
-		printf("%s and %s and %s\n", tok, tok2, s);
-		printf("%lu\n",strcspn(s, WHITESPACE_DELIM));
-		i++;
+AVLNode* buildFrequencyAVL(char* file_name){ //TODO: free duplicates
+	if(file_name == NULL ){
+		PRINT_ERROR("cannot pass in NULL file_name into buildFrequencyAVL()"); return NULL;
 	}
-*/
-
+	
+	//DECLARE VARIABLES
+		char* s = readFile(file_name); //file read into a string
+		char* s_ptr = s; //pointer to string for manipulation later
+		if(s == NULL) //Note: readFile() already prints out errors
+			return NULL; 
+		
+		AVLNode* freq_tree = NULL;
+		int break_ind; //index of first WHITESPACE_DELIM
+	
+	//SPLITS s INTO TOKEN AND WHITESPACE
+		while( (break_ind = strcspn(s_ptr , WHITESPACE_DELIM))!= 0 ){ //finds index of first instance of whitespace delim
+		
+			//Finding token before the white_space
+			char* tokB4 = (char*)malloc( break_ind + 1 ); 
+				if(tokB4 ==NULL){ ALLOC_ERROR; }
+				tokB4[break_ind] = '\0'; //string terminator
+				memcpy(tokB4, s_ptr , break_ind);//copy (break_ind) number of characters from s into tok
+			
+			//Creating the whitespace token
+			char* tokWS = getStringRep(s_ptr[break_ind]);
+			
+			//Inserting tokens into Tree
+			freq_tree = insertOrUpdateAVL(freq_tree, tokB4);
+			freq_tree = insertOrUpdateAVL(freq_tree, tokWS);
+			
+			//Update string pointer s
+			if(strlen(s_ptr) <= break_ind + 1 ) 
+				break;
+			s_ptr  = s_ptr + ( break_ind + 1 );
+		}
+		
 	return freq_tree;
 }
 
@@ -106,29 +90,28 @@ TreeNode* huffmancoding(AVLNode* frequencies){
 		enqueue(&trees, mergeTrees(t1,t2));
 	}
 
-
 	free(tokens.heapArr);
 	return dequeue(&trees);
 }
 
 
 /**
-picks minimum frequency from top of Heap or top of Queue, removes the min from the data structure
-@returns: the tree of the minimum frequency
+return unique string representation for a char whitespace
 **/
-static TreeNode* pickMinTree(MinHeap* heap, Queue* q){
-	if((heap==NULL || heap->size==0) && q==NULL){
-		PRINT_ERROR("Nothing to compare");
-		return NULL;
+static char* getStringRep( char c ){
+	switch(c){
+		case ' ': //space
+			return "SP";
+		case '\t': //tab
+			return "TAB";
+		case '\n': //new line
+			return "NL";
+		default:
+			PRINT_ERROR("not a whitespace");
+			return NULL;
 	}
-
-	if(heap==NULL || heap->size==0){
-		return dequeue(q);
-	}else if(q==NULL || (q->front==NULL&& q->end==NULL)){
-		return createTreeNode( removeMin(heap) );
-	}
-
-	return (peekMinHeap(heap) < peekQueue(q))? createTreeNode( removeMin(heap) ) : dequeue(q);
+	
+	return NULL;
 }
 
 
@@ -165,23 +148,23 @@ void Recursive(char* path){
 		if(strcmp(dp->d_name, ".")==0 || strcmp(dp->d_name, "..")==0) //if current/parent directory(ignore)
 			continue;
 
-		//Checks type of dp
+		//Checks type of dp and combines filepath (frees after entering the directory)
 		char* new_path = combinedPath(path, dp->d_name);
 		int type = typeStat(new_path);
+	
 
-		if(type ==-1){//error from calling typeStat
-			if(strcmp(new_path, path)!=0) //if not original string (was malloced)
-				free(new_path);
-			continue;
-
-		}else if(type == is_DIRnum){ //dp is a directory
+		//new_path is a directory
+		if(type == is_DIRnum){ 
 			//TODO check for symbolic link as well?
 			printf("%s\t%s\n", dp -> d_name, new_path); //TODO: del
-
+			
 			runFlag(new_path);
 			Recursive(new_path);
-			if(strcmp(new_path, path)!=0) //if not original string (was malloced)
-				free(new_path);
+			free(new_path);
+		
+		//new_path is not a directory
+		}else{
+			free(new_path);
 		}
 	}
 
@@ -194,90 +177,23 @@ void Recursive(char* path){
 
 /**
 Combines a path string with a file string and returns the new path
+returns a copy of the new path
 **/
 static char* combinedPath(char* path_name, char* file_name){
-	char* ret = (char*)malloc(2 + strlen(path_name) + strlen(file_name));
-
-	//ret copies (path + "/" + file)
+	if(path_name==NULL || file_name==NULL){
+		PRINT_ERROR("cannot pass in NULL string into combinedPath()"); exit(EXIT_FAILURE);
+	}
+	
+	//reallocate enough space
+	char* ret = (char*)malloc( 2 + strlen(path_name) + strlen(file_name) );
+	if(path_name==NULL){ ALLOC_ERROR; }
+	
+	//copies and concatenates string
 	strcpy(ret, path_name);
 	strcat(ret, "/");
 	strcat(ret, file_name);
 
 	return ret;
-}
-
-
-/**
-reads a file given a filename.
-@returns: string of contents of file if successful
-returns NULL if there's an error
-**/
-char* readFile(char* file_name){
-	//VARIABLES
-		int file, file_cpy;
-		int file_len;
-		int bytes_read;
-		char* str_f;
-
-	//INITIALIZING VARIABLES AND OPENING
-		//Opening files
-		file = open(file_name, O_RDONLY);
-		file_cpy = open(file_name, O_RDONLY);
-			 if( file < 0 || file_cpy < 0 ){
-	 			PRINT_ERROR("error opening file");perror(file_name);return NULL;
-	 		 }
-
-		//finding length of filemake
-		file_len = (int)lseek( file_cpy, 0, SEEK_END ); //gets file size in bytes by going to end og file_cpy
-			if ( file_len < 0){
-				PRINT_ERROR("error getting file length with lseek()");perror(file_name);return NULL;
-			}
-			close(file_cpy);
-
-		//file string : to return
-		str_f = (char*)calloc((file_len + 1), 1);
-
-
-	//READING FILE
-	  bytes_read = read(file, str_f, file_len);
-			if(bytes_read < 0){
-				PRINT_ERROR("error reading file");perror(file_name);return NULL;
-			}
-		str_f[bytes_read] = '\0'; //mark end of string
-
-	close(file);
-	return str_f;
-}
-
-
-/**
-returns the type of the string given in
-@params: char* name - file_name or path_name
-@returns:
-	DIR - directory
-	REG - regular file
-	LINK - link
-	-1 - error
-**/
-int typeStat(char* pathfile_name){
-	if(pathfile_name ==NULL){ //passed in NULL dirent or curr_dir
-		PRINT_ERROR("passed in NULL path");return -1;
-	}
-
-	struct stat dpstat;
-	if(stat( pathfile_name  , &dpstat) < 0){ //error calling lstat
-		perror("lstat failed"); return -1;
-	}
-
-	//check if DIR, REG, or LINK, and returns the respective number (defined in macro)
-	if(S_ISREG(dpstat.st_mode)) //directory or file
-		return is_REGnum;
-	else if(S_ISLNK(dpstat.st_mode))
-		return is_LNKnum;
-	else if(S_ISDIR(dpstat.st_mode))
-		return is_DIRnum;
-	else
-		return -1;
 }
 
 
@@ -388,7 +304,7 @@ bool inputCheck(int argc, char** argv){
 		}
 	}
 
-
+	
 	//CHECK if all necessary globals have been initialized
 	if(flag=='\0'){
 		PRINT_ERROR("must specify a flag as an argument");return false;
@@ -396,15 +312,12 @@ bool inputCheck(int argc, char** argv){
 	if( orig_pathfile == NULL){
 		PRINT_ERROR("must give in a path or a file as an argument");return false;
 	}
-
-	//make sure the number of arguments passed in matches the flag initialized
-	if( (flag=='d'||flag=='c') && codebook==NULL ){
+	
+	//CHECK IF ARGUMENTS MATCH FLAG
+	if( (flag=='d'||flag=='c') && codebook==NULL ){ //-d and -c require a codebook to run
 		PRINT_ERROR("must pass in huffman codebook for flag '-c' and '-b'");return false;
-	}else if( flag=='b' && (codebook!=NULL|| typeStat(orig_pathfile) != is_REGnum) ){
-		PRINT_ERROR("flag '-b' requires a FILE as input and no codebook");return false;
 	}
-
-	if(isRecursive && typeStat(orig_pathfile) != is_DIRnum){
+	if(isRecursive && typeStat(orig_pathfile) != is_DIRnum){ //must be path if -R is called
 		//TODO Symbolic link?
 		PRINT_ERROR("flag '-R' requires a PATH to be passed in");return false;
 	}
@@ -420,10 +333,10 @@ int main(int argc, char** argv){
 			return 0;
 
 ///////////////////////////////////////////////////////
-	 getFrequencies(orig_pathfile);
-
+	 buildFrequencyAVL(orig_pathfile);
+	
 //////////////////////////////////////////////////////////
-
+	
 	//Running the respective flag operation
 		if(isRecursive){ //recursive
 			Recursive(orig_pathfile);

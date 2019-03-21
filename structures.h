@@ -2,7 +2,8 @@
 #define DS_H
 
 	#define PRINT_ERROR(txt) (printf("ERROR: %s in: %s on line:%d\n",txt,__FILE__, __LINE__))
-
+	#define ALLOC_ERROR do{perror(""); exit(EXIT_FAILURE); }while(0)
+	
 	/**
 	structure to associate a word with a frequency.
 	**/
@@ -35,6 +36,22 @@
 	}AVLNode;
 
 
+	/**
+	structure to quickly look up a token and get its byte_encoding or vice versa
+	(is an AVL Tree)
+	**/
+	typedef struct HuffmanSearchNode{
+		char* token;
+		char* byte_encoding;
+		bool isLexiographic; //determines if Tree is ordered by token or byte_encoding
+		int height;
+		
+		struct AVLNode* left;
+		struct AVLNode* right;
+		
+	}HuffmanSearchNode;
+	
+	
 	/**
 	QueueItems of Trees. Implemented with a doubly-linkedlist to save on time efficiency
 	Only meant to be accessed within DataStructures.c
@@ -90,8 +107,9 @@
 	WordFreq* removeMin(MinHeap* heap);
 	int peekMinHeap(MinHeap* heap);
 
+	TreeNode* pickMinTree(MinHeap* heap, Queue* q);
 
-	void printWordFreq(WordFreq* element, char* s);
+	void printWordFreq(WordFreq* element, char* formatting); 
 	void printHeap(MinHeap* heap_ptr);
 	void printTree(TreeNode* root);
 	void printAVLTree(AVLNode* root);

@@ -2,14 +2,19 @@
 #define FILEC_H
 
 #include "structures.h"
+#include "fileHelperMethods.h"
 
+	//DEFINE STATEMENTS
+	#define WHITESPACE_DELIM " \t\n"
+
+
+	//METHOD SIGNAURES
 	TreeNode* huffmancoding(AVLNode* frequencies);
-	static TreeNode* pickMinTree(MinHeap* heap, Queue* q);
+	AVLNode* buildFrequencyAVL(char* file_name);
+	static char* getStringRep(char c);
 
 	static char* combinedPath(char* path_name, char* file_name);
-	int typeStat(char* pathfile_name);
-	char* readFile(char* file_name);
-
+	
 	bool runFlag(char* path_file);
 	void Recursive(char* path_file);
 
