@@ -409,7 +409,7 @@ MinHeap createMinHeap(AVLNode* tree){
 	}
 
 	ret.size = sizeOfAVLTree(tree);
-	ret.heapArr = (WordFreq**)malloc( (ret.size) * sizeof(WordFreq*) ); //creates array big enough to hold all elements in AVLTree
+	ret.heapArr = (WordFreq**)calloc( (ret.size), (ret.size) * sizeof(WordFreq*) ); //creates array big enough to hold all elements in AVLTree
 	initializeMinHeapArr(tree, ret.heapArr, 0); //inserts each node of AVLtree into heapArr
 	heapify(&ret); //turns array into a heap
 
