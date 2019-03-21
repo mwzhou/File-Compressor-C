@@ -38,14 +38,14 @@ char* readFile(char* file_name){
 		file_len = (int)lseek( file_cpy, 0, SEEK_END ); //gets file size in bytes by going to end og file_cpy
 			if ( file_len < 0){
 				PRINT_ERROR("error getting file length with lseek()"); perror(file_name); close(file_cpy);return NULL;
-			}else if( file_len == 0 ){ //TODO: verify
+			}else if( file_len == 0 ){ //TODO: verify if this is a condition
 				PRINT_ERROR( "error, can't pass in empty file"); close(file_cpy); return NULL;
 			}
 			close(file_cpy);
 
 		//file string : to return
 		str_f = (char*)calloc((file_len + 1), 1);
-		if( str_f == NULL ){ ALLOC_ERROR; }
+		if( str_f == NULL ){ pEXIT_ERROR("calloc"); }
 
 
 	//READING FILE

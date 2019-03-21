@@ -19,6 +19,7 @@ char* codebook = NULL;
 
 //TODO: (del note) DO NOT REMOVE BRACKETS ARROUND pEXIT_ERROR(txt); even if it looks ugly, it's actually two statements.
 		//if you remove the brackets, it won't run correctly
+		//sorry if some lines are multi-commands, error checks take up so much space, so I put it all on one line.
 		
 		
 
@@ -80,7 +81,8 @@ AVLNode* buildFrequencyAVL(char* file_name){
 					break;
 				s_ptr  = s_ptr + ( break_ind + 1 );
 		}
-		
+	
+	free(s);	
 	return freq_tree;
 }
 
@@ -143,24 +145,24 @@ char* getStringRep( char c ){
 
 //COMPRESS METHODS////////////////////////////////////////////
 
-void compress( char* pathfile_name ){ //TODO: add params and return
+void compress( char* file_name ){ //TODO: add params and return
 }
 
 
 
 //DECOMPRESS methods////////////////////////////////////////////
 
-void decompress( char* pathfile_name ){ //TODO: add params and return
+void decompress( char* file_name ){ //TODO: add params and return
 }
 
 
 
-//RECURSIVE methods////////////////////////////////////////////
+//RECURSE methods////////////////////////////////////////////
 
 /**
 Runs the flag multiple times in all subdirectories of a given path
 **/
-void Recursive(char* path){
+void Recurse(char* path){
 	DIR* curr_dir = opendir(path);
 	struct dirent* dp;
 
@@ -177,21 +179,15 @@ void Recursive(char* path){
 		//Checks type of dp and combines filepath (frees after entering the directory)
 		char* new_path = combinedPath(path, dp->d_name);
 		int type = typeStat(new_path);
-	
-
-		//new_path is a directory
-		if(type == is_DIRnum){ 
-			//TODO check for symbolic link as well?
-			//printf("%s\t%s\n", dp -> d_name, new_path); TODO: del
-			
-			runFlag(new_path);
-			Recursive(new_path);
-			free(new_path);
 		
-		//new_path is not a directory
-		}else{
-			free(new_path);
-		}
+			//TODO check for symbolic link as well?
+			if( type == is_DIRnum ) //new_path is a directory
+				Recurse(new_path);
+				
+			else if ( type == is_REGnum )//new_path is a file
+				runFlag(new_path);
+			
+			free(new_path);		
 	}
 
 	closedir(curr_dir);
@@ -252,24 +248,24 @@ bool isHuffmanCodebook(char* file_name){ //TODO
 
 
 /**
-Runs a single flag operation.
+Runs a single flag operation on file_name given. (note: must be a regular file!)
 Returns true if succesful, returns false if not.
 **/
-bool runFlag(char* pathfile_name){ //TODO test once complete
-	if(pathfile_name==NULL){
+bool runFlag(char* file_name){ //TODO test once complete
+	if(file_name==NULL){
 		PRINT_ERROR("path_file NULL");
 		return false;
 	}
 
 	switch(flag){ 
 		case 'b': 
-			buildcodebook( pathfile_name );
+			buildcodebook( file_name );
 			break;
 		case 'c': 
-			compress ( pathfile_name );
+			compress ( file_name );
 			break;
 		case 'd': 
-			decompress ( pathfile_name );
+			decompress ( file_name );
 			break;
 		default:
 			PRINT_ERROR("flag must be 'b', 'c', or 'd'");
@@ -336,21 +332,24 @@ bool inputCheck(int argc, char** argv){
 
 	
 	//CHECK if all necessary globals have been initialized
-	if(flag=='\0'){
-		PRINT_ERROR("must specify a flag as an argument"); exit(EXIT_FAILURE);
-	}
-	if( orig_pathfile == NULL){
-		PRINT_ERROR("must give in a path or a file as an argument"); exit(EXIT_FAILURE);
-	}
+		if(flag=='\0'){
+			PRINT_ERROR("must specify a flag as an argument"); exit(EXIT_FAILURE);
+		}
+		if( orig_pathfile == NULL){
+			PRINT_ERROR("must give in a path or a file as an argument"); exit(EXIT_FAILURE);
+		}
 	
 	//CHECK IF ARGUMENTS MATCH FLAG
-	if( (flag=='d'||flag=='c') && codebook==NULL ){ //-d and -c require a codebook to run
-		PRINT_ERROR("must pass in huffman codebook for flag '-c' and '-b'"); exit(EXIT_FAILURE);
-	}
-	if(isRecursive && typeStat(orig_pathfile) != is_DIRnum){ //must be path if -R is called
-		//TODO Symbolic link?
-		PRINT_ERROR("flag '-R' requires a PATH to be passed in"); exit(EXIT_FAILURE);
-	}
+		if( (flag=='d'||flag=='c') && codebook==NULL ){ //-d and -c require a codebook to run
+			PRINT_ERROR("must pass in huffman codebook for flags '-c' and '-b'"); exit(EXIT_FAILURE);
+		}
+		
+		if(isRecursive && typeStat(orig_pathfile) != is_DIRnum){ //'-R' flag called but path not handed in
+			//TODO Symbolic link?
+			PRINT_ERROR("flag '-R' requires a PATH to be passed in"); exit(EXIT_FAILURE);
+		}else if( !isRecursive && typeStat(orig_pathfile) != is_REGnum){ //'-R' flag not called, but file is not a regular file
+			PRINT_ERROR ( "must pass in a REGULAR FILE if not calling flag '-R'"); exit(EXIT_FAILURE);
+		}
 
 	return true;
 }
@@ -364,7 +363,7 @@ int main(int argc, char** argv){
 
 	//Running the respective flag operation
 		if(isRecursive){ //recursive
-			Recursive(orig_pathfile);
+			Recurse(orig_pathfile);
 		}else{
 			runFlag(orig_pathfile);
 		}

@@ -17,6 +17,6 @@
 	static char* combinedPath(char* path_name, char* file_name);
 	
 	bool runFlag(char* path_file);
-	void Recursive(char* path_file);
+	void Recurse(char* path);
 
 #endif
