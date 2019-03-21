@@ -19,7 +19,7 @@ To avoid time spent copying, WordFreq is represented by a pointer to a WordFreq 
 **/
 WordFreq* createWordFreq(char* word, int frequency){
 	WordFreq* ret = (WordFreq*)malloc(sizeof(WordFreq));
-	if( ret == NULL ){ ALLOC_ERROR; }
+	if( ret == NULL ){ pEXIT_ERROR("malloc"); }
 	ret->word = word;
 	ret->frequency = frequency;
 	return ret;
@@ -43,7 +43,7 @@ Initializes AVLNode
 **/
 AVLNode* createAVLNode(char* word){
 	AVLNode* ret = (AVLNode*)malloc(sizeof(AVLNode));
-	if( ret== NULL){ ALLOC_ERROR; }
+	if( ret== NULL){ pEXIT_ERROR("malloc"); }
 	
 	ret->element = createWordFreq(word,1);
 	ret->height = 1;
@@ -55,6 +55,19 @@ AVLNode* createAVLNode(char* word){
 
 
 /**
+updates root by calling insertOrUpdateAVLRec() taking in the address to the root
+@returns true if updated Frequency
+ returns false if inserted new node
+**/
+bool insertOrUpdateAVL(AVLNode**root_ptr, char* word){
+	bool updatedFreq = false;
+	(*root_ptr) = insertOrUpdateAVLRec(*root_ptr, word, &updatedFreq);
+	return updatedFreq;
+}
+
+
+
+/**
 Searches through AVL tree recursively O(logn)
 If found: Updates frequency
 If not found: Creates a WordFreq element and inserts it into the tree.
@@ -62,20 +75,20 @@ MAINTAINS AVL properties of the tree and balances if necessary
 @params: root - root of AVL Tree
 @returns: updated root after one insert/update
 **/
-AVLNode* insertOrUpdateAVL(AVLNode* root, char* word){
-	if(root ==NULL){ //no elements in the AVLTree yet
+static AVLNode* insertOrUpdateAVLRec(AVLNode* root, char* word, bool* updatedFreq){
+	if(root ==NULL)//no elements in the AVLTree yet
 		return createAVLNode(word);
-	}
+	
 
 	int strcmp_word = strcmp(root->element->word,word);
 
 	if(strcmp_word<0){ //word passed in is greater than current node
-		root->left = insertOrUpdateAVL((root->left) , word);
+		root->left = insertOrUpdateAVLRec((root->left) , word, updatedFreq);
 	}else if(strcmp_word>0){ //word passed in is less than current node
-		root->right = insertOrUpdateAVL((root->right) , word);
+		root->right = insertOrUpdateAVLRec((root->right) , word, updatedFreq);
 	}else{
 		root->element->frequency++;
-		//printWordFreq( root->element, "\n");//TODO: free duplicates
+		*updatedFreq = true;
 		return root;
 	}
 
@@ -241,7 +254,7 @@ Initializes a TreeNode structure and returns a pointer to the created TreeNode
 **/
 TreeNode* createTreeNode(WordFreq* element){
 	TreeNode* ret = (TreeNode*)malloc(sizeof(TreeNode));
-	if(ret==NULL){ ALLOC_ERROR; }
+	if(ret==NULL){ pEXIT_ERROR("malloc"); }
 	ret->element = element;
 	ret->left = NULL;
 	ret->right = NULL;
@@ -308,7 +321,7 @@ Initializes a QueueItem given an existing tree and returns a pointer to that Que
 **/
 static QueueItem* createQueueItem(TreeNode* tree){
 	QueueItem* ret = (QueueItem*)malloc(sizeof(QueueItem));
-	if( ret == NULL ){ ALLOC_ERROR; }
+	if( ret == NULL ){ pEXIT_ERROR("malloc"); }
 	ret->tree = tree;
 	ret->prev = NULL;
 	ret->next = NULL;

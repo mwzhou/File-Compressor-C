@@ -8,6 +8,7 @@ private methods only meant to be accessed by DataStructures.c
 	
 	#define heightAVL(node) (((node)==NULL)? 0: (node)->height)
 	
+	static AVLNode* insertOrUpdateAVLRec(AVLNode* root, char* word, bool* updatedFreq);
 	static AVLNode* BalanceAVL(AVLNode* root, int balance_factor, char* word);
 	static void Case1Balance(AVLNode** root_ptr, bool isLeft);
 	static void Case2Balance(AVLNode** root_ptr, bool isLeftRight);

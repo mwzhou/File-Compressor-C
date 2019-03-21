@@ -9,9 +9,10 @@
 
 
 	//METHOD SIGNAURES
+	void buildcodebook(char* file_name);
 	TreeNode* huffmancoding(AVLNode* frequencies);
 	AVLNode* buildFrequencyAVL(char* file_name);
-	static char* getStringRep(char c);
+	char* getStringRep(char c);
 
 	static char* combinedPath(char* path_name, char* file_name);
 	

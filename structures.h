@@ -2,7 +2,7 @@
 #define DS_H
 
 	#define PRINT_ERROR(txt) (printf("ERROR: %s in: %s on line:%d\n",txt,__FILE__, __LINE__))
-	#define ALLOC_ERROR do{perror(""); exit(EXIT_FAILURE); }while(0)
+	#define pEXIT_ERROR(txt) do{perror(txt); exit(EXIT_FAILURE); }while(0)
 	
 	/**
 	structure to associate a word with a frequency.
@@ -88,7 +88,7 @@
 	void freeWordFreq(WordFreq* element);
 
 	AVLNode* createAVLNode(char* word);
-	AVLNode* insertOrUpdateAVL(AVLNode* root, char* word);
+	bool insertOrUpdateAVL(AVLNode**root_ptr, char* word);
 	int sizeOfAVLTree(AVLNode* root);
 	void freeAVLTree(AVLNode* root);
 

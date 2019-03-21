@@ -17,11 +17,23 @@ bool isRecursive = false;
 char* orig_pathfile = NULL;
 char* codebook = NULL;
 
+//TODO: (del note) DO NOT REMOVE BRACKETS ARROUND pEXIT_ERROR(txt); even if it looks ugly, it's actually two statements.
+		//if you remove the brackets, it won't run correctly
+		
+		
 
 //BUILD_CODEBOOK methods////////////////////////////////////////////
 
-void buildcodebook(){ //TODO: add params and return
-
+void buildcodebook(char* file_name){ //TODO
+	if(file_name==NULL){
+		PRINT_ERROR("passed in NULL file_name into buildcodebook"); return;
+	}
+	
+	TreeNode* huffman_tree = huffmancoding( buildFrequencyAVL(file_name) );
+	if(huffman_tree==NULL) return; //method already outputs errors
+	
+	//TODO: build codebook from tree
+	
 }
 
 
@@ -29,9 +41,9 @@ void buildcodebook(){ //TODO: add params and return
 /**
 goes through a file, tokenizes it, and gets the frequency of each token
 @returns AVLTree* based on frquencies of each element
-@returns NULL is file wasn't passed in, or there were no tokens
+ returns NULL is file wasn't passed in, or there were no tokens
 **/
-AVLNode* buildFrequencyAVL(char* file_name){ //TODO: free duplicates
+AVLNode* buildFrequencyAVL(char* file_name){ 
 	if(file_name == NULL ){
 		PRINT_ERROR("cannot pass in NULL file_name into buildFrequencyAVL()"); return NULL;
 	}
@@ -45,26 +57,28 @@ AVLNode* buildFrequencyAVL(char* file_name){ //TODO: free duplicates
 		AVLNode* freq_tree = NULL;
 		int break_ind; //index of first WHITESPACE_DELIM
 	
-	//SPLITS s INTO TOKEN AND WHITESPACE
+	//SPLITS string INTO TOKEN AND WHITESPACE
 		while( (break_ind = strcspn(s_ptr , WHITESPACE_DELIM))!= 0 ){ //finds index of first instance of whitespace delim
 		
 			//Finding token before the white_space
-			char* tokB4 = (char*)malloc( break_ind + 1 ); 
-				if(tokB4 ==NULL){ ALLOC_ERROR; }
-				tokB4[break_ind] = '\0'; //string terminator
-				memcpy(tokB4, s_ptr , break_ind);//copy (break_ind) number of characters from s into tok
+				char* tokB4 = (char*)malloc( break_ind + 1 ); 
+					if(tokB4 ==NULL){ pEXIT_ERROR("malloc"); }
+					tokB4[break_ind] = '\0'; //string terminator
+					memcpy(tokB4, s_ptr , break_ind);//copy (break_ind) number of characters from s into tok
 			
 			//Creating the whitespace token
-			char* tokWS = getStringRep(s_ptr[break_ind]);
+				char* tokWS = getStringRep(s_ptr[break_ind]);
 			
-			//Inserting tokens into Tree
-			freq_tree = insertOrUpdateAVL(freq_tree, tokB4);
-			freq_tree = insertOrUpdateAVL(freq_tree, tokWS);
+			//Inserting tokens into Tree, frees token if duplicate
+				if( insertOrUpdateAVL(&freq_tree, tokB4) ) //insert tokB4, frees if duplicate
+					free(tokB4);
+				if( insertOrUpdateAVL(&freq_tree, tokWS) ) //insert tokWS, frees if duplicate
+					free(tokWS);
 			
 			//Update string pointer s
-			if(strlen(s_ptr) <= break_ind + 1 ) 
-				break;
-			s_ptr  = s_ptr + ( break_ind + 1 );
+				if(strlen(s_ptr) <= break_ind + 1 ) 
+					break;
+				s_ptr  = s_ptr + ( break_ind + 1 );
 		}
 		
 	return freq_tree;
@@ -96,16 +110,27 @@ TreeNode* huffmancoding(AVLNode* frequencies){
 
 
 /**
-return unique string representation for a char whitespace
+returns a unique string representation (dynamically allocated) for a char whitespace passed in
 **/
-static char* getStringRep( char c ){
+char* getStringRep( char c ){
+	//String must be dynamically allocated to free indisciminantly later (avoid strcmp)
+	char* ret = (char*)malloc(3);
+	if(ret==NULL){ pEXIT_ERROR("malloc"); }
+	ret[2]='\0';
+	
 	switch(c){
 		case ' ': //space
-			return "SP";
+			ret[0]='S';
+			ret[1]= 'P';
+			return ret;
 		case '\t': //tab
-			return "TAB";
+			ret[0]='T';
+			ret[1]= 'B';
+			return ret;
 		case '\n': //new line
-			return "NL";
+			ret[0]='N';
+			ret[1]= 'L';
+			return ret;
 		default:
 			PRINT_ERROR("not a whitespace");
 			return NULL;
@@ -115,16 +140,17 @@ static char* getStringRep( char c ){
 }
 
 
+
 //COMPRESS METHODS////////////////////////////////////////////
 
-void compress(){ //TODO: add params and return
+void compress( char* pathfile_name ){ //TODO: add params and return
 }
 
 
 
 //DECOMPRESS methods////////////////////////////////////////////
 
-void decompress(){ //TODO: add params and return
+void decompress( char* pathfile_name ){ //TODO: add params and return
 }
 
 
@@ -156,7 +182,7 @@ void Recursive(char* path){
 		//new_path is a directory
 		if(type == is_DIRnum){ 
 			//TODO check for symbolic link as well?
-			printf("%s\t%s\n", dp -> d_name, new_path); //TODO: del
+			//printf("%s\t%s\n", dp -> d_name, new_path); TODO: del
 			
 			runFlag(new_path);
 			Recursive(new_path);
@@ -172,9 +198,6 @@ void Recursive(char* path){
 }
 
 
-
-////////////////////////////////////////////////
-
 /**
 Combines a path string with a file string and returns the new path
 returns a copy of the new path
@@ -186,7 +209,7 @@ static char* combinedPath(char* path_name, char* file_name){
 	
 	//reallocate enough space
 	char* ret = (char*)malloc( 2 + strlen(path_name) + strlen(file_name) );
-	if(path_name==NULL){ ALLOC_ERROR; }
+	if(path_name==NULL){ pEXIT_ERROR("malloc"); }
 	
 	//copies and concatenates string
 	strcpy(ret, path_name);
@@ -197,6 +220,9 @@ static char* combinedPath(char* path_name, char* file_name){
 }
 
 
+////////////////////////////////////////////////
+
+
 /**
 builds AVL Tree based on the codebook given
 if:
@@ -205,8 +231,9 @@ if:
 @returns search tree if successful
 @returns NULL if flag uninitialized or file is not a huffman_codebook
 **/
-AVLNode* buildHuffmanSearchTree(char* file_name){ //TODO
-	if(flag!= 'c' || flag!= 'd'){ //if flag is not 'c' or 'd' or hasn't been initialized yet
+AVLNode* buildHuffmanSearchTree(char* file_name){ //TODO: for compress and decompress
+	if(flag!= 'c' || flag!= 'd'){ //if flag is not 'c' or 'd' 
+		PRINT_ERROR("Can only build Huffman Search Tree for '-c' and '-d' flags");
 		return NULL;
 	}
 
@@ -216,7 +243,7 @@ AVLNode* buildHuffmanSearchTree(char* file_name){ //TODO
 
 
 /**
-checks if file matches huffman codebook
+checks if file matches huffman codebook format
 **/
 bool isHuffmanCodebook(char* file_name){ //TODO
 	return false;
@@ -228,22 +255,25 @@ bool isHuffmanCodebook(char* file_name){ //TODO
 Runs a single flag operation.
 Returns true if succesful, returns false if not.
 **/
-bool runFlag(char* pathfile_name){ //TODO
+bool runFlag(char* pathfile_name){ //TODO test once complete
 	if(pathfile_name==NULL){
 		PRINT_ERROR("path_file NULL");
 		return false;
 	}
 
-	switch(flag){
-		case 'b': //TODO
+	switch(flag){ 
+		case 'b': 
+			buildcodebook( pathfile_name );
 			break;
-		case 'c': //TODO
+		case 'c': 
+			compress ( pathfile_name );
 			break;
-		case 'd': //TODO
+		case 'd': 
+			decompress ( pathfile_name );
 			break;
 		default:
-			PRINT_ERROR("first letter of flag must be 'b', 'c', or 'd'");
-			return false;
+			PRINT_ERROR("flag must be 'b', 'c', or 'd'");
+			exit(EXIT_FAILURE);
 	}
 	return true;
 }
@@ -254,7 +284,7 @@ checks inputs of items passed through terminal and initializes globals
 **/
 bool inputCheck(int argc, char** argv){
 	if(argc<3 || argc>5){
-		PRINT_ERROR("Must pass inbetween 2 to 4 arguments in addition to the executable");return false;
+		PRINT_ERROR("Must pass inbetween 2 to 4 arguments in addition to the executable"); exit(EXIT_FAILURE);
 	}
 
 	//LOOPING THROUGH EACH ARGUMENT (excluding executable)
@@ -268,14 +298,14 @@ bool inputCheck(int argc, char** argv){
 			//is a regular flag
 			if( s[1]=='b'||s[1]=='c'||s[1]=='d' ){
 				if(flag!='\0'){ //already came across a flag
-					PRINT_ERROR("cannot have multiple flags");return false;
+					PRINT_ERROR("cannot have multiple flags"); exit(EXIT_FAILURE);
 				}
 				flag = s[1];
 
 			//is a recursive flag
 			}else if( s[1]=='R' ){
 				if(isRecursive){ //already came across '-R' flag
-					PRINT_ERROR("cannot have multiple '-R' flags");return false;
+					PRINT_ERROR("cannot have multiple '-R' flags"); exit(EXIT_FAILURE);
 				}
 				isRecursive = true;
 			}
@@ -290,14 +320,14 @@ bool inputCheck(int argc, char** argv){
 				//isHuffmanCodebook
 				if(isHuffmanCodebook(s)){
 					if(codebook!=NULL){ //codebook already initialized
-						PRINT_ERROR("can only have one codebook");return false;
+						PRINT_ERROR("can only have one codebook"); exit(EXIT_FAILURE);
 					}
 					codebook = s;
 
 				//regular path/file
 				}else{
 					if(orig_pathfile!=NULL){ //orig_pathfile already initialized
-						PRINT_ERROR("can only have at most one file/path");return false;
+						PRINT_ERROR("can only have at most one file/path"); exit(EXIT_FAILURE);
 					}
 					orig_pathfile = s;
 				}
@@ -307,19 +337,19 @@ bool inputCheck(int argc, char** argv){
 	
 	//CHECK if all necessary globals have been initialized
 	if(flag=='\0'){
-		PRINT_ERROR("must specify a flag as an argument");return false;
+		PRINT_ERROR("must specify a flag as an argument"); exit(EXIT_FAILURE);
 	}
 	if( orig_pathfile == NULL){
-		PRINT_ERROR("must give in a path or a file as an argument");return false;
+		PRINT_ERROR("must give in a path or a file as an argument"); exit(EXIT_FAILURE);
 	}
 	
 	//CHECK IF ARGUMENTS MATCH FLAG
 	if( (flag=='d'||flag=='c') && codebook==NULL ){ //-d and -c require a codebook to run
-		PRINT_ERROR("must pass in huffman codebook for flag '-c' and '-b'");return false;
+		PRINT_ERROR("must pass in huffman codebook for flag '-c' and '-b'"); exit(EXIT_FAILURE);
 	}
 	if(isRecursive && typeStat(orig_pathfile) != is_DIRnum){ //must be path if -R is called
 		//TODO Symbolic link?
-		PRINT_ERROR("flag '-R' requires a PATH to be passed in");return false;
+		PRINT_ERROR("flag '-R' requires a PATH to be passed in"); exit(EXIT_FAILURE);
 	}
 
 	return true;
@@ -332,11 +362,6 @@ int main(int argc, char** argv){
 		if(!inputCheck(argc, argv))
 			return 0;
 
-///////////////////////////////////////////////////////
-	 buildFrequencyAVL(orig_pathfile);
-	
-//////////////////////////////////////////////////////////
-	
 	//Running the respective flag operation
 		if(isRecursive){ //recursive
 			Recursive(orig_pathfile);
