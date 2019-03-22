@@ -10,7 +10,7 @@
 
 	//METHOD SIGNAURES
 	void buildcodebook(char* file_name);
-	static void buildcodebookRec(char* file_name, TreeNode* huffman_tree, char* encoding);
+	void buildcodebookRec(char* file_name, TreeNode* huffman_tree, char* encoding);
 	static TreeNode* huffmancoding(AVLNode* frequencies);
 	static AVLNode* buildFrequencyAVL(char* file_name);
 	static char* getStringRep(char c);
@@ -18,6 +18,6 @@
 	static char* combinedPath(char* path_name, char* file_name);
 	
 	bool runFlag(char* path_file);
-	void Recurse(char* path);
+	void recurse(char* path);
 
 #endif

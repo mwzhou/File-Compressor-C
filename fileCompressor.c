@@ -20,6 +20,7 @@ char* codebook = NULL;
 //TODO: (del note) DO NOT REMOVE BRACKETS ARROUND pEXIT_ERROR(txt); even if it looks ugly, it's actually two statements.
 		//if you remove the brackets, it won't run correctly
 		//sorry if some lines are multi-commands, error checks take up so much space, so I put it all on one line.
+		//if you wanna separate the lines feel free to do so
 		
 		
 
@@ -30,9 +31,9 @@ void buildcodebook(char* file_name){ //TODO
 		PRINT_ERROR("passed in NULL file_name into buildcodebook"); return;
 	}
 	
-	TreeNode* huffman_tree = huffmancoding( buildFrequencyAVL(file_name) );
+	TreeNode* huffman_tree = huffmancoding( buildFrequencyAVL(file_name) );	//tree is freed in method
 	if(huffman_tree==NULL) return; //method already outputs errors
-	buildcodebookRec(file_name, huffman_tree, NULL);
+	buildcodebookRec(file_name, huffman_tree, NULL); //TODO
 	
 }
 
@@ -40,9 +41,13 @@ void buildcodebook(char* file_name){ //TODO
 /**
 goes through the TreeNode* and adds encoding to the file
 **/
-static void buildcodebookRec(char* file_name, TreeNode* huffman_tree, char* encoding){ 
-	//TODO
+void buildcodebookRec(char* file_name, TreeNode* huffman_tree, char* encoding){ //TODO
+	if( huffman_tree == NULL )
+		return;
 	
+	buildcodebookRec( file_name, huffman_tree->left, encoding);
+	printToken(huffman_tree->element, "\n"); //TODO: remove
+	buildcodebookRec( file_name, huffman_tree->right, encoding);
 }
 
 
@@ -98,6 +103,7 @@ static AVLNode* buildFrequencyAVL(char* file_name){
 /**
 Takes in a AVLTree of tokss and their frequencies in a file and performs huffman coding
 returns a huffman tree to be used in encoding
+FREES AVL TREE AFTER USE
 **/
 static TreeNode* huffmancoding(AVLNode* frequencies){
 	if(frequencies==NULL){
@@ -123,7 +129,7 @@ static TreeNode* huffmancoding(AVLNode* frequencies){
 returns a unique string representation (dynamically allocated) for a char whitespace passed in
 **/
 static char* getStringRep( char c ){
-	//String must be dynamically allocated to free indisciminantly later (avoid strcmp)
+	//String must be dynamically allocated to free indisciminantly later in BuildFrequencyAVL
 	char* ret = (char*)malloc(3);
 	if(ret==NULL){ pEXIT_ERROR("malloc"); }
 	ret[2]='\0';
@@ -170,7 +176,7 @@ void decompress( char* file_name ){ //TODO: add params and return
 /**
 Runs the flag multiple times in all subdirectories of a given path
 **/
-void Recurse(char* path){
+void recurse(char* path){
 	DIR* curr_dir = opendir(path);
 	struct dirent* dp;
 
@@ -186,12 +192,11 @@ void Recurse(char* path){
 
 		//Checks type of dp and combines filepath (frees after entering the directory)
 		char* new_path = combinedPath(path, dp->d_name);
-
 		FileType type = typeOfFile(new_path);
 		
 			//TODO check for symbolic link as well?
 			if( type == isDIR ) //new_path is a directory
-				Recurse(new_path);
+				recurse(new_path);
 				
 			else if ( type == isREG )//new_path is a file
 				runFlag(new_path);
@@ -229,14 +234,14 @@ static char* combinedPath(char* path_name, char* file_name){
 
 
 /**
-builds AVL Tree based on the codebook given
+builds Code Tree based on the codebook given
 if:
-	flag == 'd': builds AVL Tree based on numerical ordering (bits)
-	flag == 'c': builds an AVL Tree based on lexiographic ordering
+	flag == 'd': builds Code Tree based on numerical ordering (bits)
+	flag == 'c': builds an Code Tree based on lexiographic ordering
 @returns search tree if successful
 @returns NULL if flag uninitialized or file is not a huffman_codebook
 **/
-CodebookSearchNode* buildCodebkSearchTree(char* file_name){ //TODO: for compress and decompress
+CodeNode* buildCodeTree(char* file_name){ //TODO: for compress and decompress
 	if(flag!= 'c' || flag!= 'd'){ //if flag is not 'c' or 'd' 
 		PRINT_ERROR("Can only build Huffman Search Tree for '-c' and '-d' flags");
 		return NULL;
@@ -353,7 +358,6 @@ bool inputCheck(int argc, char** argv){
 			PRINT_ERROR("must pass in huffman codebook for flags '-c' and '-b'"); exit(EXIT_FAILURE);
 		}
 		
-
 		if(isRecursive && typeOfFile(orig_pathfile) != isDIR ){ //'-R' flag called but path not handed in
 			//TODO Symbolic link?
 			PRINT_ERROR("flag '-R' requires a PATH to be passed in"); exit(EXIT_FAILURE);
@@ -370,13 +374,14 @@ int main(int argc, char** argv){
 	//INPUT CHECKS
 		if(!inputCheck(argc, argv))
 			return 0;
+	
 
 	//Running the respective flag operation
 		if(isRecursive){ //recursive
-			Recurse(orig_pathfile);
+			recurse(orig_pathfile);
 		}else{
 			runFlag(orig_pathfile);
 		}
-
+		
 	return 0;
 }
