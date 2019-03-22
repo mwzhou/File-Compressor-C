@@ -9,43 +9,60 @@ structures.c  is a self-made library that holds all the structures necessary to 
 #include "structures_priv.h"
 
 
-//WORDFREQ methods/////////////////////////////////////////////////////////////////
+//Token methods/////////////////////////////////////////////////////////////////
+//(description of struct in structures.h)
 
 /**
-Initializes a WordFreq pointer to a word frequency object because it will be passed around in many structs.
-To avoid time spent copying, WordFreq is represented by a pointer to a WordFreq object because it is reused in so many structs.
-@params - char* word, int frequency
-@ret - WordFreq pointer
+Initializes a pointer to a Token object  (int version)
+(To avoid time spent copying, Token is represented by a pointer to a Token object because it is reused in other methods.)
+@params - tok - token in file, frequency - frequency of occurences of tok
+@ret - Token pointer
 **/
-WordFreq* createWordFreq(char* word, int frequency){
-	WordFreq* ret = (WordFreq*)malloc(sizeof(WordFreq));
+Token* createToken(char* tok, int frequency){
+	Token* ret = (Token*)malloc(sizeof(Token));
 	if( ret == NULL ){ pEXIT_ERROR("malloc"); }
-	ret->word = word;
+	ret->tok = tok;
 	ret->frequency = frequency;
 	return ret;
 }
 
 
 /**
-Frees a WordFrequency and its String
+Initializes a pointer to a Token object (String version)
+(To avoid time spent copying, Token is represented by a pointer to a Token object because it is reused in other methods.)
+@params - tok - token in file, encoding - huffman byte_encoding of tokS
+@ret - Token pointer
 **/
-void freeWordFreq(WordFreq* element){
-	free(element->word);
+Token* createTokenStr( char* tok, char* encoding){
+	Token* ret = (Token*)malloc(sizeof(Token));
+	if( ret == NULL ){ pEXIT_ERROR("malloc"); }
+	ret->tok = tok;
+	ret->encoding = encoding;
+	return ret;
+}
+
+
+/**
+Frees a Tokenuency and its String
+**/
+void freeToken(Token* element){
+	free(element->tok);
 	free(element);
 }
 
 
 
 //AVLNode methods (note this is the same type as TreeNode by typedef)////////////////////////////////////////////////
+//(description of struct in structures.h)
 
 /**
 Initializes AVLNode
 **/
-AVLNode* createAVLNode(char* word){
+AVLNode* createAVLNode(char* tok){
 	AVLNode* ret = (AVLNode*)malloc(sizeof(AVLNode));
 	if( ret== NULL){ pEXIT_ERROR("malloc"); }
 	
-	ret->element = createWordFreq(word,1);
+	ret->element = createToken(tok,1);
 	ret->height = 1;
 	ret->left = NULL;
 	ret->right = NULL;
@@ -59,9 +76,9 @@ updates root by calling insertOrUpdateAVLRec() taking in the address to the root
 @returns true if updated Frequency
  returns false if inserted new node
 **/
-bool insertOrUpdateAVL(AVLNode**root_ptr, char* word){
+bool insertOrUpdateAVL(AVLNode**root_ptr, char* tok){
 	bool updatedFreq = false;
-	(*root_ptr) = insertOrUpdateAVLRec(*root_ptr, word, &updatedFreq);
+	(*root_ptr) = insertOrUpdateAVLRec(*root_ptr, tok, &updatedFreq);
 	return updatedFreq;
 }
 
@@ -69,23 +86,23 @@ bool insertOrUpdateAVL(AVLNode**root_ptr, char* word){
 
 /**
 Searches through AVL tree recursively O(logn)
-If found: Updates frequency
-If not found: Creates a WordFreq element and inserts it into the tree.
+If found: Updates frequency and changes *updatedFreq bool to true
+If not found: Creates a Token element and inserts it into the tree.
 MAINTAINS AVL properties of the tree and balances if necessary
-@params: root - root of AVL Tree
+@params: root - root of AVL Tree, tok - tok to insert/update, updatedFreq - address of boolean to note whether updated or inserted
 @returns: updated root after one insert/update
 **/
-static AVLNode* insertOrUpdateAVLRec(AVLNode* root, char* word, bool* updatedFreq){
+static AVLNode* insertOrUpdateAVLRec(AVLNode* root, char* tok, bool* updatedFreq){
 	if(root ==NULL)//no elements in the AVLTree yet
-		return createAVLNode(word);
+		return createAVLNode(tok);
 	
 
-	int strcmp_word = strcmp(root->element->word,word);
+	int strcmp_tok = strcmp(root->element->tok,tok);
 
-	if(strcmp_word<0){ //word passed in is greater than current node
-		root->left = insertOrUpdateAVLRec((root->left) , word, updatedFreq);
-	}else if(strcmp_word>0){ //word passed in is less than current node
-		root->right = insertOrUpdateAVLRec((root->right) , word, updatedFreq);
+	if(strcmp_tok<0){ //tok passed in is greater than current node
+		root->left = insertOrUpdateAVLRec((root->left) , tok, updatedFreq);
+	}else if(strcmp_tok>0){ //tok passed in is less than current node
+		root->right = insertOrUpdateAVLRec((root->right) , tok, updatedFreq);
 	}else{
 		root->element->frequency++;
 		*updatedFreq = true;
@@ -98,7 +115,7 @@ static AVLNode* insertOrUpdateAVLRec(AVLNode* root, char* word, bool* updatedFre
 	//Balancing the tree
 
 	int balance_factor = (root==NULL)? 0 : (heightAVL(root->left)) - (heightAVL(root->right));
-	root = BalanceAVL(root , balance_factor, word);
+	root = BalanceAVL(root , balance_factor, tok);
 	return root;
 }
 
@@ -107,13 +124,13 @@ static AVLNode* insertOrUpdateAVLRec(AVLNode* root, char* word, bool* updatedFre
 Balances AVL Tree given a root after one insert (Constant time)
 returns updated pointer to root
 **/
-static AVLNode* BalanceAVL(AVLNode* root, int balance_factor, char* word){
-	if(root==NULL||balance_factor==1|| balance_factor==0 ||word==NULL){
+static AVLNode* BalanceAVL(AVLNode* root, int balance_factor, char* tok){
+	if(root==NULL||balance_factor==1|| balance_factor==0 ||tok==NULL){
 		return root;
 	}
 
-	int strcmp_left = (root->left==NULL)? 0 : strcmp((root->left)->element->word , word);
-	int strcmp_right = (root->right==NULL)? 0 : strcmp((root->right)->element->word , word);
+	int strcmp_left = (root->left==NULL)? 0 : strcmp((root->left)->element->tok , tok);
+	int strcmp_right = (root->right==NULL)? 0 : strcmp((root->right)->element->tok , tok);
 
 
 	if(balance_factor>1 && strcmp_left<0){ //Case: left-left
@@ -229,7 +246,7 @@ int sizeOfAVLTree(AVLNode* root){
 
 /**
 frees all nodes in a AVLTree. PostOrder Traversal.
-Note: DOES NOT free the WordFreq element
+Note: DOES NOT free the Token element
 **/
 void freeAVLTree(AVLNode* root){
 	if(root==NULL) return;
@@ -241,18 +258,40 @@ void freeAVLTree(AVLNode* root){
 
 
 
-//HUFFMAN SEARCH NODE methods/////////////////////////////////////////////////////////////////
-//TODO
+//CODEBOOK SEARCH NODE methods (Note: is same type as AVLNode)/////////////////////////////////////////////////////////////////
+//(description of struct in structures.h)
 
+/**
+Initializes CodebookSearchNode
+**/
+CodebookSearchNode* createCodebookSearchNode(char* tok, char* encoding){
+	CodebookSearchNode* ret = (CodebookSearchNode*)malloc(sizeof(CodebookSearchNode));
+	if( ret== NULL){ pEXIT_ERROR("malloc"); }
+	
+	ret->element = createTokenStr(tok, encoding);
+	ret->height = 1;
+	ret->left = NULL;
+	ret->right = NULL;
+	
+	return ret;
+}
+
+
+/**
+**/
+CodebookSearchNode* insertCodebookSearchTree(){ //TODO
+	return NULL;
+}
 
 
 
 //TREENODE methods/////////////////////////////////////////////////////////////////
+//(description of struct in structures.h)
 
 /**
 Initializes a TreeNode structure and returns a pointer to the created TreeNode
 **/
-TreeNode* createTreeNode(WordFreq* element){
+TreeNode* createTreeNode(Token* element){
 	TreeNode* ret = (TreeNode*)malloc(sizeof(TreeNode));
 	if(ret==NULL){ pEXIT_ERROR("malloc"); }
 	ret->element = element;
@@ -264,7 +303,7 @@ TreeNode* createTreeNode(WordFreq* element){
 
 /**
 merges two trees into one and returns the root (the combined frequency)
-Note: the root->element->word=NULL (because it only represents a frequency!)
+Note: the root->element->tok=NULL (because it only represents a frequency!)
 **/
 TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2){ //TODO
 	if((t1==NULL&&t2==NULL)){
@@ -276,8 +315,8 @@ TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2){ //TODO
 		return t1;
 	}
 
-	WordFreq* root_wordf = createWordFreq(NULL, (t1->element->frequency + t2->element->frequency) );
-	TreeNode* root = createTreeNode(root_wordf);
+	Token* root_tokf = createToken(NULL, (t1->element->frequency + t2->element->frequency) );
+	TreeNode* root = createTreeNode(root_tokf);
 
 	root->left = t1;
 	root->right = t2;
@@ -287,7 +326,7 @@ TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2){ //TODO
 
 /**
 frees all nodes in a Tree. PostOrder Traversal.
-Note: DOES NOT free the WordFreq element
+Note: DOES NOT free the Token element
 **/
 void freeTreeOnly(TreeNode* root){
 	if(root==NULL) return;
@@ -300,7 +339,7 @@ void freeTreeOnly(TreeNode* root){
 
 /**
 frees all nodes in a Tree. PostOrder Traversal.
-Note: Frees WordFreq AND its string. Be careful if you want to use the String for further use.
+Note: Frees Token AND its string. Be careful if you want to use the String for further use.
 **/
 void freeTreeAndWF(TreeNode* root){
 	if(root==NULL) return;
@@ -308,13 +347,14 @@ void freeTreeAndWF(TreeNode* root){
 	freeTreeAndWF(root->left);
 	freeTreeAndWF(root->right);
 
-	freeWordFreq(root->element);
+	freeToken(root->element);
 	free(root);
 }
 
 
 
-//TREEQUEUE methods////////////////////////////////////////////////////////////////
+//QUEUE methods////////////////////////////////////////////////////////////////
+//(description of struct in structures.h)
 
 /**[private method]
 Initializes a QueueItem given an existing tree and returns a pointer to that QueueItem
@@ -421,10 +461,11 @@ void freeQueue(Queue* q){
 
 
 //MINHEAP methods//////////////////////
+//(description of struct in structures.h)
 
 /**
 creates a MinHeap from an AVL Frequency Tree
-@params: tree - AVL tree root that keeps track of frequencies of each word
+@params: tree - AVL tree root that keeps track of frequencies of each tok
 @ret : a MinHeap w/ an initialized heap array, or if passed in tree is faulty, a Minheap with a NULL array and size 0
 **/
 MinHeap createMinHeap(AVLNode* tree){
@@ -436,7 +477,7 @@ MinHeap createMinHeap(AVLNode* tree){
 	}
 
 	ret.size = sizeOfAVLTree(tree);
-	ret.heapArr = (WordFreq**)calloc( (ret.size), (ret.size) * sizeof(WordFreq*) ); //creates array big enough to hold all elements in AVLTree
+	ret.heapArr = (Token**)calloc( (ret.size), (ret.size) * sizeof(Token*) ); //creates array big enough to hold all elements in AVLTree
 	initializeMinHeapArr(tree, ret.heapArr, 0); //inserts each node of AVLtree into heapArr
 	heapify(&ret); //turns array into a heap
 
@@ -446,11 +487,11 @@ MinHeap createMinHeap(AVLNode* tree){
 
 /**[private method]
 Serializes an AVL tree into an array.
-Traverses through an AVL tree and inserts each WordFreq element into the heapArr
+Traverses through an AVL tree and inserts each Token element into the heapArr
 @params: i is the current index of the next element in heapArr (updated recursively)
 @returns: an int to keep track of the index
 **/
-static int initializeMinHeapArr(AVLNode* node, WordFreq** heapArr, int i){
+static int initializeMinHeapArr(AVLNode* node, Token** heapArr, int i){
 	if(node->left != NULL)
 		i= initializeMinHeapArr(node->left, heapArr, i);
 	heapArr[i++]= node->element;
@@ -484,7 +525,7 @@ sift-down algorithm for heaps
 given an index in a heapArray, siftDown() checks if all nodes in the subtree are smaller than that element
 performs the necessary swaps to mantain a minheap structure
 **/
-static void siftDown(WordFreq** heapArr, int size, int ind){
+static void siftDown(Token** heapArr, int size, int ind){
 	if(heapArr==NULL||size<=ind){
 		PRINT_ERROR("either heapArr uninitialized or faulty index/size passed");
 		return;
@@ -516,10 +557,10 @@ static void siftDown(WordFreq** heapArr, int size, int ind){
 
 
 /**[private method]
-Swaps two WordFreq pointers given the addresses of the two pointers
+Swaps two Token pointers given the addresses of the two pointers
 **/
-static void swap(WordFreq** element1, WordFreq** element2){
-	WordFreq* temp = *element1;
+static void swap(Token** element1, Token** element2){
+	Token* temp = *element1;
 	*element1 = *element2;
 	*element2 = temp;
 }
@@ -528,13 +569,13 @@ static void swap(WordFreq** element1, WordFreq** element2){
 /**
 returns from top of the heap and then updates the heap (sifts up)
 **/
-WordFreq* removeMin(MinHeap* heap){
+Token* removeMin(MinHeap* heap){
 	if(heap==NULL||heap->size==0){
 		PRINT_ERROR("cannot remove min from empty or null heap");
 		return NULL;
 	}
 
-	WordFreq* min= heap->heapArr[0];
+	Token* min= heap->heapArr[0];
 	swap(&(heap->heapArr[0]), &(heap->heapArr[heap->size-1])); //swaps last element to the top
 	heap->heapArr[heap->size-1]=NULL; //removes element from heapArray
 	heap->size--; //decreases accesible elements in a heap
@@ -565,7 +606,7 @@ method to be used for huffman coding.
 picks minimum frequency from top of Heap or top of Queue, removes the min from the data structure
 @returns: the tree of the minimum frequency
 **/
-TreeNode* pickMinTree(MinHeap* heap, Queue* q){
+TreeNode* pickMinTreeHuffman(MinHeap* heap, Queue* q){
 	if((heap==NULL || heap->size==0) && q==NULL){
 		PRINT_ERROR("Nothing to compare");
 		return NULL;
@@ -585,19 +626,19 @@ TreeNode* pickMinTree(MinHeap* heap, Queue* q){
 //PRINT methods/////////////////////////////////////////////////////////////
 
 /**
-prints out WordFreq
+prints out Token
 @params: formatting is any additional parameters to add to the string output
 **/
-void printWordFreq(WordFreq* wf, char* formatting){
+void printToken(Token* wf, char* formatting){
 	if(wf==NULL){
 		printf("NULL %s",formatting);
 		return;
 	}
 
-	if(wf->word==NULL){
+	if(wf->tok==NULL){
 		printf("NULL:%d %s",wf->frequency,formatting);
 	}else{
-		printf("%s:%d %s",wf->word,wf->frequency,formatting);
+		printf("%s:%d %s",wf->tok,wf->frequency,formatting);
 	}
 }
 
@@ -625,16 +666,16 @@ static void printHeapRec(MinHeap* heap_ptr, int root, int space){
 
     printf("\n");
     for (i = count; i < space; i++){ printf(" ");}
-    printWordFreq(heap_ptr->heapArr[root],"\n");
+    printToken(heap_ptr->heapArr[root],"\n");
 
  	printHeapRec(heap_ptr, 2*root+1, space);
 }
 
 //printsHeapArray for testing
-void printHeapArray(WordFreq** arr, int size){
+void printHeapArray(Token** arr, int size){
 	int i;
 	for(i=0; i<size; i++){
-		printWordFreq(arr[i],"\t");
+		printToken(arr[i],"\t");
 	}
 	printf("\n");
 }
@@ -663,7 +704,7 @@ static void printTreeRec(TreeNode* root, int space){
 
     printf("\n");
     for (i = count; i < space; i++){ printf(" ");}
-    printWordFreq(root->element,"\n");
+    printToken(root->element,"\n");
 
     printTreeRec(root->left, space);
 }
@@ -692,7 +733,7 @@ static void printAVLTreeRec(AVLNode* root, int space){
 
     printf("\n");
     for (i = count; i < space; i++){ printf(" ");}
-    printWordFreq(root->element,"\n");
+    printToken(root->element,"\n");
 
     printAVLTreeRec(root->left, space);
 }

@@ -38,14 +38,14 @@ char* readFile(char* file_name){
 		file_len = (int)lseek( file_cpy, 0, SEEK_END ); //gets file size in bytes by going to end og file_cpy
 			if ( file_len < 0){
 				PRINT_ERROR("error getting file length with lseek()"); perror(file_name); close(file_cpy);return NULL;
-			}else if( file_len == 0 ){ //TODO: verify
+			}else if( file_len == 0 ){ //TODO: verify if this is a condition
 				PRINT_ERROR( "error, can't pass in empty file"); close(file_cpy); return NULL;
 			}
 			close(file_cpy);
 
 		//file string : to return
 		str_f = (char*)calloc((file_len + 1), 1);
-		if( str_f == NULL ){ ALLOC_ERROR; }
+		if( str_f == NULL ){ pEXIT_ERROR("calloc"); }
 
 
 	//READING FILE
@@ -67,26 +67,26 @@ returns the type of the string given in
 	DIR - directory
 	REG - regular file
 	LINK - link
-	-1 - error
+	UNDEF - error
 **/
-int typeStat(char* pathfile_name){
-	if(pathfile_name ==NULL){ //passed in NULL dirent or curr_dir
-		PRINT_ERROR("passed in NULL path");return -1;
+FileType typeOfFile(char* file_name){
+	if(file_name ==NULL){ //passed in NULL dirent or curr_dir
+		PRINT_ERROR("passed in NULL path");return isUNDEF;
 	}
 
 	struct stat dpstat;
-	if(stat( pathfile_name  , &dpstat) < 0){ //error calling lstat
-		perror("lstat failed"); return -1;
+	if(stat( file_name  , &dpstat) < 0){ //error calling lstat
+		perror("lstat failed"); return isUNDEF;
 	}
 
 	//check if DIR, REG, or LINK, and returns the respective number (defined in macro)
 	if(S_ISREG(dpstat.st_mode)) //directory or file
-		return is_REGnum;
+		return isREG;
 	else if(S_ISLNK(dpstat.st_mode))
-		return is_LNKnum;
+		return isLNK;
 	else if(S_ISDIR(dpstat.st_mode))
-		return is_DIRnum;
+		return isDIR;
 	else
-		return -1;
+		return isUNDEF;
 }
 

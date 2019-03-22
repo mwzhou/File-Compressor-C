@@ -4,20 +4,27 @@
 	#define PRINT_ERROR(txt) (printf("ERROR: %s in: %s on line:%d\n",txt,__FILE__, __LINE__))
 	#define pEXIT_ERROR(txt) do{perror(txt); exit(EXIT_FAILURE); }while(0)
 	
+	
+	typedef enum{ INT, CHAR }type;
+	
+	
 	/**
-	structure to associate a word with a frequency.
+	structure to associate a word with a frequency OR an encoding
 	**/
-	typedef struct WordFreq{
-		char* word;
-		int frequency;
-	}WordFreq;
+	typedef struct Token{
+		char* tok;
+		union{ //Token can either have a frequency associated with the tok or a byte_encoding associated with the token
+			int frequency;
+			char* encoding;
+		};
+	}Token;
 
 
 	/**
-	structure to combine frequencies of each WordFreq element for huffman coding
+	structure to combine frequencies of each Token element for huffman coding
 	**/
 	typedef struct TreeNode{
-		WordFreq* element;
+		Token* element;
 		//Note: If element->word==NULL, it represents an combined frequency of the left and right subtrees
 
 		struct TreeNode* left;
@@ -29,7 +36,7 @@
 	structure to order tokens in a file lexiographically in a balanced tree and keep track of its frequencies
 	**/
 	typedef struct AVLNode{
-		WordFreq* element;
+		Token* element;
 		int height;
 		struct AVLNode* left;
 		struct AVLNode* right;
@@ -37,19 +44,10 @@
 
 
 	/**
-	structure to quickly look up a token and get its byte_encoding or vice versa
-	(is an AVL Tree)
+	Note: CodebookSearchNode is the same type as an AVL Node (different name for readability)
+	Is used for searching toks and their encodings.
 	**/
-	typedef struct HuffmanSearchNode{
-		char* token;
-		char* byte_encoding;
-		bool isLexiographic; //determines if Tree is ordered by token or byte_encoding
-		int height;
-		
-		struct AVLNode* left;
-		struct AVLNode* right;
-		
-	}HuffmanSearchNode;
+	typedef struct AVLNode CodebookSearchNode;
 	
 	
 	/**
@@ -64,7 +62,7 @@
 
 
 	/**
-	Queue that keeps track of head and tail
+	Queue that keeps track of head and tail QueueItems
 	**/
 	typedef struct Queue{
 		QueueItem* front;
@@ -77,22 +75,23 @@
 	Ordered based on the Frequencies of elements.
 	**/
 	typedef struct MinHeap{
-		WordFreq** heapArr; //array of WordFreq pointers
+		Token** heapArr; //array of Token pointers
 		int size;
 	}MinHeap;
 
 
 
 	//Method Signatures
-	WordFreq* createWordFreq(char* word, int frequency);
-	void freeWordFreq(WordFreq* element);
+	Token* createToken(char* word, int frequency);
+	Token* createTokenStr( char* tok, char* encoding);
+	void freeToken(Token* element);
 
 	AVLNode* createAVLNode(char* word);
 	bool insertOrUpdateAVL(AVLNode**root_ptr, char* word);
 	int sizeOfAVLTree(AVLNode* root);
 	void freeAVLTree(AVLNode* root);
 
-	TreeNode* createTreeNode(WordFreq* element);
+	TreeNode* createTreeNode(Token* element);
 	TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2);
 	void freeTreeOnly(TreeNode* root);
 	void freeTreeAndWF(TreeNode* root); //frees the word frequency and its string
@@ -104,12 +103,12 @@
 	void freeQueue(Queue* q);
 
 	MinHeap createMinHeap(AVLNode* root);
-	WordFreq* removeMin(MinHeap* heap);
+	Token* removeMin(MinHeap* heap);
 	int peekMinHeap(MinHeap* heap);
 
-	TreeNode* pickMinTree(MinHeap* heap, Queue* q);
+	TreeNode* pickMinTreeHuffman(MinHeap* heap, Queue* q);
 
-	void printWordFreq(WordFreq* element, char* formatting); 
+	void printToken(Token* element, char* formatting); 
 	void printHeap(MinHeap* heap_ptr);
 	void printTree(TreeNode* root);
 	void printAVLTree(AVLNode* root);
