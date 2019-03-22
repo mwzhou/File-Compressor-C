@@ -32,8 +32,16 @@ void buildcodebook(char* file_name){ //TODO
 	
 	TreeNode* huffman_tree = huffmancoding( buildFrequencyAVL(file_name) );
 	if(huffman_tree==NULL) return; //method already outputs errors
+	buildcodebookRec(file_name, huffman_tree, NULL);
 	
-	//TODO: build codebook from tree
+}
+
+
+/**
+goes through the TreeNode* and adds encoding to the file
+**/
+static void buildcodebookRec(char* file_name, TreeNode* huffman_tree, char* encoding){ 
+	//TODO
 	
 }
 
@@ -44,7 +52,7 @@ goes through a file, tokenizes it, and gets the frequency of each token
 @returns AVLTree* based on frquencies of each element
  returns NULL is file wasn't passed in, or there were no tokens
 **/
-AVLNode* buildFrequencyAVL(char* file_name){ 
+static AVLNode* buildFrequencyAVL(char* file_name){ 
 	if(file_name == NULL ){
 		PRINT_ERROR("cannot pass in NULL file_name into buildFrequencyAVL()"); return NULL;
 	}
@@ -88,10 +96,10 @@ AVLNode* buildFrequencyAVL(char* file_name){
 
 
 /**
-Takes in a AVLTree of words and their frequencies in a file and performs huffman coding
+Takes in a AVLTree of tokss and their frequencies in a file and performs huffman coding
 returns a huffman tree to be used in encoding
 **/
-TreeNode* huffmancoding(AVLNode* frequencies){
+static TreeNode* huffmancoding(AVLNode* frequencies){
 	if(frequencies==NULL){
 		return NULL;
 	}
@@ -101,8 +109,8 @@ TreeNode* huffmancoding(AVLNode* frequencies){
 	Queue trees = {NULL,NULL};
 
 	while( !(tokens.size==0 && hasSizeOne(&trees)) ){ //stops when heap is empty and only one element left in tree
-		TreeNode* t1 = pickMinTree(&tokens, &trees);
-		TreeNode* t2 = pickMinTree(&tokens, &trees);
+		TreeNode* t1 = pickMinTreeHuffman(&tokens, &trees);
+		TreeNode* t2 = pickMinTreeHuffman(&tokens, &trees);
 		enqueue(&trees, mergeTrees(t1,t2));
 	}
 
@@ -114,7 +122,7 @@ TreeNode* huffmancoding(AVLNode* frequencies){
 /**
 returns a unique string representation (dynamically allocated) for a char whitespace passed in
 **/
-char* getStringRep( char c ){
+static char* getStringRep( char c ){
 	//String must be dynamically allocated to free indisciminantly later (avoid strcmp)
 	char* ret = (char*)malloc(3);
 	if(ret==NULL){ pEXIT_ERROR("malloc"); }
@@ -178,13 +186,14 @@ void Recurse(char* path){
 
 		//Checks type of dp and combines filepath (frees after entering the directory)
 		char* new_path = combinedPath(path, dp->d_name);
-		int type = typeStat(new_path);
+
+		FileType type = typeOfFile(new_path);
 		
 			//TODO check for symbolic link as well?
-			if( type == is_DIRnum ) //new_path is a directory
+			if( type == isDIR ) //new_path is a directory
 				Recurse(new_path);
 				
-			else if ( type == is_REGnum )//new_path is a file
+			else if ( type == isREG )//new_path is a file
 				runFlag(new_path);
 			
 			free(new_path);		
@@ -227,7 +236,7 @@ if:
 @returns search tree if successful
 @returns NULL if flag uninitialized or file is not a huffman_codebook
 **/
-AVLNode* buildHuffmanSearchTree(char* file_name){ //TODO: for compress and decompress
+CodebookSearchNode* buildCodebkSearchTree(char* file_name){ //TODO: for compress and decompress
 	if(flag!= 'c' || flag!= 'd'){ //if flag is not 'c' or 'd' 
 		PRINT_ERROR("Can only build Huffman Search Tree for '-c' and '-d' flags");
 		return NULL;
@@ -309,8 +318,8 @@ bool inputCheck(int argc, char** argv){
 
 		//CHECK IF IS PATH/FILE and that it exists
 		}else{
-				if( typeStat(s) == -1){ //if file/path does not exist
-					return false; //typeStat already prints out error messages
+				if( typeOfFile(s) == isUNDEF){ //if file/path does not exist
+					return false; //typeOfFile already prints out error messages
 				}
 
 				//isHuffmanCodebook
@@ -344,10 +353,11 @@ bool inputCheck(int argc, char** argv){
 			PRINT_ERROR("must pass in huffman codebook for flags '-c' and '-b'"); exit(EXIT_FAILURE);
 		}
 		
-		if(isRecursive && typeStat(orig_pathfile) != is_DIRnum){ //'-R' flag called but path not handed in
+
+		if(isRecursive && typeOfFile(orig_pathfile) != isDIR ){ //'-R' flag called but path not handed in
 			//TODO Symbolic link?
 			PRINT_ERROR("flag '-R' requires a PATH to be passed in"); exit(EXIT_FAILURE);
-		}else if( !isRecursive && typeStat(orig_pathfile) != is_REGnum){ //'-R' flag not called, but file is not a regular file
+		}else if( !isRecursive && typeOfFile(orig_pathfile) != isREG ){ //'-R' flag not called, but file is not a regular file
 			PRINT_ERROR ( "must pass in a REGULAR FILE if not calling flag '-R'"); exit(EXIT_FAILURE);
 		}
 
