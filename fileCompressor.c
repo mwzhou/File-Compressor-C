@@ -186,6 +186,7 @@ void Recurse(char* path){
 
 		//Checks type of dp and combines filepath (frees after entering the directory)
 		char* new_path = combinedPath(path, dp->d_name);
+
 		FileType type = typeOfFile(new_path);
 		
 			//TODO check for symbolic link as well?
@@ -352,6 +353,7 @@ bool inputCheck(int argc, char** argv){
 			PRINT_ERROR("must pass in huffman codebook for flags '-c' and '-b'"); exit(EXIT_FAILURE);
 		}
 		
+
 		if(isRecursive && typeOfFile(orig_pathfile) != isDIR ){ //'-R' flag called but path not handed in
 			//TODO Symbolic link?
 			PRINT_ERROR("flag '-R' requires a PATH to be passed in"); exit(EXIT_FAILURE);
