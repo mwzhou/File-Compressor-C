@@ -21,11 +21,11 @@ Initializes a pointer to a Token object  (int version)
 Token* createTokenInt(char* tok, int frequency){
 	Token* ret = (Token*)malloc(sizeof(Token));
 	if( ret == NULL ){ pEXIT_ERROR("malloc"); }
-	
+
 	ret->hasFrequency = true;
 	ret->tok = tok;
 	ret->frequency = frequency;
-	
+
 	return ret;
 }
 
@@ -39,17 +39,17 @@ Initializes a pointer to a Token object (String version)
 Token* createTokenStr( char* tok, char* encoding){
 	Token* ret = (Token*)malloc(sizeof(Token));
 	if( ret == NULL ){ pEXIT_ERROR("malloc"); }
-	
+
 	ret->hasFrequency = false;
 	ret->tok = tok;
 	ret->encoding = encoding;
-	
+
 	return ret;
 }
 
 
 /**
-Frees a Token and its items 
+Frees a Token and its items
 **/
 void freeToken(Token* element){
 	free(element->tok);
@@ -70,12 +70,12 @@ Initializes AVLNode
 AVLNode* createAVLNode(char* tok){
 	AVLNode* ret = (AVLNode*)malloc(sizeof(AVLNode));
 	if( ret== NULL){ pEXIT_ERROR("malloc"); }
-	
+
 	ret->element = createTokenInt(tok,1);
 	ret->height = 1;
 	ret->left = NULL;
 	ret->right = NULL;
-	
+
 	return ret;
 }
 
@@ -99,15 +99,15 @@ Searches through AVL tree recursively O(logn)
 If found: Updates frequency and changes *updatedFreq bool to true
 If not found: Creates a Token element and inserts it into the tree.
 MAINTAINS AVL properties of the tree and balances if necessary
-@params: AVLNode* root - root of AVL Tree, 
-		 char* tok - tok to insert/update, 
+@params: AVLNode* root - root of AVL Tree,
+		 char* tok - tok to insert/update,
 		 bool* updatedFreq - address of boolean to note whether updated or inserted
 @returns: updated root after one insert/update
 **/
 static AVLNode* insertOrUpdateAVLRec(AVLNode* root, char* tok, bool* updatedFreq){
 	if(root ==NULL)//no elements in the AVLTree yet
 		return createAVLNode(tok);
-	
+
 	//Comparisons and Insert
 	int strcmp_tok = strcmp(root->element->tok,tok);
 	if(strcmp_tok<0){ //tok passed in is greater than root's tok
@@ -132,8 +132,8 @@ static AVLNode* insertOrUpdateAVLRec(AVLNode* root, char* tok, bool* updatedFreq
 
 /** [private method]
 Balances AVL Tree given a root after one insert (Constant time)
-@params: AVLNode* root - root of AVLTree; 
-		 int balance_factor - how imbalanced the tree is; 
+@params: AVLNode* root - root of AVLTree;
+		 int balance_factor - how imbalanced the tree is;
 		 char* key  - token/encoding string to compare root->left and root->right to, to figure out what type of imbalance
 		 CMPMode mode - comparison mode, whether to compare by tokens or encodings
 @returns: updated pointer to balanced root.
@@ -142,21 +142,21 @@ static AVLNode* BalanceAVL(AVLNode* root, int balance_factor, char* key , CMPMod
 	if(root==NULL||balance_factor==1|| balance_factor==0 ||key ==NULL) //can't compare
 		return root;
 	else if( mode == cmpByEncodings && root->element->hasFrequency ){ //if root has a frequency (i.e. no encoding), you can't compare the encodings
-		pEXIT_ERROR("cannot compare root's encoding if the root does not have an encoding");
+		pRETURN_ERROR("cannot compare root's encoding if the root does not have an encoding", root);
 	}
-	
+
 	int strcmp_left;
 	int strcmp_right;
-	
+
 	//initializes values of strcmp_left and strcmp_right based on comparison mode
 	if(mode == cmpByEncodings ){ //compares children's encodings
 		strcmp_left = (root->left==NULL)? 0 : strcmp( (root->left)->element->encoding , key);
-		strcmp_right = (root->right==NULL)? 0 : strcmp( (root->right)->element->encoding , key); 
+		strcmp_right = (root->right==NULL)? 0 : strcmp( (root->right)->element->encoding , key);
 	}else if( mode == cmpByTokens ){//compares children's toks
 		strcmp_left = (root->left==NULL)? 0 : strcmp( (root->left)->element->tok , key);
 		strcmp_right = (root->right==NULL)? 0 : strcmp( (root->right)->element->tok , key);
 	}
-	
+
 
 	//Balancing - finds what type of imbalance root is
 	if(balance_factor>1 && strcmp_left<0){ //Case: left-left
@@ -294,12 +294,12 @@ Initializes CodeNode
 CodeNode* createCodeNode(char* tok, char* encoding){
 	CodeNode* ret = (CodeNode*)malloc(sizeof(CodeNode));
 	if( ret== NULL){ pEXIT_ERROR("malloc"); }
-	
+
 	ret->element = createTokenStr(tok, encoding);
 	ret->height = 1;
 	ret->left = NULL;
 	ret->right = NULL;
-	
+
 	return ret;
 }
 
@@ -308,7 +308,7 @@ CodeNode* createCodeNode(char* tok, char* encoding){
 wrapper method just to be consistent with insertOrUpdateAVL()
 takes address of CodeTree root and updates it in memory by inserting it
 **/
-void insertCodeTree( CodeNode** root_ptr, char* tok, char* encoding, CMPMode mode){ 
+void insertCodeTree( CodeNode** root_ptr, char* tok, char* encoding, CMPMode mode){
 	*root_ptr = insertCodeTreeRec( (*root_ptr), tok, encoding, mode);
 }
 
@@ -319,20 +319,20 @@ inserts a token and an encoding into a CodeTree Recursively
 		 char* tok - tok to insert ; char* encoding - encoding to insert associated with tok;
 		 CMPMode mode- whether comparing based on Encoding, or comparing based on Token
 **/
-static CodeNode* insertCodeTreeRec( CodeNode* root, char* tok, char* encoding, CMPMode mode ){ 
+static CodeNode* insertCodeTreeRec( CodeNode* root, char* tok, char* encoding, CMPMode mode ){
 	if(root ==NULL)//no elements in the AVLTree yet
 		return createCodeNode( tok, encoding );
-	
+
 	//COMPARISONS AND INSERTING
 	//stores value of comparison between tokens or a comparison between encodings
 	int strcmp_tok = (mode == cmpByEncodings )? strcmp(root->element->encoding, encoding) : strcmp(root->element->tok,tok);
-	
-	if(strcmp_tok<0){ 
+
+	if(strcmp_tok<0){
 		root->left = insertCodeTreeRec(root->left, tok, encoding, mode);
-	}else if(strcmp_tok>0){ 
+	}else if(strcmp_tok>0){
 		root->right = insertCodeTreeRec(root->right, tok, encoding, mode);
 	}else{
-		PRINT_ERROR("duplicate Node in CodeNode");
+		pRETURN_ERROR("duplicate Node in CodeNode", root);
 		return root;
 	}
 
@@ -348,12 +348,11 @@ static CodeNode* insertCodeTreeRec( CodeNode* root, char* tok, char* encoding, C
 
 
 /**
-searches through CodeNode based on the key given, returns the tok/encoding associated with the key
+Searches through CodeNode based on the key given, returns the tok/encoding associated with the key
 @params:
 @returns: String Item associated with key (if mode is cmpByEncodings, returns the token; if not, returns the encoding)
 **/
-char* getCodeItem( CodeNode* root, char* key, CMPMode mode ){ //TODO
-	
+char* getCodeItem( CodeNode* root, char* key, CMPMode mode ){ //TODO: search function
 	return NULL;
 
 }
@@ -362,7 +361,7 @@ char* getCodeItem( CodeNode* root, char* key, CMPMode mode ){ //TODO
 /**
 frees CodeTree AND the Token associated with it along with its tok and encoding strings
 **/
-void freeCodeTreeAndTok( CodeNode* root ){ 
+void freeCodeTreeAndTok( CodeNode* root ){
 	if(root==NULL) return;
 
 	freeCodeTreeAndTok(root->left);
@@ -396,8 +395,7 @@ Note: the root->element->tok=NULL (because it only represents a frequency!)
 **/
 TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2){ //TODO
 	if((t1==NULL&&t2==NULL)){
-		PRINT_ERROR("cannot pass in two NULL TreeNodes into mergeTrees()");
-		return NULL;
+		pRETURN_ERROR("cannot pass in TWO NULL TreeNodes into mergeTrees() (at most one tree can be NULL)", NULL);
 	}else if(t1==NULL){
 		return t2;
 	}else if(t2==NULL){
@@ -559,10 +557,8 @@ creates a MinHeap from an AVL Frequency Tree
 **/
 MinHeap createMinHeap(AVLNode* tree){
 	MinHeap ret = {NULL,0};
-
 	if(tree==NULL){
-		PRINT_ERROR("cannot create a heap from a NULL tree");
-		return ret;
+		pRETURN_ERROR("cannot create a heap from a NULL tree", ret);
 	}
 
 	ret.size = sizeOfAVLTree(tree);
@@ -596,10 +592,7 @@ linear heapify
 takes initialized MinHeap pointer and heapifies it with the O(n) time algorithm. Starts from first non-leaf node and sifts-down
 **/
 static void heapify(MinHeap* heap){
-	if(heap==NULL||heap->heapArr==NULL){
-		PRINT_ERROR("can't pass in null heap or uninitialized heap");
-		return;
-	}
+	if(heap==NULL||heap->heapArr==NULL){ pRETURN_ERRORvoid("can't pass in null heap or uninitialized heap into heapify()"); }
 
 	int currind = (heap->size)/2 - 1;
 	while(currind>=0){
@@ -615,10 +608,7 @@ given an index in a heapArray, siftDown() checks if all nodes in the subtree are
 performs the necessary swaps to mantain a minheap structure
 **/
 static void siftDown(Token** heapArr, int size, int ind){
-	if(heapArr==NULL||size<=ind){
-		PRINT_ERROR("either heapArr uninitialized or faulty index/size passed");
-		return;
-	}
+	if(heapArr==NULL||size<=ind){ pRETURN_ERRORvoid("either heapArr uninitialized or faulty index/size passed into siftDown()"); }
 
 	while(ind < (size/2)){ //while ind is not a leaf node index
 		int l = 2*ind + 1; //left node index
@@ -659,10 +649,7 @@ static void swap(Token** element1, Token** element2){
 returns from top of the heap and then updates the heap (sifts up)
 **/
 Token* removeMin(MinHeap* heap){
-	if(heap==NULL||heap->size==0){
-		PRINT_ERROR("cannot remove min from empty or null heap");
-		return NULL;
-	}
+	if(heap==NULL||heap->size==0){ pRETURN_ERROR("cannot remove min from empty or null heap" ,NULL); }
 
 	Token* min= heap->heapArr[0];
 	swap(&(heap->heapArr[0]), &(heap->heapArr[heap->size-1])); //swaps last element to the top
@@ -694,16 +681,14 @@ int peekMinHeap(MinHeap* heap){
 method to be used for huffman coding.
 picks minimum frequency from top of Heap or top of Queue, removes the min from the data structure
 @returns: the tree of the minimum frequency
+ returns: NULL on error
 **/
 TreeNode* pickMinTreeHuffman(MinHeap* heap, Queue* q){
-	if((heap==NULL || heap->size==0) && q==NULL){
-		PRINT_ERROR("Nothing to compare");
-		return NULL;
-	}
+	if((heap==NULL || heap->size==0) && q==NULL){ pRETURN_ERROR("Nothing to compare, both heap and q are empty/NULL", NULL); }
 
-	if(heap==NULL || heap->size==0){
-		return dequeue(q);
-	}else if(q==NULL || (q->front==NULL&& q->end==NULL)){
+	if(heap==NULL || heap->size==0){ //heap is Empty
+		return dequeue(q); //Note: this frees the element in dequeue()
+	}else if(q==NULL || (q->front==NULL&& q->end==NULL)){ //queue is empty
 		return createTreeNode( removeMin(heap) );
 	}
 
