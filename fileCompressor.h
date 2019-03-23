@@ -10,14 +10,14 @@
 
 	//METHOD SIGNAURES
 	void buildcodebook(char* file_name);
-	static void buildcodebookRec(char* file_name, TreeNode* huffman_tree, char* encoding);
+	static void writeEncodings( int codebook, TreeNode* huffman_tree, char* encoding);
 	static TreeNode* huffmancoding(AVLNode* frequencies);
 	static AVLNode* buildFrequencyAVL(char* file_name);
+	static char* getNewEncoding( char* prev_encoding, bool wentLeft);
 	static char* getStringRep(char c);
-
-	static char* combinedPath(char* path_name, char* file_name);
+	
+	void recurse(char* path);
 	
 	bool runFlag(char* path_file);
-	void Recurse(char* path);
 
 #endif

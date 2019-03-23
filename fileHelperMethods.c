@@ -17,7 +17,7 @@ fileHelperMethods.c is a self-made file library since we're not allowed to use f
 /**
 reads a file given a filename.
 @returns: string of contents of file if successful
-returns NULL if there's an error
+ returns: NULL if invalid, non-urgent error
 **/
 char* readFile(char* file_name){
 	//VARIABLES
@@ -30,17 +30,13 @@ char* readFile(char* file_name){
 		//Opening files
 		file = open(file_name, O_RDONLY);
 		file_cpy = open(file_name, O_RDONLY);
-			 if( file < 0 || file_cpy < 0 ){
-	 			PRINT_ERROR("error opening file");perror(file_name);return NULL;
-	 		 }
+			 if( file < 0 || file_cpy < 0 ){ pRETURN_ERROR("error opening file", NULL); }
 
 		//finding length of filemake
 		file_len = (int)lseek( file_cpy, 0, SEEK_END ); //gets file size in bytes by going to end og file_cpy
-			if ( file_len < 0){
-				PRINT_ERROR("error getting file length with lseek()"); perror(file_name); close(file_cpy);return NULL;
-			}else if( file_len == 0 ){ //TODO: verify if this is a condition
-				PRINT_ERROR( "error, can't pass in empty file"); close(file_cpy); return NULL;
-			}
+    	//checking if file_len is a valid length
+			if ( file_len < 0){ pEXIT_ERROR("error getting file length with lseek()");
+		}else if( file_len == 0 ){ pRETURN_ERROR( "error, can't pass in empty file", NULL);} //TODO: verify if this is a condition
 			close(file_cpy);
 
 		//file string : to return
@@ -50,13 +46,32 @@ char* readFile(char* file_name){
 
 	//READING FILE
 	  bytes_read = read(file, str_f, file_len);
-			if(bytes_read < 0){
-				PRINT_ERROR("error reading file");perror(file_name);return NULL;
-			}
+			if(bytes_read < 0){ pRETURN_ERROR("error reading file", NULL); }
 		str_f[bytes_read] = '\0'; //mark end of string
 
 	close(file);
 	return str_f;
+}
+
+
+/**
+Combines a path string with a file string and returns the new path
+@returns: a copy of the new path
+returns: NULL if invalid, non-urgent issue
+**/
+char* combinedPath(char* path_name, char* file_name){
+	if(path_name==NULL || file_name==NULL){ pRETURN_ERROR("cannot pass in NULL string into combinedPath()", NULL); }
+
+	//reallocate enough space
+	char* ret = (char*)malloc( 2 + strlen(path_name) + strlen(file_name) );
+	if(path_name==NULL){ pEXIT_ERROR("malloc"); }
+
+	//copies and concatenates string
+	strcpy(ret, path_name);
+	strcat(ret, "/");
+	strcat(ret, file_name);
+
+	return ret;
 }
 
 
@@ -70,14 +85,10 @@ returns the type of the string given in
 	UNDEF - error
 **/
 FileType typeOfFile(char* file_name){
-	if(file_name ==NULL){ //passed in NULL dirent or curr_dir
-		PRINT_ERROR("passed in NULL path");return isUNDEF;
-	}
+	if(file_name ==NULL){ pRETURN_ERROR("passed in NULL path", isUNDEF); }
 
 	struct stat dpstat;
-	if(stat( file_name  , &dpstat) < 0){ //error calling lstat
-		perror("lstat failed"); return isUNDEF;
-	}
+	if(stat( file_name  , &dpstat) < 0){ pRETURN_ERROR("lstat failed", isUNDEF); }
 
 	//check if DIR, REG, or LINK, and returns the respective number (defined in macro)
 	if(S_ISREG(dpstat.st_mode)) //directory or file
@@ -89,4 +100,3 @@ FileType typeOfFile(char* file_name){
 	else
 		return isUNDEF;
 }
-

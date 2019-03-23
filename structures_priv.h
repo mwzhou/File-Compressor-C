@@ -9,10 +9,12 @@ private methods only meant to be accessed by DataStructures.c
 	#define heightAVL(node) (((node)==NULL)? 0: (node)->height)
 	
 	static AVLNode* insertOrUpdateAVLRec(AVLNode* root, char* tok, bool* updatedFreq);
-	static AVLNode* BalanceAVL(AVLNode* root, int balance_factor, char* tok);
+	static AVLNode* BalanceAVL(AVLNode* root, int balance_factor, char* cmp_str, CMPMode mode);
 	static void Case1Balance(AVLNode** root_ptr, bool isLeft);
 	static void Case2Balance(AVLNode** root_ptr, bool isLeftRight);
 	static int greaterHeight(AVLNode* parent);
+	
+	static CodeNode* insertCodeTreeRec( CodeNode* root, char* tok, char* encoding, CMPMode mode);
 	
 	static QueueItem* createQueueItem(TreeNode* tree);	
 

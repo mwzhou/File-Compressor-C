@@ -1,18 +1,24 @@
 #ifndef DS_H
 #define DS_H
 
+	//Error macros
 	#define PRINT_ERROR(txt) (printf("ERROR: %s in: %s on line:%d\n",txt,__FILE__, __LINE__))
-	#define pEXIT_ERROR(txt) do{perror(txt); exit(EXIT_FAILURE); }while(0)
-	
-	
-	typedef enum{ INT, CHAR }type;
-	
-	
+	#define pEXIT_ERROR(txt) do{ PRINT_ERROR(txt); perror(txt); exit(EXIT_FAILURE); }while(0) //exits program on failure
+	#define pRETURN_ERROR(txt, return_val) do{ PRINT_ERROR(txt); perror(txt); return return_val; }while(0) //returns method out of EXIT_FAILURE
+	#define pRETURN_ERRORvoid(txt) do{ PRINT_ERROR(txt); perror(txt); return; }while(0)
+
+	#define printCodeTree(root) printAVLTree(root)
+
+	//Comparison Mode to be used in AVLNode and CodeNode methods
+	typedef enum{ cmpByTokens, cmpByEncodings }CMPMode;
+
+
 	/**
 	structure to associate a word with a frequency OR an encoding
 	**/
 	typedef struct Token{
 		char* tok;
+		bool hasFrequency; //boolean to distinguish whether it has a frequency or encoding
 		union{ //Token can either have a frequency associated with the tok or a byte_encoding associated with the token
 			int frequency;
 			char* encoding;
@@ -44,12 +50,12 @@
 
 
 	/**
-	Note: CodebookSearchNode is the same type as an AVL Node (different name for readability)
-	Is used for searching toks and their encodings.
+	Note: CodeNode is the same type as an AVL Node (different name for readability)
+	It's  a Codebook AVL Node used for searching toks and their encodings efficiently.
 	**/
-	typedef struct AVLNode CodebookSearchNode;
-	
-	
+	typedef struct AVLNode CodeNode;
+
+
 	/**
 	QueueItems of Trees. Implemented with a doubly-linkedlist to save on time efficiency
 	Only meant to be accessed within DataStructures.c
@@ -82,7 +88,7 @@
 
 
 	//Method Signatures
-	Token* createToken(char* word, int frequency);
+	Token* createTokenInt(char* word, int frequency);
 	Token* createTokenStr( char* tok, char* encoding);
 	void freeToken(Token* element);
 
@@ -91,10 +97,15 @@
 	int sizeOfAVLTree(AVLNode* root);
 	void freeAVLTree(AVLNode* root);
 
+	CodeNode* createCodeNode(char* tok, char* encoding);
+	void insertCodeTree( CodeNode** root_ptr, char* tok, char* encoding, CMPMode mode);
+	char* getCodeItem( CodeNode* root, char* key, CMPMode mode);
+	void freeCodeTreeAndTok( CodeNode* root );
+
 	TreeNode* createTreeNode(Token* element);
 	TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2);
 	void freeTreeOnly(TreeNode* root);
-	void freeTreeAndWF(TreeNode* root); //frees the word frequency and its string
+	void freeTreeAndTok(TreeNode* root); //frees the Token and its elements
 
 	TreeNode* dequeue(Queue* q);
 	void enqueue(Queue* q, TreeNode* tree);
@@ -108,10 +119,11 @@
 
 	TreeNode* pickMinTreeHuffman(MinHeap* heap, Queue* q);
 
-	void printToken(Token* element, char* formatting); 
+	void printToken(Token* element, char* formatting);
 	void printHeap(MinHeap* heap_ptr);
 	void printTree(TreeNode* root);
 	void printAVLTree(AVLNode* root);
+	//Note: printCodeTree(root) is same as printAVLTree(root) as defined in Macro
 	void printQueue(Queue* q_ptr);
 
 #endif
