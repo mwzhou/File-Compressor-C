@@ -68,8 +68,7 @@ static void writeEncodings(int codebook, TreeNode* root, char* encoding){ //TODO
 		(root->element)->encoding = encoding;
 		(root->element)->hasFrequency=false;
 		
-		//WRITE encoding and tok if not NULL into codebook in the format specified by Assignment. 
-		//Checks for write() errors after each write
+		//WRITE encoding and tok if not NULL into codebook in the format specified by Assignment. (Checks for write() errors after each write)
 		if( (root->element)->tok!= NULL && encoding!=NULL){ 
 			if( write( codebook, (root->element)->encoding , strlen((root->element)->encoding)) < 0) { pRETURN_ERRORvoid("write()"); } //write the encoding
 			if( write( codebook, "\t" , 1) < 0) { pRETURN_ERRORvoid("write()"); }
@@ -261,7 +260,6 @@ void recurse(char* path){
 
 
 
-
 //MISC methods//////////////////////////////////////////////
 
 
@@ -370,7 +368,6 @@ bool inputCheck(int argc, char** argv){
 
 	return true;
 }
-
 
 
 int main(int argc, char** argv){
