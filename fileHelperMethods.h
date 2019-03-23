@@ -9,6 +9,5 @@
 	char* readFile(char* file_name);
 	FileType typeOfFile(char* file_name);
 	char* combinedPath(char* path_name, char* file_name);
-	char* getDirectory(char* file_name);
 
 #endif

@@ -11,11 +11,14 @@
 
 #include "fileCompressor.h"
 
-//GLOBALS
-char flag ='\0';
-bool isRecursive = false;
-char* orig_pathfile = NULL;
-char* codebook = NULL;
+//GLOBALS: items passed through the terminal
+char flag ='\0'; //flag passed in, will be initialized to flag
+bool isRecursive = false; //if'-R' flag passed in, will be initialized to true
+char* orig_pathfile = NULL; //file/path name passed in, will be initialized to file/path name
+char* codebook = NULL; //if codebook file name passed in, will be initialized to codebook name
+
+CodeNode* CodeTree = NULL; //tree to search up tokens/encodings quickly
+
 
 //TODO: (del note) DO NOT REMOVE BRACKETS ARROUND pEXIT_ERROR(txt); or pRETURN_ERROR(txt);
  		//even if it looks ugly, it's a whole do while loop defined in a macro. if you remove the brackets, it won't run correctly!!!
@@ -27,63 +30,66 @@ char* codebook = NULL;
 
 //BUILD_CODEBOOK methods////////////////////////////////////////////
 
-void buildcodebook(char* file_name){ //TODO
+void buildcodebook(char* file_name){
 	if(file_name==NULL){ pEXIT_ERROR("passed in NULL file_name into buildcodebook"); }
 
-	TreeNode* huffman_tree = huffmancoding( buildFrequencyAVL(file_name) );	//Note: AVLtree is freed in huffmancoding
-	if(huffman_tree==NULL) return; //Note: huffmancoding method already outputs errors
+	//build Huffman Tree
+		TreeNode* huffman_tree = huffmancoding( buildFrequencyAVL(file_name) );	//Note: AVLtree is freed in huffmancoding
+			if(huffman_tree==NULL) return; //Note: huffmancoding method already outputs errors
 
-	//Create File and Write into it TODO
-
-/*	char* dirf_name =  getDirectory(file_name);
-	printf("What? %s\n", file_name);
-
-	char* codebook_name = combinedPath(dirf_name, "HuffmanCodebook");
-	printf("%s\n",codebook_name);
-
-	int codebook = open(codebook_name, O_WRONLY| O_APPEND| O_CREAT, 0644); //TODO 0644?
-	if(codebook < 0){ pRETURN_ERRORvoid("tried to open HuffmanCodebook"); }
-
-
-	buildcodebookRec(codebook_name, huffman_tree, NULL);
-
-
+	//Create File
+		int codebook = open("HuffmanCodebook", O_WRONLY| O_CREAT, 0644); //creates a new file, overwrites old HuffmanCoding File if exists
+			if(codebook < 0){ pRETURN_ERRORvoid("tried to open HuffmanCodebook"); }
+	
+	//FIND ENCODINGS AND WRITE TO CODEBOOK
+		if ( write( codebook, "\\\n", 2) < 0) { pRETURN_ERRORvoid("write()"); } //writes starting line, and then checks if unsuccesful
+		writeEncodings(codebook, huffman_tree, NULL); //finds and writes encodings to file
+		if ( write( codebook, "\n", 1) < 0) { pRETURN_ERRORvoid("write()"); } //writes terminating line, and then checks if unsuccesful
+		
 	//FREEING and CLOSING
-		//free(codebook_name);
 		close(codebook);
-	*/
-		freeTreeAndTok(huffman_tree);
+		freeTreeAndTok(huffman_tree); //frees all TreeNodes AND also frees the encoding and token of each node
 }
 
 
+
 /**
-goes through the Huffman Tree passed in and changes each node's frequency into the encoding for that word
-adds each NON-NULL encoding to a created file
+goes through the Huffman Tree passed in and changes each node's frequency into the encoding for that word.
+Adds each NON-NULL encoding for a NON-NULL token into the codebook
 **/
-static void buildcodebookRec(char* codebook_name, TreeNode* root, char* encoding){ //TODO
-	if( root == NULL ){
+static void writeEncodings(int codebook, TreeNode* root, char* encoding){ //TODO: check if codebook has to be certain order
+	if( root == NULL )
 		return;
-	}
-
-	buildcodebookRec( codebook_name, root->left, getNewEncoding(encoding, false) );
-
-	//update root's element and swaps the frequency for the encoding
-	(root->element)->encoding = encoding;
-	(root->element)->hasFrequency=false;
-	//TODO: add to file if root->element->tok!=NULL
-
-	buildcodebookRec( codebook_name, root->right, getNewEncoding(encoding, true) );
+	
+	//WRITE ROOT'S ENCODING TO THE CODEBOOK
+		//update root's element and swaps the frequency member for an encoding member so that it can be freed later freeTreeAndTok()
+		(root->element)->encoding = encoding;
+		(root->element)->hasFrequency=false;
+		
+		//WRITE encoding and tok to file in the format specified by Assignment. 
+		//Checks for write() errors after each write
+		if( (root->element)->tok!= NULL && encoding!=NULL){ //if non-null token and non-null encoding, add to file
+			if( write( codebook, (root->element)->encoding , strlen((root->element)->encoding)) < 0) { pRETURN_ERRORvoid("write()"); } //write the encoding
+			if( write( codebook, "\t" , 1) < 0) { pRETURN_ERRORvoid("write()"); }
+			if( write( codebook, (root->element)->tok , strlen((root->element)->tok)) < 0) { pRETURN_ERRORvoid("write()"); } //write the token
+			if( write( codebook, "\n" , 1) < 0) { pRETURN_ERRORvoid("write()"); }
+		}
+	
+	//update encodings by passing in newEncoding with added 1 or added 0, pass recusively
+	writeEncodings( codebook, root->left, getNewEncoding(encoding, false) );
+	writeEncodings( codebook, root->right, getNewEncoding(encoding, true) );
 }
 
 
 /**
-Adds a 0 or a 1 to the end of prev_encoding passed in.
+Adds a 0 or a 1 to the end of prev_encoding passed in, returns a new string.
+If prev_encoding is NULL, just returns a string with a single 1 or 0.
 @params: char* prev_encoding - previous encoding of parent; bool addOne - boolean to decide whether to add a '1' or a '0' to the last character
-@return: new_encoding in separate memory than prev_encoding
+@return: new_encoding (malloced in different memory)
 **/
 static char* getNewEncoding( char* prev_encoding, bool addOne){
 	//Variables
-		int len_prev = (prev_encoding == NULL)? 0 : strlen(prev_encoding); //length of prev_encoding, 0 if prev_encoding was NULL
+		int len_prev = (prev_encoding == NULL)? 0 : strlen(prev_encoding); //length of prev_encoding, length is 0 if prev_encoding was NULL
 		char* new_encoding = (char*)malloc( len_prev + 2 ); //string to return, malloc one byte larger than prev_encoding + space for the terminating char
 		if( new_encoding==NULL ){ pEXIT_ERROR("malloc"); }
 
@@ -113,7 +119,7 @@ static AVLNode* buildFrequencyAVL(char* file_name){
 		AVLNode* freq_tree = NULL;
 		int break_ind; //index of first WHITESPACE_DELIM
 
-	//SPLITS string INTO TOKEN AND WHITESPACE
+	//TOKENIZES s into TOKEN AND WHITESPACE
 		while( (break_ind = strcspn(s_ptr , WHITESPACE_DELIM))!= 0 ){ //finds index of first instance of whitespace delim
 
 			//Finding token before the white_space

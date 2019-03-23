@@ -76,18 +76,6 @@ char* combinedPath(char* path_name, char* file_name){
 
 
 /**
-gets directory of file passed in
-return's directory's name
-**/
-char* getDirectory(char* file_name){
-	if( typeOfFile(file_name) == isDIR) return file_name; //if already a directory, return this directory
-	//TODO
-	return NULL;
-
-}
-
-
-/**
 returns the type of the string given in
 @params: char* name - file_name or path_name
 @returns:

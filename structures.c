@@ -52,9 +52,14 @@ Token* createTokenStr( char* tok, char* encoding){
 Frees a Token and its items
 **/
 void freeToken(Token* element){
-	free(element->tok);
-	if(!(element->hasFrequency)) // if element has an Encoding
+	if(element==NULL)
+		return;
+	
+	if(element->tok!=NULL)
+		free(element->tok);
+	if( element->hasFrequency==false && element->encoding!=NULL ) // if element has a Non-NULL Encoding
 		free(element->encoding);
+		
 	free(element);
 }
 
@@ -458,7 +463,7 @@ static QueueItem* createQueueItem(TreeNode* tree){
 
 /**
 takes first tree from the Queue's front
-(free's queue pointer that was removed from the queue (but not the tree pointer))
+FREES queue pointer that was removed from the queue (but not the tree pointer)
 updates q's front
 @params: q - address of a Queue that contains pointer to front
 @returns: TreeNode* at front
@@ -534,7 +539,7 @@ free's all Queue nodes if necessary (does not touch the trees in case of future 
 however, if implemented correctly, FileCompression.c will not need to call upon this method
 **/
 void freeQueue(Queue* q){
-	if(q==NULL||(q->front)==NULL||q->end==NULL)
+	if(q==NULL||(q->front)==NULL||(q->end)==NULL)
 		return;
 
 	QueueItem* ptr = (q->front);
