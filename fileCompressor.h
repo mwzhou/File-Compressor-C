@@ -10,11 +10,11 @@
 
 	//METHOD SIGNAURES
 	void buildcodebook(char* file_name);
-	static void writeEncodings( int codebook, TreeNode* huffman_tree, char* encoding);
+	static void writeEncodings(int codebook, TreeNode* huffman_tree, char* encoding);
 	static TreeNode* huffmancoding(AVLNode* frequencies);
 	static AVLNode* buildFrequencyAVL(char* file_name);
-	static char* getNewEncoding( char* prev_encoding, bool wentLeft);
-	static char* getStringRep(char c);
+	static char* getNewEncoding(char* prev_encoding, bool wentLeft );
+	static char* getStringRepOfWS(char c);
 	
 	void recurse(char* path);
 	
