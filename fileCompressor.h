@@ -5,7 +5,7 @@
 #include "fileHelperMethods.h"
 
 //DEFINE MACROS
-	#define WHITESPACE_DELIM " \t\n"
+	#define WHITESPACE_DELIM " \t\n\\"
 	#define WRITE_AND_CHECKv(file, buf, nbytes) do{  if( write(file, buf , nbytes) < 0 ) { pRETURN_ERRORvoid("write()"); } }while(0) //writes to file, if failed, prints out error and returns void
 
 //METHOD SIGNAURES

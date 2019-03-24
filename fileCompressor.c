@@ -113,11 +113,9 @@ static AVLNode* buildFrequencyAVL(char* file_name){
 
 		AVLNode* freq_tree = NULL;
 	//TOKENIZES fstr INTO A TOKEN AND A WHITESPACE TOKEN - loops through fstr until there are no more whitespaces
-		
 		int indOfWS = 0; //index to keep track of the first instance of a whitespace in fstr_ptr
 			
 		while( (indOfWS = strcspn(fstr_ptr , WHITESPACE_DELIM)) < strlen(fstr_ptr) ){ //updates index of whitespace and stops once there are no more white spaces 
-			
 			//Finding the token before the white_space (if there is one) and Inserting/Updating
 				if(indOfWS!=0){ //if there is a token before the whitespace
 					char* tokB4 = (char*)malloc( indOfWS + 1 );
@@ -136,7 +134,7 @@ static AVLNode* buildFrequencyAVL(char* file_name){
 					
 				if( insertOrUpdateAVL(&freq_tree, tokWS) == UPDATED ) //insert tokWS into AVL, frees tokWS if insertOrUpdateAVL() did an Update
 					free(tokWS);
-
+			
 			//Update string pointer
 				fstr_ptr  += ( indOfWS + 1 ); //update pointer of fstr_ptr to after current tokens
 		}
@@ -149,8 +147,8 @@ static AVLNode* buildFrequencyAVL(char* file_name){
 /**
 returns a unique string representation (dynamically allocated) for a char whitespace passed in
 **/
-static char* getStringRepOfWS( char c ){
-	//String must be dynamically allocated to free indisciminantly later in BuildFrequencyAVL() without having to do strcmps
+static char* getStringRepOfWS( char c ){ //TODO: do for all chars 0 through 32 and 127!
+	//String must be dynamically allocated to free indisciminantly later without having to do strcmps
 	char* ret = (char*)malloc(3);
 	if(ret==NULL){ pEXIT_ERROR("malloc"); }
 	ret[2]='\0';
@@ -167,6 +165,10 @@ static char* getStringRepOfWS( char c ){
 		case '\n': //new line
 			ret[0]='N';
 			ret[1]= 'L';
+			return ret;
+		case '\\': //escape char
+			ret[0]='E';
+			ret[1]= 'S';
 			return ret;
 		default:
 			free(ret);
