@@ -21,36 +21,36 @@ reads a file given a filename.
 **/
 char* readFile(char* file_name){
 	//VARIABLES
-		int file, file_cpy;
-		int file_len;
-		int bytes_read;
-		char* str_f;
+		int file, file_cpy; //files
+		int file_len; //length of file in bytes
+		char* fstr; //string with file's contents, return this string on success
+		int bytes_read; //number of bytes read through read
 
-	//INITIALIZING VARIABLES AND OPENING
+	//INITIALIZING VARIABLES AND OPENING FILE
 		//Opening files
 		file = open(file_name, O_RDONLY);
-		file_cpy = open(file_name, O_RDONLY);
+		file_cpy = open(file_name, O_RDONLY); //copy of file
 			 if( file < 0 || file_cpy < 0 ){ pRETURN_ERROR("error opening file", NULL); }
 
-		//finding length of filemake
+		//Initializing file length in bytes
 		file_len = (int)lseek( file_cpy, 0, SEEK_END ); //gets file size in bytes by going to end og file_cpy
-    	//checking if file_len is a valid length
-			if ( file_len < 0){ pEXIT_ERROR("error getting file length with lseek()");
-		}else if( file_len == 0 ){ pRETURN_ERROR( "error, can't pass in empty file", NULL);} //TODO: verify if this is a condition
+			if ( file_len < 0){ pRETURN_ERROR("error getting file length with lseek()", NULL); } //checking if file_len is a valid length
+			else if( file_len == 0 ){  pRETURN_ERROR( "error, can't pass in empty file", NULL); } //TODO: verify if this is a condition	
 			close(file_cpy);
-
-		//file string : to return
-		str_f = (char*)calloc((file_len + 1), 1);
-		if( str_f == NULL ){ pEXIT_ERROR("calloc"); }
+			
+		//Initializing File Strings to return
+		fstr = (char*)calloc((file_len + 1), 1);
+		if( fstr == NULL ){ pEXIT_ERROR("calloc()"); }
 
 
 	//READING FILE
-	  bytes_read = read(file, str_f, file_len);
-			if(bytes_read < 0){ pRETURN_ERROR("error reading file", NULL); }
-		str_f[bytes_read] = '\0'; //mark end of string
+	bytes_read = read(file, fstr, file_len);
+		if(bytes_read < 0){ pRETURN_ERROR("error reading file", NULL); }
+	
+	fstr[bytes_read] = '\0'; //mark end of string
 
 	close(file);
-	return str_f;
+	return fstr;
 }
 
 
@@ -76,13 +76,36 @@ char* combinedPath(char* path_name, char* file_name){
 
 
 /**
+Appends a character to the end of a string, returns a malloced new string with a character appended to the end
+@params: char* prev_str = string to append to
+		 char add_c = character to add
+@return: new_string(malloced in different memory)
+Note: does NOT free prev_str
+**/
+char* appendCharToString( char* prev_str , char add_c){
+	//Variables
+		int len_prev = (prev_str == NULL)? 0 : strlen(prev_str); //length of prev_str, length is 0 if prev_str was NULL
+		char* new_str = (char*)malloc( len_prev + 2 ); //string to return: malloc one byte larger than prev_str + space for the terminating char
+			if( new_str==NULL ){ pEXIT_ERROR("malloc()"); }
+
+	//CREATING NEW ENCODING
+		if(prev_str!= NULL)  //copy old encoding into new encoding (if old encoding not NULL)
+			strcpy( new_str , prev_str); 
+		new_str[len_prev] = add_c;
+		new_str[len_prev+1] = '\0'; //terminating character
+
+	return new_str;
+}
+
+
+/**
 returns the type of the string given in
 @params: char* name - file_name or path_name
-@returns:
-	DIR - directory
-	REG - regular file
-	LINK - link
-	UNDEF - error
+@returns FileType:
+	isDIR - directory
+	isREG - regular file
+	isLINK - link
+	isUNDEF - error
 **/
 FileType typeOfFile(char* file_name){
 	if(file_name ==NULL){ pRETURN_ERROR("passed in NULL path", isUNDEF); }
@@ -99,4 +122,76 @@ FileType typeOfFile(char* file_name){
 		return isDIR;
 	else
 		return isUNDEF;
+}
+
+
+/**
+Goes through file_name given and checks if the file matches the format of a huffman codebook
+**/
+bool isHuffmanCodebook(char* file_name){ 
+	if( typeOfFile(file_name) != isREG ) //file passed in is not a regular file
+		return false; 		
+		
+		
+	//READ FILE as a string
+		char* fstr = readFile(file_name);
+			if( fstr == NULL ) //error reading file
+				return false; 
+	
+	
+	//CHECK FORMAT OF FILE
+		//checking first line:
+		if(fstr[0] != '\\' && fstr[0] != '\n'){ //first line must be in the format of "\\\n"
+			free(fstr);
+			return false;
+		}
+		
+		
+		//checking contents:
+		int len_fstr = strlen(fstr);
+			if(len_fstr< 3){ //must have at least 3 characters in huffman codebook
+				free(fstr); 
+				return false;
+			}
+		bool isEncoding = true; //boolean to check format of encoding/token
+		
+		//loop in the body of the file
+		int i;
+		for(i = 2; i< len_fstr-1; i++){ 
+			//check format of encoding
+			if(isEncoding){
+				if( fstr[i] == '\t' ){ //reached end of current encoding
+					isEncoding = false; //update to check format for token
+					
+				}else if( !(fstr[i] == '0' || fstr[i] == '1') ){ //encoding must be a string of '0's and '1's, if not: return false
+					free(fstr); 
+					return false;
+				}
+			
+			//check format of token
+			}else{
+				if(fstr[i] == '\n'){ //reached end of token
+					isEncoding = true; //update to check format for encoding
+					
+				}else if(fstr[i] ==' ' || fstr[i] == '\t'){ //token should not have a tab or whitespace in the token
+					free(fstr); 
+					return false;
+					
+				}	
+			}
+		}
+		
+		if(!isEncoding){ //did not end body with a token
+			free(fstr); 
+			return false;		
+		}
+		
+		//checking terminating line: 
+		if( fstr[len_fstr-2]!='\n' && fstr[len_fstr-1]!='\n' ){ //last character befor terminating line must be "\n" and terminating line must be "\n"
+			free(fstr); 
+			return false;
+		}
+		
+	free(fstr);
+	return true;
 }
