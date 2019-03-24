@@ -46,11 +46,11 @@ void buildcodebook(char* file_name){
 
 	//build Huffman Tree
 		TreeNode* huffman_tree = huffmancoding( buildFrequencyAVL(file_name) );	//Note: AVLtree is freed in huffmancoding
-			if(huffman_tree==NULL) return; //Note: huffmancoding method already outputs errors
-
+			if(huffman_tree==NULL) return; //Note: huffmancoding method already outputs errors	
+			
 	//Create File:
 		//get path of huffmancodebook:
-			char* dir = getDirOfFile(orig_pathfile); //direcory of file_name
+			char* dir = getDirOfFile(file_name); //direcory of file_name
 			char* cb_path = concatStr(dir, "HuffmanCodebook"); //directory + "HuffmanCodebook"
 			free(dir);
 		
@@ -105,42 +105,39 @@ goes through a file, tokenizes it, and gets the frequency of each token
 **/
 static AVLNode* buildFrequencyAVL(char* file_name){
 	if(file_name == NULL ){ pRETURN_ERROR("cannot pass in NULL file_name into buildFrequencyAVL()", NULL); }
-
+	
 	//DECLARE VARIABLES
 		char* fstr = readFile(file_name); //file read into a string
 		char* fstr_ptr = fstr; //pointer to front of string for manipulation later
 			if(fstr == NULL) return NULL; //Note: readFile() already prints out errors
 
 		AVLNode* freq_tree = NULL;
-	
-	//TOKENIZES fstr INTO A TOKEN AND A WHITESPACE TOKEN
+	//TOKENIZES fstr INTO A TOKEN AND A WHITESPACE TOKEN - loops through fstr until there are no more whitespaces
 		
 		int indOfWS = 0; //index to keep track of the first instance of a whitespace in fstr_ptr
 			
-		while( true ){
+		while( (indOfWS = strcspn(fstr_ptr , WHITESPACE_DELIM)) < strlen(fstr_ptr) ){ //updates index of whitespace and stops once there are no more white spaces 
 			
-			indOfWS = strcspn(fstr_ptr , WHITESPACE_DELIM); //update indOfWS in fstr_ptr
-			
-			//Finding the token before the white_space
-				char* tokB4 = (char*)malloc( indOfWS + 1 );
-					if(tokB4 ==NULL){ pEXIT_ERROR("malloc"); }
-					tokB4[indOfWS] = '\0'; //string terminator
-					memcpy(tokB4, fstr_ptr , indOfWS);//copy (indOfWS) number of characters from fstr into tok
-
-			//Finding the whitespace token
+			//Finding the token before the white_space (if there is one) and Inserting/Updating
+				if(indOfWS!=0){ //if there is a token before the whitespace
+					char* tokB4 = (char*)malloc( indOfWS + 1 );
+						if(tokB4 ==NULL){ pEXIT_ERROR("malloc"); }
+						tokB4[indOfWS] = '\0'; //string terminator
+						memcpy(tokB4, fstr_ptr , indOfWS);//copy (indOfWS) number of characters from fstr into tok
+					
+					//insert tokB4 into AVL, frees tokB4 if insertOrUpdateAVL() did an Update
+					if( insertOrUpdateAVL(&freq_tree, tokB4) == UPDATED ) 
+						free(tokB4);
+				}
+				
+			//Finding the whitespace token and Inserting/Updating
 				char* tokWS = getStringRepOfWS(fstr_ptr[indOfWS]);
-					if(tokWS==NULL){ free(fstr); free(tokB4); free(freq_tree); pRETURN_ERROR("did not enter in whitespace", NULL); }
-			
-			//Inserting tokens into Tree, frees token if duplicate
-				if( insertOrUpdateAVL(&freq_tree, tokB4) == UPDATED ) //insert tokB4 into AVL, frees tokB4 if insertOrUpdateAVL() did an Update
-					free(tokB4);
+					if(tokWS==NULL){ free(fstr); free(freq_tree); pRETURN_ERROR("did not enter in whitespace", NULL); }
+					
 				if( insertOrUpdateAVL(&freq_tree, tokWS) == UPDATED ) //insert tokWS into AVL, frees tokWS if insertOrUpdateAVL() did an Update
 					free(tokWS);
 
-			//update string pointer
-				if( strlen(fstr_ptr) <= indOfWS + 1  ) //if the indOfWS reached beyond the string
-					break;
-					
+			//Update string pointer
 				fstr_ptr  += ( indOfWS + 1 ); //update pointer of fstr_ptr to after current tokens
 		}
 
@@ -187,12 +184,20 @@ FREES AVL TREE AFTER USE
 **/
 static TreeNode* huffmancoding(AVLNode* frequency_tree){
 	if(frequency_tree==NULL){ pRETURN_ERROR("passed in NULL frequency tree", NULL);}
-
+	
+	if( sizeOfAVLTree(frequency_tree)== 1){ //if there is only one token: create a tree and return it
+		TreeNode* ret = createTreeNode(  createTokenInt(NULL, frequency_tree->element->frequency) );
+		ret->left = createTreeNode(  frequency_tree->element );
+		free(frequency_tree);
+		return ret;
+	}
+	
 	//Variables
 	MinHeap tokens = buildMinHeap(frequency_tree);
-	freeAVLTree(frequency_tree); //do not need frequencies anymore, free AVLNodes (not the element though)
+		freeAVLTree(frequency_tree); //do not need frequencies anymore, free AVLNodes (not the element though)
 	Queue trees = {NULL,NULL};
 
+	
 	//continuously merge the two min elements from the heap and queue until we get one merged huffman tree
 	//takes the smaller item in the heap/queue and merges the two minimums, then enqueues the tree onto the queue
 	while( !(tokens.size==0 && hasSizeOne(&trees)) ){ //stops when heap is empty and only one element left in tree
@@ -297,6 +302,7 @@ void recurse(char* path){
 	//DIRECTORY VARIABLES
 	DIR* curr_dir = opendir(path);
 		if(curr_dir==NULL){ pEXIT_ERROR("opendir()"); } 
+		
 	struct dirent* dp;
 
 	//TRAVERSES THROUGH CURRENT DIRECTORY TO FIND ALL SUBDIRECTORIES //TODO check for symbolic link as well?
@@ -309,11 +315,10 @@ void recurse(char* path){
 		FileType type = typeOfFile(new_path); //file type of new_path
 		
 		//RECURSE if Sub-Directory, RUN-FLAG, if not
-		if( type == isDIR ) //new_path is a directory
+		if( type == isDIR ){ //new_path is a directory
 			recurse(new_path);
-		else if ( type == isREG ){ //new_path is a file
-			if( ( flag=='d' && endsWithHCZ(new_path) )|| flag!='d') //run flag if not d, or if it is d and the file ends with .hcz
-				runFlag(new_path);
+		}else if ( type == isREG ){ //new_path is a regular file 
+				runFlag(new_path); //Note: flag only runs if the file meets the requirment for each respective flag
 		}
 		
 		free(new_path);
@@ -332,24 +337,27 @@ void recurse(char* path){
 Runs a single flag operation on file_name given. (note: must be a regular file!)
 Returns true if succesful, returns false if not.
 **/
-bool runFlag(char* file_name){ //TODO test once complete
+bool runFlag(char* file_name){ 
 	if(file_name==NULL){ pEXIT_ERROR("path_file NULL");}
 	if( typeOfFile(file_name)!= isREG ){ pRETURN_ERROR("must input a REG FILE into runFlag()", false); }
 	
 	switch(flag){
 		case 'b':
-			buildcodebook( file_name );
+			if( strstr(file_name, "HuffmanCodebook") == NULL ) //if file sent in is not a HuffmanCodebook creates by b
+				buildcodebook( file_name );
 			break;
 		case 'c':
-			compress ( file_name );
+			if( !endsWithHCZ(file_name) ) //if the file does not end with hcz
+				compress ( file_name );
 			break;
 		case 'd':
-			if( !endsWithHCZ(file_name) ){ pRETURN_ERROR("tried to pass in file that doesn't end with hcz into decompress", false); }//if file name doesn't end with hcz
-			decompress ( file_name );
+			if( endsWithHCZ(file_name) ) //if the file ends with hcz
+				decompress ( file_name );
 			break;
 		default:
 			pEXIT_ERROR("flag must be 'b', 'c', or 'd'");
 	}
+	
 	return true;
 }
 
@@ -392,7 +400,7 @@ bool inputCheck(int argc, char** argv){
 			//if arg is a regular path/file
 			}else{
 				if(orig_pathfile!=NULL){ pEXIT_ERROR("can only have at most one file/path"); }  //orig_pathfile already initialized
-				orig_pathfile = s;
+				orig_pathfile = realpath(s, NULL); //gets real path
 			}
 			
 		}
@@ -420,7 +428,7 @@ int main(int argc, char** argv){
 	
 	//Running the respective flag operation
 		if(isRecursive) //recursive
-			recurse(orig_pathfile);
+			recurse( orig_pathfile);
 		else
 			runFlag(orig_pathfile);
 	

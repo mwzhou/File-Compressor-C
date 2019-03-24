@@ -122,19 +122,19 @@ gets the directory of a given filename
 eturns string of directory (malloced)
 **/
 char* getDirOfFile( char* file_name){
-	if( typeOfFile(file_name)==isDIR ){ //if already a directory
-		return file_name;
-	}
+	if(file_name == NULL){ pRETURN_ERROR("file_name passed in is NULL", NULL);  }
+	if( typeOfFile(file_name)==isDIR  ){ pRETURN_ERROR("file_name passed in is already a directory", NULL); }
 	
-	char* realp = realpath(file_name, NULL); //real path of file_name
 	
+	char* realp = realpath(file_name, NULL); //gets the real path of file_name
+		
 	//loops through end of realp and 0's out each character until first '/' character
 	int i;
 	for(i= strlen(realp)-1 ; i>=0; i--){
-		if(realp[i]== '/')
-			break;
+		if(realp[i]== '/') break;
 		realp[i] = '\0';
 	}
+	
 	
 	if( typeOfFile(realp)==isDIR  )
 		return realp;
