@@ -15,8 +15,13 @@
 //METHOD SIGNATURES
 	char* readFile(char* file_name);
 	FileType typeOfFile(char* file_name);
+	
 	char* combinedPath(char* path_name, char* file_name);
 	char* appendCharToString( char* prev_str , char add_c);
+	char* concatStr(char* s1, char* s2);
+	char* getDirOfFile( char* file_name);
+	
+	bool endsWithHCZ(char* file_name);
 	bool isHuffmanCodebook(char* file_name);
 
 #endif

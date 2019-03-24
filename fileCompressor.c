@@ -39,7 +39,7 @@
 //BUILD_CODEBOOK methods////////////////////////////////////////////
 
 /**
-builds codebook in current directory called HuffmanCodebook (TODO: check exactly where the codebook should end up)
+builds codebook in current directory called HuffmanCodebook
 **/
 void buildcodebook(char* file_name){
 	if(file_name==NULL){ pEXIT_ERROR("passed in NULL file_name into buildcodebook"); }
@@ -48,14 +48,21 @@ void buildcodebook(char* file_name){
 		TreeNode* huffman_tree = huffmancoding( buildFrequencyAVL(file_name) );	//Note: AVLtree is freed in huffmancoding
 			if(huffman_tree==NULL) return; //Note: huffmancoding method already outputs errors
 
-	//Create File
-		int codebook = open("HuffmanCodebook", O_WRONLY| O_CREAT, 0644); //creates a new file, overwrites old HuffmanCoding File if exists TODO: check where to add
+	//Create File:
+		//get path of huffmancodebook:
+			char* dir = getDirOfFile(orig_pathfile); //direcory of file_name
+			char* cb_path = concatStr(dir, "HuffmanCodebook"); //directory + "HuffmanCodebook"
+			free(dir);
+		
+		//opening file:
+		int codebook = open(cb_path, O_WRONLY| O_CREAT, 0644); //creates a new file, overwrites old HuffmanCoding File if exists 
 			if(codebook < 0){ pRETURN_ERRORvoid("tried to open HuffmanCodebook"); }
-	
+			free(cb_path);
+			
 	//FIND ENCODINGS AND WRITE TO CODEBOOK
-		if ( write( codebook, "\\\n", 2) < 0 ) { pRETURN_ERRORvoid("write()"); } //writes starting line, and then checks if unsuccesful
+		WRITE_AND_CHECKv( codebook, "\\\n", 2); //writes starting line, and then checks if unsuccesful
 		writeEncodings(codebook, huffman_tree, NULL); //finds and writes encodings of each token into file
-		if ( write( codebook, "\n", 1) < 0 ) { pRETURN_ERRORvoid("write()"); } //writes terminating line, and then checks if unsuccesful
+		WRITE_AND_CHECKv( codebook, "\n", 1); //writes terminating line, and then checks if unsuccesful
 		
 	//FREEING and CLOSING
 		close(codebook);
@@ -78,10 +85,10 @@ static void writeEncodings(int codebook, TreeNode* root, char* encoding){ //TODO
 		
 		//WRITE encoding and tok if not NULL into codebook in the format specified by Assignment. (Checks for write() errors after each write)
 		if( (root->element)->tok!= NULL && encoding!=NULL){ 
-			if( write( codebook, (root->element)->encoding , strlen((root->element)->encoding) ) < 0 ) { pRETURN_ERRORvoid("write()"); } //write the encoding into codebook
-			if( write( codebook, "\t" , 1) < 0 ) { pRETURN_ERRORvoid("write()"); }
-			if( write( codebook, (root->element)->tok , strlen((root->element)->tok) ) < 0 ) { pRETURN_ERRORvoid("write()"); } //write the token into codebook
-			if( write( codebook, "\n" , 1) < 0) { pRETURN_ERRORvoid("write()"); }
+			WRITE_AND_CHECKv( codebook, (root->element)->encoding , strlen((root->element)->encoding) );//write the encoding into codebook
+			WRITE_AND_CHECKv( codebook, "\t" , 1 );		
+			WRITE_AND_CHECKv( codebook, (root->element)->tok , strlen((root->element)->tok) );//write the token into codebook
+			WRITE_AND_CHECKv( codebook, "\n" , 1 );		
 		}
 	
 	//UPDATE new encoding by adding a 0 or a 1 to the current encoding, then RECURSE
@@ -105,11 +112,15 @@ static AVLNode* buildFrequencyAVL(char* file_name){
 			if(fstr == NULL) return NULL; //Note: readFile() already prints out errors
 
 		AVLNode* freq_tree = NULL;
-		int indOfWS; //index of whitespace
-
+	
 	//TOKENIZES fstr INTO A TOKEN AND A WHITESPACE TOKEN
-		while( (indOfWS = strcspn(fstr_ptr , WHITESPACE_DELIM))!= 0 ){ //finds index of first instance of whitespace delim
-
+		
+		int indOfWS = 0; //index to keep track of the first instance of a whitespace in fstr_ptr
+			
+		while( true ){
+			
+			indOfWS = strcspn(fstr_ptr , WHITESPACE_DELIM); //update indOfWS in fstr_ptr
+			
 			//Finding the token before the white_space
 				char* tokB4 = (char*)malloc( indOfWS + 1 );
 					if(tokB4 ==NULL){ pEXIT_ERROR("malloc"); }
@@ -118,7 +129,7 @@ static AVLNode* buildFrequencyAVL(char* file_name){
 
 			//Finding the whitespace token
 				char* tokWS = getStringRepOfWS(fstr_ptr[indOfWS]);
-					if(tokWS==NULL){ free(fstr); free(fstr_ptr); free(tokB4); free(freq_tree); pRETURN_ERROR("did not enter in whitespace", NULL);}
+					if(tokWS==NULL){ free(fstr); free(tokB4); free(freq_tree); pRETURN_ERROR("did not enter in whitespace", NULL); }
 			
 			//Inserting tokens into Tree, frees token if duplicate
 				if( insertOrUpdateAVL(&freq_tree, tokB4) == UPDATED ) //insert tokB4 into AVL, frees tokB4 if insertOrUpdateAVL() did an Update
@@ -126,9 +137,10 @@ static AVLNode* buildFrequencyAVL(char* file_name){
 				if( insertOrUpdateAVL(&freq_tree, tokWS) == UPDATED ) //insert tokWS into AVL, frees tokWS if insertOrUpdateAVL() did an Update
 					free(tokWS);
 
-			//Update string pointer fstr
-				if(strlen(fstr_ptr) <= indOfWS + 1 )
+			//update string pointer
+				if( strlen(fstr_ptr) <= indOfWS + 1  ) //if the indOfWS reached beyond the string
 					break;
+					
 				fstr_ptr  += ( indOfWS + 1 ); //update pointer of fstr_ptr to after current tokens
 		}
 
@@ -198,14 +210,37 @@ static TreeNode* huffmancoding(AVLNode* frequency_tree){
 
 //COMPRESS METHODS////////////////////////////////////////////
 
-void compress( char* file_name ){ //TODO
+/**
+compresses file_name given and writes <file_name>.hcz into the same directory
+Note: checks on file_name have already been done in inputCheck() and runFlag()
+**/
+void compress( char* fname ){ //TODO
 	//tree to search up tokens quickly and get an encoding
 	CodeNode* codebook_tree = buildCodebookTree( codebook_name, cmpByTokens);
 	
-	//TODO: compress file passed in 
-		// use char* getCodeItem( CodeNode* root, char* key, cmpByTokens); to find encoding associated with token
-		// can look at the tokenizer I made in buildFrequencyAVL() if you want to separate a string into a token and a whitespace (with a few modifications ofcourse)
+	//file contents of fname read into fstr (readFile is a fileHelperMethods.c method) //TODO: free
+	char* fstr = readFile(fname);
 	
+	//compressed file name:
+	char* fcomp_name = "<file_name>.hcz"; //TODO: remember to get rid of old extension if any (i.e: "file.txt") 
+		//get path to insert it with getDirOfFile(fname) [fileHelperMethods.c]
+	
+	//compressed file to write to:
+	int fcomp = open(fcomp_name , O_WRONLY| O_CREAT, 0644); //creates a new file in directory, overwrites old file if exists
+		if(fcomp < 0){ pRETURN_ERRORvoid("tried to open HuffmanCodebook"); }
+			
+			
+	/*TODO: compress file passed in 
+		-find a way to get fcomp_name
+		-use char* getCodeItem( CodeNode* root, char* key, cmpByTokens); (in structures.c) to find encoding associated with token
+		-can look at the tokenizer I made in buildFrequencyAVL() (in the same c file) 
+		 if you want to separate a string into a token and a whitespace (with a few modifications ofcourse)	
+		-NOTE: in my tokenizer all tokens are malloced, so free them after each use when you don't need them anymore!
+	*/
+	
+	
+	//Frees
+	free(fstr);
 	freeCodeTree( codebook_tree );
 }
 
@@ -214,15 +249,39 @@ void compress( char* file_name ){ //TODO
 
 //DECOMPRESS methods////////////////////////////////////////////
 
-void decompress( char* file_name ){ //TODO
+/**
+decompresses given file_name.hcz given and writes decompressed file_name into the same directory
+Note: checks on file_name have already been done in inputCheck() and runFlag()
+**/
+void decompress( char* fname_hcz ){ //TODO
 	//tree to search up encodings quickly and get a token
 	CodeNode* codebook_tree = buildCodebookTree( codebook_name, cmpByEncodings);
 	
+	//file contents of fname_hcz read into fstr_hcz (readFile is a fileHelperMethods.c method) TODO: free
+	char* fstr_hcz = readFile(fname_hcz); 
 	
-	//TODO: decompress file passed in:
-		//will have to figure out your own tokenizer, maybe do a bit by bit comparison?
-		//char* getCodeItem( CodeNode* root, char* key, cmpByEncodings); to find token associated with encoding
+	//decompressed file name:
+	char* fdec_name = "<file_name> - .hcz"; //TODO: find a way to get rid of the .hcz extension
+		//get path to insert it with getDirOfFile(fname_hcz) [fileHelperMethods.c]
+		
+	//decompressed file to write to:
+	int fdecomp= open(fdec_name , O_WRONLY| O_CREAT, 0644); //creates a new file in directory, overwrites old file if exists
+		if(fdecomp < 0){ pRETURN_ERRORvoid("tried to open HuffmanCodebook"); }
 	
+	
+	
+	/*TODO: decompress file passed in:
+		-find a way to get fdec_name
+		-go through fstr_hcz and try to extract each encoding
+		-USE char* getCodeItem( CodeNode* root, char* key, cmpByEncodings); to find token associated with encoding
+		-might be able to use [char* appendCharToString( char* prev_str , char add_c)] (in fileHelperMethods.c) but 
+		 NOTE that I don't free the previous string in order to use it recusively in buildcodebook(), you'll have to free the string
+	*/
+	
+	
+	
+	//Frees
+	free(fstr_hcz);
 	freeCodeTree( codebook_tree );
 }
 
@@ -232,7 +291,7 @@ void decompress( char* file_name ){ //TODO
 //RECURSE methods////////////////////////////////////////////
 
 /**
-Runs the flag multiple times in all subdirectories of a given path
+Runs the flag multiple times in all subdirectories of a given path. Checks on input parameter path have already been done in inputCheck;
 **/
 void recurse(char* path){
 	//DIRECTORY VARIABLES
@@ -252,9 +311,11 @@ void recurse(char* path){
 		//RECURSE if Sub-Directory, RUN-FLAG, if not
 		if( type == isDIR ) //new_path is a directory
 			recurse(new_path);
-		else if ( type == isREG ) //new_path is a file
-			runFlag(new_path);
-
+		else if ( type == isREG ){ //new_path is a file
+			if( ( flag=='d' && endsWithHCZ(new_path) )|| flag!='d') //run flag if not d, or if it is d and the file ends with .hcz
+				runFlag(new_path);
+		}
+		
 		free(new_path);
 	}
 
@@ -273,7 +334,8 @@ Returns true if succesful, returns false if not.
 **/
 bool runFlag(char* file_name){ //TODO test once complete
 	if(file_name==NULL){ pEXIT_ERROR("path_file NULL");}
-		
+	if( typeOfFile(file_name)!= isREG ){ pRETURN_ERROR("must input a REG FILE into runFlag()", false); }
+	
 	switch(flag){
 		case 'b':
 			buildcodebook( file_name );
@@ -282,6 +344,7 @@ bool runFlag(char* file_name){ //TODO test once complete
 			compress ( file_name );
 			break;
 		case 'd':
+			if( !endsWithHCZ(file_name) ){ pRETURN_ERROR("tried to pass in file that doesn't end with hcz into decompress", false); }//if file name doesn't end with hcz
 			decompress ( file_name );
 			break;
 		default:
@@ -351,7 +414,7 @@ bool inputCheck(int argc, char** argv){
 
 
 int main(int argc, char** argv){
-	//INPUT CHECKS
+	//CHECKS ARGUMENTS PASSED IN THROUGH TERMINAL
 		if(!inputCheck(argc, argv))
 			return 0;
 	

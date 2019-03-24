@@ -64,12 +64,31 @@ char* combinedPath(char* path_name, char* file_name){
 
 	//reallocate enough space
 	char* ret = (char*)malloc( 2 + strlen(path_name) + strlen(file_name) );
-	if(path_name==NULL){ pEXIT_ERROR("malloc"); }
+		if(ret==NULL){ pEXIT_ERROR("malloc"); }
 
 	//copies and concatenates string
 	strcpy(ret, path_name);
 	strcat(ret, "/");
 	strcat(ret, file_name);
+
+	return ret;
+}
+
+
+/**
+Combines two strings together into a new concatenated string
+NOTE: does not free original strings
+**/
+char* concatStr(char* s1, char* s2){
+	if(s1==NULL || s2==NULL){ pRETURN_ERROR("cannot pass in NULL string into combinedPath()", NULL); }
+
+	//reallocate enough space
+	char* ret = (char*)malloc( 1 + strlen(s1) + strlen(s2) );
+		if(ret==NULL){ pEXIT_ERROR("malloc"); }
+
+	//copies and concatenates string
+	strcpy(ret, s1);
+	strcat(ret, s2);
 
 	return ret;
 }
@@ -99,6 +118,32 @@ char* appendCharToString( char* prev_str , char add_c){
 
 
 /**
+gets the directory of a given filename
+eturns string of directory (malloced)
+**/
+char* getDirOfFile( char* file_name){
+	if( typeOfFile(file_name)==isDIR ){ //if already a directory
+		return file_name;
+	}
+	
+	char* realp = realpath(file_name, NULL); //real path of file_name
+	
+	//loops through end of realp and 0's out each character until first '/' character
+	int i;
+	for(i= strlen(realp)-1 ; i>=0; i--){
+		if(realp[i]== '/')
+			break;
+		realp[i] = '\0';
+	}
+	
+	if( typeOfFile(realp)==isDIR  )
+		return realp;
+	else
+		return NULL;
+}
+
+
+/**
 returns the type of the string given in
 @params: char* name - file_name or path_name
 @returns FileType:
@@ -122,6 +167,20 @@ FileType typeOfFile(char* file_name){
 		return isDIR;
 	else
 		return isUNDEF;
+}
+
+/**
+returns true if file name ends in .hcz
+**/
+bool endsWithHCZ(char* file_name){
+	int len = strlen(file_name);
+	if(len<5) //must have enough character, minimum length is 5, i.e.: "c.hcz""
+		return false;
+	
+	if( file_name[len-4]=='.' && file_name[len-3]=='h' && file_name[len-2]=='c' && file_name[len-1]=='z' ) //ends with .hcz
+		return true;
+		
+	return false;
 }
 
 
@@ -181,7 +240,7 @@ bool isHuffmanCodebook(char* file_name){
 			}
 		}
 		
-		if(!isEncoding){ //did not end body with a token
+		if(!isEncoding){ //did not end the body with a token (should have set isEncoding=true)
 			free(fstr); 
 			return false;		
 		}
