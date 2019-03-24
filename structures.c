@@ -88,40 +88,42 @@ AVLNode* createAVLNode(char* tok){
 /**
 wrapper method for insertOrUpdateAVLRec()
 updates root by calling insertOrUpdateAVLRec() taking in the address to the root, updates root in memory
-@returns true if updates Frequency
-		 false if inserted new node
+@returns UPDATED if updates Frequency
+		 INSERTED if inserted new node
 **/
-bool insertOrUpdateAVL(AVLNode**root_ptr, char* tok){
-	bool updatedFreq = false;
-	(*root_ptr) = insertOrUpdateAVLRec(*root_ptr, tok, &updatedFreq);
-	return updatedFreq;
+Operation insertOrUpdateAVL(AVLNode**root_ptr, char* tok){
+	Operation op = INSERTED;
+	(*root_ptr) = insertOrUpdateAVLRec(*root_ptr, tok, &op);
+	return op;
 }
 
 
 
 /** [private method]
 Searches through AVL tree recursively O(logn)
-If found: Updates frequency and changes *updatedFreq bool to true
+If found: Updates frequency and changes *op_ptr to UPDATED
 If not found: Creates a Token element and inserts it into the tree.
 MAINTAINS AVL properties of the tree and balances if necessary
 @params: AVLNode* root - root of AVL Tree,
 		 char* tok - tok to insert/update,
-		 bool* updatedFreq - address of boolean to note whether updated or inserted
+		 Operation* op_ptr - address of Operation enum to note whether insertOrUpdateAVL() updated or inserted
 @returns: updated root after one insert/update
 **/
-static AVLNode* insertOrUpdateAVLRec(AVLNode* root, char* tok, bool* updatedFreq){
+static AVLNode* insertOrUpdateAVLRec(AVLNode* root, char* tok, Operation* op_ptr){
 	if(root ==NULL)//no elements in the AVLTree yet
 		return createAVLNode(tok);
-
+	
+	if(root->element->hasFrequency==false){ pRETURN_ERROR("can only insert/update AVL Tree if each node has a frequency", NULL); } //if node doesn't have a frequency
+	
 	//Comparisons and Insert
 	int strcmp_tok = strcmp(root->element->tok,tok);
 	if(strcmp_tok<0){ //tok passed in is greater than root's tok
-		root->left = insertOrUpdateAVLRec((root->left) , tok, updatedFreq);
+		root->left = insertOrUpdateAVLRec((root->left) , tok, op_ptr);
 	}else if(strcmp_tok>0){ //tok passed in is less than root's tok
-		root->right = insertOrUpdateAVLRec((root->right) , tok, updatedFreq);
+		root->right = insertOrUpdateAVLRec((root->right) , tok, op_ptr);
 	}else{
 		root->element->frequency++;
-		*updatedFreq = true;
+		*op_ptr = UPDATED; //change operation to UPDATED
 		return root;
 	}
 
@@ -293,10 +295,11 @@ void freeAVLTree(AVLNode* root){
 //CODEBOOK SEARCH NODE methods (Note: is same type as AVLNode)/////////////////////////////////////////////////////////////////
 //(description of struct in structures.h)
 
-/**
+
+/** [private method]
 Initializes CodeNode
 **/
-CodeNode* createCodeNode(char* tok, char* encoding){
+static CodeNode* createCodeNode(char* tok, char* encoding){
 	CodeNode* ret = (CodeNode*)malloc(sizeof(CodeNode));
 	if( ret== NULL){ pEXIT_ERROR("malloc"); }
 
@@ -306,15 +309,6 @@ CodeNode* createCodeNode(char* tok, char* encoding){
 	ret->right = NULL;
 
 	return ret;
-}
-
-
-/**
-wrapper method just to be consistent with insertOrUpdateAVL()
-takes address of CodeTree root and updates it in memory by inserting it
-**/
-void insertCodeTree( CodeNode** root_ptr, char* tok, char* encoding, CMPMode mode){
-	*root_ptr = insertCodeTreeRec( (*root_ptr), tok, encoding, mode);
 }
 
 
@@ -328,8 +322,7 @@ static CodeNode* insertCodeTreeRec( CodeNode* root, char* tok, char* encoding, C
 	if(root ==NULL)//no elements in the AVLTree yet
 		return createCodeNode( tok, encoding );
 
-	//COMPARISONS AND INSERTING
-	//stores value of comparison between tokens or a comparison between encodings
+	//COMPARISONS AND INSERTING stores value of comparison between tokens or a comparison between encodings
 	int strcmp_tok = (mode == cmpByEncodings )? strcmp(root->element->encoding, encoding) : strcmp(root->element->tok,tok);
 
 	if(strcmp_tok<0){
@@ -353,26 +346,75 @@ static CodeNode* insertCodeTreeRec( CodeNode* root, char* tok, char* encoding, C
 
 
 /**
-Searches through CodeNode based on the key given, returns the tok/encoding associated with the key
-@params:
-@returns: String Item associated with key (if mode is cmpByEncodings, returns the token; if not, returns the encoding)
+builds CodeTree based on the codebook given. Note: assuming codebook_name is a codebook
+if:
+	mode == cmpByTokens, builds Code Tree based on Tokens
+	mode == cmpByEncodings, builds Code Tree based on Encodings
+@returns CodeTree if successful
+ returns NULL if error
 **/
-char* getCodeItem( CodeNode* root, char* key, CMPMode mode ){ //TODO: search function
-	return NULL;
-
+CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode){  //TODO
+	//Tree to return
+	CodeNode* codetree = NULL;
+	
+	//Read file as string
+	char* fstr = readFile(codebook_name); //reads file into a string
+		if(fstr == NULL) return NULL;
+	fstr += 2; //ignore first two characters
+	
+	
+	//LOOPING THROUGH CODEBOOK AND ADDING TO TREE
+	char* curr_token = strtok( fstr, "\n\t"); //split on next new line or tab
+	
+	char* encoding = NULL; //store encoding
+	char* tok = NULL; //store token
+	bool isEncoding = true; //if curr token is an encoding or a tok
+	
+	while( curr_token != NULL){
+		if(isEncoding){ //if curr_token is an encoding, store curr_token
+			encoding = curr_token; //store curr_tok
+			isEncoding = false; //update
+			
+		}else{ //if curr_token is a tok, insert into tree
+			tok = curr_token;
+			codetree = insertCodeTreeRec( codetree, tok , encoding , mode); //insert and update root
+			isEncoding = true; //update
+		}
+		
+		curr_token = strtok( NULL, "\n\t"); //update curr_token
+	}
+	
+	return codetree;
 }
 
 
 /**
-frees CodeTree AND the Token associated with it along with its tok and encoding strings
+Searches through CodeNode based on the key given, returns the tok/encoding associated with the key
+@params: CodeNode* root: root of tree
+		 char* key: string to search for in tree
+		 CMPMode mode: comparison mode to search through tree (either based on tokens or based on encodings)
+@returns: String Item associated with key (if mode is cmpByEncodings, returns the token; if not, returns the encoding)
+ returns NULL if error
 **/
-void freeCodeTreeAndTok( CodeNode* root ){
-	if(root==NULL) return;
-
-	freeCodeTreeAndTok(root->left);
-	freeCodeTreeAndTok(root->right);
-	freeToken(root->element);
-	free(root);
+char* getCodeItem( CodeNode* root, char* key, CMPMode mode ){ //TODO: search function
+	if(root == NULL){ pRETURN_ERROR("tried to pass in NULL tree into getCodeItem()", NULL); }
+	else if( root->element->hasFrequency){ pRETURN_ERROR("cannot pass in a tree with no encodings into getCodeItem()", NULL); }
+	
+	CodeNode* ptr = root;
+	while(ptr!=NULL){
+		//compare key to ptr's key (ptr's key is determined by comparison mode)
+		int cmp_key = (mode == cmpByEncodings)? strcmp(key, ptr->element->encoding) : strcmp(key, ptr->element->tok); 
+		
+		if( cmp_key == 0 ){ //found key
+			return (mode == cmpByEncodings)? root->element->tok : root->element->encoding; //return token if comparing by encodings; return encoding if comparint by tokens
+		}else if( cmp_key > 0 ){ //if key>ptr's key, go left
+			ptr = ptr->left;
+		}else if ( cmp_key < 0 ){ //if key<ptr's key, go left
+			ptr = ptr->right;
+		}
+	}
+		
+	return NULL; //not found
 }
 
 
@@ -556,11 +598,11 @@ void freeQueue(Queue* q){
 //(description of struct in structures.h)
 
 /**
-creates a MinHeap from an AVL Frequency Tree
+build a MinHeap from an AVL Frequency Tree
 @params: tree - AVL tree root that keeps track of frequencies of each tok
 @ret : a MinHeap w/ an initialized heap array, or if passed in tree is faulty, a Minheap with a NULL array and size 0
 **/
-MinHeap createMinHeap(AVLNode* tree){
+MinHeap buildMinHeap(AVLNode* tree){
 	MinHeap ret = {NULL,0};
 	if(tree==NULL){
 		pRETURN_ERROR("cannot create a heap from a NULL tree", ret);

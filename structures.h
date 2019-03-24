@@ -1,18 +1,20 @@
 #ifndef DS_H
 #define DS_H
+#include "fileHelperMethods.h"
 
-	//Error macros
-	#define PRINT_ERROR(txt) (printf("ERROR: %s in: %s on line:%d\n",txt,__FILE__, __LINE__))
-	#define pEXIT_ERROR(txt) do{ PRINT_ERROR(txt); perror(txt); exit(EXIT_FAILURE); }while(0) //exits program on failure
-	#define pRETURN_ERROR(txt, return_val) do{ PRINT_ERROR(txt); perror(txt); return return_val; }while(0) //returns method out of EXIT_FAILURE
-	#define pRETURN_ERRORvoid(txt) do{ PRINT_ERROR(txt); perror(txt); return; }while(0)
-
+//DEFINE STATEMENTS
 	#define printCodeTree(root) printAVLTree(root)
-
+	#define freeCodeTree(root) freeAVLTree(root)
+	
+//ENUMS	
 	//Comparison Mode to be used in AVLNode and CodeNode methods
 	typedef enum{ cmpByTokens, cmpByEncodings }CMPMode;
+	
+	//Operation returned by insertOrUpdateAVL()
+	typedef enum{ UPDATED, INSERTED }Operation;
 
-
+//STRUCTS
+	
 	/**
 	structure to associate a word with a frequency OR an encoding
 	**/
@@ -87,21 +89,20 @@
 
 
 
-	//Method Signatures
+//METHOD SIGNATURES
 	Token* createTokenInt(char* word, int frequency);
 	Token* createTokenStr( char* tok, char* encoding);
 	void freeToken(Token* element);
 
 	AVLNode* createAVLNode(char* word);
-	bool insertOrUpdateAVL(AVLNode**root_ptr, char* word);
+	Operation insertOrUpdateAVL(AVLNode**root_ptr, char* tok);
 	int sizeOfAVLTree(AVLNode* root);
 	void freeAVLTree(AVLNode* root);
 
-	CodeNode* createCodeNode(char* tok, char* encoding);
-	void insertCodeTree( CodeNode** root_ptr, char* tok, char* encoding, CMPMode mode);
+	CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode);
 	char* getCodeItem( CodeNode* root, char* key, CMPMode mode);
-	void freeCodeTreeAndTok( CodeNode* root );
-
+	//Note:freeCodeTree(root) is the same as freeAVLTree(AVLNode* root) as defined in the macr
+	
 	TreeNode* createTreeNode(Token* element);
 	TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2);
 	void freeTreeOnly(TreeNode* root);
@@ -113,7 +114,7 @@
 	bool hasSizeOne(Queue* q);
 	void freeQueue(Queue* q);
 
-	MinHeap createMinHeap(AVLNode* root);
+	MinHeap buildMinHeap(AVLNode* root);
 	Token* removeMin(MinHeap* heap);
 	int peekMinHeap(MinHeap* heap);
 

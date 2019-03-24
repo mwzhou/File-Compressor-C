@@ -12,19 +12,27 @@
 #include "fileCompressor.h"
 
 //GLOBALS: items passed through the terminal
-	char flag ='\0'; //flag passed in, will be initialized to flag
-	bool isRecursive = false; //if'-R' flag passed in, will be initialized to true
-	char* orig_pathfile = NULL; //file/path name passed in, will be initialized to file/path name
-	char* codebook = NULL; //if codebook file name passed in, will be initialized to codebook name
 
-	CodeNode* CodeTree = NULL; //tree to search up tokens/encodings quickly
-
+	//flag passed in, will be initialized to flag
+	char flag ='\0'; 
+	
+	//if'-R' flag passed in, will be initialized to true
+	bool isRecursive = false; 
+	
+	//file/path name passed in, will be initialized to file/path name
+	char* orig_pathfile = NULL;
+	
+	//file/path name passed in, will be initialized to file/path name
+	char* codebook_name = NULL;
+	
 
 //TODO: (del note) DO NOT REMOVE BRACKETS ARROUND pEXIT_ERROR(txt); or pRETURN_ERROR(txt);
  		//even if it looks ugly, it's a whole do while loop defined in a macro. if you remove the brackets, it won't run correctly!!!
-		//feel free to use these macros (in structures.h) to print out errors/return or exit
+		//feel free to use these macros ( defined in fileHelperMethods.h ) to print out errors/return or exit
+		
 		//sorry if some lines are multi-commands, error checks take up so much space, so I put it all on one line.
 		//if you wanna separate the lines feel free to do so (but with the brackets!)
+
 
 
 
@@ -45,9 +53,9 @@ void buildcodebook(char* file_name){
 			if(codebook < 0){ pRETURN_ERRORvoid("tried to open HuffmanCodebook"); }
 	
 	//FIND ENCODINGS AND WRITE TO CODEBOOK
-		if ( write( codebook, "\\\n", 2) < 0) { pRETURN_ERRORvoid("write()"); } //writes starting line, and then checks if unsuccesful
+		if ( write( codebook, "\\\n", 2) < 0 ) { pRETURN_ERRORvoid("write()"); } //writes starting line, and then checks if unsuccesful
 		writeEncodings(codebook, huffman_tree, NULL); //finds and writes encodings of each token into file
-		if ( write( codebook, "\n", 1) < 0) { pRETURN_ERRORvoid("write()"); } //writes terminating line, and then checks if unsuccesful
+		if ( write( codebook, "\n", 1) < 0 ) { pRETURN_ERRORvoid("write()"); } //writes terminating line, and then checks if unsuccesful
 		
 	//FREEING and CLOSING
 		close(codebook);
@@ -70,38 +78,17 @@ static void writeEncodings(int codebook, TreeNode* root, char* encoding){ //TODO
 		
 		//WRITE encoding and tok if not NULL into codebook in the format specified by Assignment. (Checks for write() errors after each write)
 		if( (root->element)->tok!= NULL && encoding!=NULL){ 
-			if( write( codebook, (root->element)->encoding , strlen((root->element)->encoding)) < 0) { pRETURN_ERRORvoid("write()"); } //write the encoding
-			if( write( codebook, "\t" , 1) < 0) { pRETURN_ERRORvoid("write()"); }
-			if( write( codebook, (root->element)->tok , strlen((root->element)->tok)) < 0) { pRETURN_ERRORvoid("write()"); } //write the token
+			if( write( codebook, (root->element)->encoding , strlen((root->element)->encoding) ) < 0 ) { pRETURN_ERRORvoid("write()"); } //write the encoding into codebook
+			if( write( codebook, "\t" , 1) < 0 ) { pRETURN_ERRORvoid("write()"); }
+			if( write( codebook, (root->element)->tok , strlen((root->element)->tok) ) < 0 ) { pRETURN_ERRORvoid("write()"); } //write the token into codebook
 			if( write( codebook, "\n" , 1) < 0) { pRETURN_ERRORvoid("write()"); }
 		}
 	
-	//UPDATE encodings by passing in newEncoding with added 1 or added 0, then RECURSE
-	writeEncodings( codebook, root->left, getNewEncoding(encoding, false) );
-	writeEncodings( codebook, root->right, getNewEncoding(encoding, true) );
+	//UPDATE new encoding by adding a 0 or a 1 to the current encoding, then RECURSE
+	writeEncodings( codebook, root->left, appendCharToString(encoding, '0') ); 
+	writeEncodings( codebook, root->right, appendCharToString(encoding, '1') );
 }
 
-
-/**
-Adds a 0 or a 1 to the end of prev_encoding passed in, returns a new string.
-If prev_encoding is NULL, just returns a string with a single 1 or 0.
-@params: char* prev_encoding - previous encoding of parent; bool addOne - boolean to decide whether to add a '1' or a '0' to the last character
-@return: new_encoding (malloced in different memory)
-**/
-static char* getNewEncoding( char* prev_encoding, bool addOne){
-	//Variables
-		int len_prev = (prev_encoding == NULL)? 0 : strlen(prev_encoding); //length of prev_encoding, length is 0 if prev_encoding was NULL
-		char* new_encoding = (char*)malloc( len_prev + 2 ); //string to return: malloc one byte larger than prev_encoding + space for the terminating char
-			if( new_encoding==NULL ){ pEXIT_ERROR("malloc()"); }
-
-	//copying old encoding into new encoding and adds a 0 or a 1 to the last character based on addOne
-		if(prev_encoding!= NULL) 
-			strcpy( new_encoding , prev_encoding); //copy old encoding into new encoding
-		new_encoding[len_prev] = (addOne)? '1' : '0'; //add 0 or 1
-		new_encoding[len_prev+1] = '\0'; //terminating character
-
-	return new_encoding;
-}
 
 
 /**
@@ -113,39 +100,39 @@ static AVLNode* buildFrequencyAVL(char* file_name){
 	if(file_name == NULL ){ pRETURN_ERROR("cannot pass in NULL file_name into buildFrequencyAVL()", NULL); }
 
 	//DECLARE VARIABLES
-		char* s = readFile(file_name); //file read into a string
-		char* s_ptr = s; //pointer to string for manipulation later
-			if(s == NULL) return NULL; //Note: readFile() already prints out errors
+		char* fstr = readFile(file_name); //file read into a string
+		char* fstr_ptr = fstr; //pointer to front of string for manipulation later
+			if(fstr == NULL) return NULL; //Note: readFile() already prints out errors
 
 		AVLNode* freq_tree = NULL;
-		int break_ind; //index of first WHITESPACE_DELIM
+		int indOfWS; //index of whitespace
 
-	//TOKENIZES s into TOKEN AND WHITESPACE
-		while( (break_ind = strcspn(s_ptr , WHITESPACE_DELIM))!= 0 ){ //finds index of first instance of whitespace delim
+	//TOKENIZES fstr INTO A TOKEN AND A WHITESPACE TOKEN
+		while( (indOfWS = strcspn(fstr_ptr , WHITESPACE_DELIM))!= 0 ){ //finds index of first instance of whitespace delim
 
-			//Finding token before the white_space
-				char* tokB4 = (char*)malloc( break_ind + 1 );
+			//Finding the token before the white_space
+				char* tokB4 = (char*)malloc( indOfWS + 1 );
 					if(tokB4 ==NULL){ pEXIT_ERROR("malloc"); }
-					tokB4[break_ind] = '\0'; //string terminator
-					memcpy(tokB4, s_ptr , break_ind);//copy (break_ind) number of characters from s into tok
+					tokB4[indOfWS] = '\0'; //string terminator
+					memcpy(tokB4, fstr_ptr , indOfWS);//copy (indOfWS) number of characters from fstr into tok
 
-			//Creating the whitespace token
-				char* tokWS = getStringRepOfWS(s_ptr[break_ind]);
-					if(tokWS==NULL){ free(s); free(s_ptr); free(tokB4); free(freq_tree); pRETURN_ERROR("did not enter in whitespace", NULL);}
+			//Finding the whitespace token
+				char* tokWS = getStringRepOfWS(fstr_ptr[indOfWS]);
+					if(tokWS==NULL){ free(fstr); free(fstr_ptr); free(tokB4); free(freq_tree); pRETURN_ERROR("did not enter in whitespace", NULL);}
 			
 			//Inserting tokens into Tree, frees token if duplicate
-				if( insertOrUpdateAVL(&freq_tree, tokB4) ) //insert tokB4, frees if duplicate
+				if( insertOrUpdateAVL(&freq_tree, tokB4) == UPDATED ) //insert tokB4 into AVL, frees tokB4 if insertOrUpdateAVL() did an Update
 					free(tokB4);
-				if( insertOrUpdateAVL(&freq_tree, tokWS) ) //insert tokWS, frees if duplicate
+				if( insertOrUpdateAVL(&freq_tree, tokWS) == UPDATED ) //insert tokWS into AVL, frees tokWS if insertOrUpdateAVL() did an Update
 					free(tokWS);
 
-			//Update string pointer s
-				if(strlen(s_ptr) <= break_ind + 1 )
+			//Update string pointer fstr
+				if(strlen(fstr_ptr) <= indOfWS + 1 )
 					break;
-				s_ptr  = s_ptr + ( break_ind + 1 );
+				fstr_ptr  += ( indOfWS + 1 ); //update pointer of fstr_ptr to after current tokens
 		}
 
-	free(s);
+	free(fstr);
 	return freq_tree;
 }
 
@@ -186,12 +173,12 @@ Takes in a AVLTree of tokss and their frequencies in a file and performs huffman
 returns a huffman tree to be used in encoding
 FREES AVL TREE AFTER USE
 **/
-static TreeNode* huffmancoding(AVLNode* frequencies){
-	if(frequencies==NULL){ pRETURN_ERROR("passed in NULL frequecy", NULL);}
+static TreeNode* huffmancoding(AVLNode* frequency_tree){
+	if(frequency_tree==NULL){ pRETURN_ERROR("passed in NULL frequency tree", NULL);}
 
 	//Variables
-	MinHeap tokens = createMinHeap(frequencies);
-	freeAVLTree(frequencies); //do not need frequencies anymore, free AVLNodes (not the element though)
+	MinHeap tokens = buildMinHeap(frequency_tree);
+	freeAVLTree(frequency_tree); //do not need frequencies anymore, free AVLNodes (not the element though)
 	Queue trees = {NULL,NULL};
 
 	//continuously merge the two min elements from the heap and queue until we get one merged huffman tree
@@ -212,6 +199,14 @@ static TreeNode* huffmancoding(AVLNode* frequencies){
 //COMPRESS METHODS////////////////////////////////////////////
 
 void compress( char* file_name ){ //TODO
+	//tree to search up tokens quickly and get an encoding
+	CodeNode* codebook_tree = buildCodebookTree( codebook_name, cmpByTokens);
+	
+	//TODO: compress file passed in 
+		// use char* getCodeItem( CodeNode* root, char* key, cmpByTokens); to find encoding associated with token
+		// can look at the tokenizer I made in buildFrequencyAVL() if you want to separate a string into a token and a whitespace (with a few modifications ofcourse)
+	
+	freeCodeTree( codebook_tree );
 }
 
 
@@ -220,6 +215,15 @@ void compress( char* file_name ){ //TODO
 //DECOMPRESS methods////////////////////////////////////////////
 
 void decompress( char* file_name ){ //TODO
+	//tree to search up encodings quickly and get a token
+	CodeNode* codebook_tree = buildCodebookTree( codebook_name, cmpByEncodings);
+	
+	
+	//TODO: decompress file passed in:
+		//will have to figure out your own tokenizer, maybe do a bit by bit comparison?
+		//char* getCodeItem( CodeNode* root, char* key, cmpByEncodings); to find token associated with encoding
+	
+	freeCodeTree( codebook_tree );
 }
 
 
@@ -261,30 +265,6 @@ void recurse(char* path){
 
 
 //MISC methods//////////////////////////////////////////////
-
-
-/**
-builds Code Tree based on the codebook given
-if:
-	flag == 'd': builds Code Tree based on numerical ordering (bits)
-	flag == 'c': builds an Code Tree based on lexiographic ordering
-@returns search tree if successful
-@returns NULL if flag uninitialized or file is not a huffman_codebook
-**/
-CodeNode* buildCodeTree(char* file_name){ //TODO: for compress and decompress
-	if(flag!= 'c' || flag!= 'd'){ pEXIT_ERROR("Can only build Huffman Search Tree for '-c' and '-d' flags"); } //if flag is not 'c' or 'd'
-
-	CodeNode* ret = NULL;
-	return ret;
-}
-
-
-/**
-checks if file matches huffman codebook format
-**/
-bool isHuffmanCodebook(char* file_name){ //TODO
-	return false;
-}
 
 
 /**
@@ -340,11 +320,11 @@ bool inputCheck(int argc, char** argv){
 		}else{
 			
 			if( typeOfFile(s) == isUNDEF) { pEXIT_ERROR(""); } //checking if PATH/FILE exists , if not, exit
-
-			//if ard is a HuffmanCodebook
-			if(isHuffmanCodebook(s)){
-				if(codebook!=NULL){ pEXIT_ERROR("can only have one codebook"); } //codebook already initialized
-				codebook = s;
+			
+			//if arg is a HuffmanCodebook
+			if( isHuffmanCodebook(s) ){
+				if( codebook_name != NULL ){ pEXIT_ERROR("can only have one codebook"); } //codebook already initialized
+				codebook_name = s;
 
 			//if arg is a regular path/file
 			}else{
@@ -357,15 +337,15 @@ bool inputCheck(int argc, char** argv){
 	}
 	
 	//CHECK if all necessary globals have been initialized
-		if(flag=='\0'){ pEXIT_ERROR("must specify a flag as an argument"); }
+		if(flag =='\0'){ pEXIT_ERROR("must specify a flag as an argument"); }
 		if( orig_pathfile == NULL ){ pEXIT_ERROR("must give in a path or a file as an argument"); }
-
+	
 	//CHECK IF ARGUMENTS MATCH FLAG
-		if( (flag=='d'||flag=='c') && codebook==NULL ){ pEXIT_ERROR("must pass in huffman codebook for flags '-c' and '-b'"); } //-d and -c flags, but codebook not initialized
-
+		if( (flag=='d'||flag=='c') && codebook_name==NULL ){ pEXIT_ERROR("must pass in huffman codebook for flags '-c' and '-b'"); } //-d and -c flags, but codebook not initialized
+	
 		if(isRecursive && typeOfFile(orig_pathfile) != isDIR ){  pEXIT_ERROR("flag '-R' requires a PATH to be passed in"); } //'-R' flag called but path not handed in
 		else if( !isRecursive && typeOfFile(orig_pathfile) != isREG ){ pEXIT_ERROR ( "must pass in a REGULAR FILE if not calling flag '-R'"); }//'-R' flag not called, but file is not a regular file
-
+	
 	return true;
 }
 
@@ -374,7 +354,7 @@ int main(int argc, char** argv){
 	//INPUT CHECKS
 		if(!inputCheck(argc, argv))
 			return 0;
-
+	
 	//Running the respective flag operation
 		if(isRecursive) //recursive
 			recurse(orig_pathfile);
