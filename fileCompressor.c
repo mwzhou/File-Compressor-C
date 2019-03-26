@@ -187,7 +187,7 @@ FREES AVL TREE AFTER USE
 static TreeNode* huffmancoding(AVLNode* frequency_tree){
 	if(frequency_tree==NULL){ pRETURN_ERROR("passed in NULL frequency tree", NULL);}
 	
-	if( sizeOfAVLTree(frequency_tree)== 1){ //if there is only one token: create a tree and return it
+	if( frequency_tree->left==NULL && frequency_tree->right==NULL ){ //if there is only one token: create a tree and return it
 		TreeNode* ret = createTreeNode(  createTokenInt(NULL, frequency_tree->element->frequency) );
 		ret->left = createTreeNode(  frequency_tree->element );
 		free(frequency_tree);
@@ -320,7 +320,7 @@ void recurse(char* path){
 		if( type == isDIR ){ //new_path is a directory
 			recurse(new_path);
 		}else if ( type == isREG ){ //new_path is a regular file 
-				runFlag(new_path); //Note: flag only runs if the file meets the requirment for each respective flag
+			runFlag(new_path); //Note: flag only runs if the file meets the requirment for each respective flag in runFlag()
 		}
 		
 		free(new_path);
