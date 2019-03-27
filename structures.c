@@ -55,7 +55,7 @@ void freeToken(Token* element){
 	if(element==NULL)
 		return;
 	
-	if(element->tok!=NULL)
+	if(element->tok!=NULL && !isDELIMStr(element->tok))
 		free(element->tok);
 	if( element->hasFrequency==false && element->encoding!=NULL ) // if element has a Non-NULL Encoding
 		free(element->encoding);
@@ -353,37 +353,45 @@ if:
 @returns CodeTree if successful
  returns NULL if error
 **/
-CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode){  //TODO
+CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode){ 
 	//Tree to return
 	CodeNode* codetree = NULL;
 	
 	//Read file as string
 	char* fstr = readFile(codebook_name); //reads file into a string
 		if(fstr == NULL) return NULL;
-	fstr += 2; //ignore first two characters
+	char* fstr_cpy = fstr; //pointer to front of fstr
+	fstr_cpy += 2; //ignore first two characters
 	
 	
 	//LOOPING THROUGH CODEBOOK AND ADDING TO TREE
-	char* curr_token = strtok( fstr, "\n\t"); //split on next new line or tab
+		char* curr_token = strtok( fstr_cpy , "\n\t"); //split on next new line or tab
 	
-	char* encoding = NULL; //store encoding
-	char* tok = NULL; //store token
-	bool isEncoding = true; //if curr token is an encoding or a tok
+		char* encoding = NULL; //store encoding
+		char* tok = NULL; //store token
+		bool isEncoding = true; //if curr token is an encoding or a tok
 	
 	while( curr_token != NULL){
+		//Make a copy of curr_token to insert into tree
+		char* curr_cpy = (char*)malloc(strlen(curr_token)+1); 
+			if(curr_cpy == NULL){ pEXIT_ERROR("malloc"); }
+		strcpy(curr_cpy, curr_token);
+		
+		//Store respective token
 		if(isEncoding){ //if curr_token is an encoding, store curr_token
-			encoding = curr_token; //store curr_tok
-			isEncoding = false; //update
+			encoding = curr_cpy; //store curr_tok
+			isEncoding = false; //update if encoding or token
 			
 		}else{ //if curr_token is a tok, insert into tree
-			tok = curr_token;
+			tok = curr_cpy;
 			codetree = insertCodeTreeRec( codetree, tok , encoding , mode); //insert and update root
-			isEncoding = true; //update
+			isEncoding = true; //update if encoding or token
 		}
 		
 		curr_token = strtok( NULL, "\n\t"); //update curr_token
 	}
 	
+	free(fstr);
 	return codetree;
 }
 
@@ -417,6 +425,20 @@ char* getCodeItem( CodeNode* root, char* key, CMPMode mode ){ //TODO: search fun
 	return NULL; //not found
 }
 
+
+/**
+frees all nodes in a Code Tree. PostOrder Traversal.
+Note: Frees Token AND all its strings. Be careful if you want to use the Strings for further use (also must be malloced).
+**/
+void freeCodeTreeAndTok(CodeNode* root){
+	if(root==NULL) return;
+
+	freeCodeTreeAndTok(root->left);
+	freeCodeTreeAndTok(root->right);
+
+	freeToken(root->element);
+	free(root);
+}
 
 
 
@@ -755,12 +777,14 @@ void printToken(Token* wf, char* formatting){
 		printf("NULL %s",formatting);
 		return;
 	}
-
+	
 	if(wf->hasFrequency)
-		printf("%s:%d %s",wf->tok,wf->frequency,formatting);
+		printf("%s:%d %s",wf->tok, wf->frequency,formatting);
 	else
-		printf("%s:%s %s",wf->tok,wf->encoding,formatting);
+		printf("%s:%s %s",wf->tok, wf->encoding,formatting);
 }
+
+
 
 void printHeap(MinHeap* heap_ptr){
 	if(heap_ptr==NULL || heap_ptr->heapArr==NULL){

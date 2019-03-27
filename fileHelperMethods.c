@@ -15,37 +15,41 @@ fileHelperMethods.c is a self-made file library since we're not allowed to use f
 
 
 /**
+returns size of file in bytes
+**/
+int sizeOfFile(char* file_name){
+	int file = open(file_name, O_RDONLY);
+		if( file < 0 ){ pEXIT_ERROR("error opening file"); }
+	
+	int file_len = (int)lseek( file , 0, SEEK_END ); //gets file size in bytes by going to end of file_cpy		
+		if ( file_len < 0 ){ pEXIT_ERROR("error getting file length with lseek()"); }//checking if file_len is a valid length
+			
+	close(file);
+	return file_len;
+}
+
+
+/**
 reads a file given a filename.
 @returns: string of contents of file if successful
- returns: NULL if invalid, non-urgent error
 **/
 char* readFile(char* file_name){
-	//VARIABLES
-		int file, file_cpy; //files
-		int file_len; //length of file in bytes
-		char* fstr; //string with file's contents, return this string on success
-		int bytes_read; //number of bytes read through read
-
-	//INITIALIZING VARIABLES AND OPENING FILE
+	//INITIALIZING VARIABLES AND OPENING THE FILE
 		//Opening files
-		file = open(file_name, O_RDONLY);
-		file_cpy = open(file_name, O_RDONLY); //copy of file
-			 if( file < 0 || file_cpy < 0 ){ pRETURN_ERROR("error opening file", NULL); }
+		int file = open(file_name, O_RDONLY); //file
+			 if( file < 0 ){ pEXIT_ERROR("error opening file"); }
 
 		//Initializing file length in bytes
-		file_len = (int)lseek( file_cpy, 0, SEEK_END ); //gets file size in bytes by going to end og file_cpy
-			if ( file_len < 0){ pRETURN_ERROR("error getting file length with lseek()", NULL); } //checking if file_len is a valid length
-			else if( file_len == 0 ){  pRETURN_ERROR( "error, can't pass in empty file", NULL); } //TODO: verify if this is a condition	
-			close(file_cpy);
+		int file_len = sizeOfFile(file_name); //length of file in bytes
 			
 		//Initializing File Strings to return
-		fstr = (char*)calloc((file_len + 1), 1);
+		char* fstr = (char*)calloc((file_len + 1), 1); //string with file's contents, return this string on success
 		if( fstr == NULL ){ pEXIT_ERROR("calloc()"); }
 
 
-	//READING FILE
-	bytes_read = read(file, fstr, file_len);
-		if(bytes_read < 0){ pRETURN_ERROR("error reading file", NULL); }
+	//READING THE FILE
+	int bytes_read = read(file, fstr, file_len); //number of bytes read through read
+		if(bytes_read < 0){ pEXIT_ERROR("error reading file"); }
 	
 	fstr[bytes_read] = '\0'; //mark end of string
 
@@ -144,6 +148,87 @@ char* getDirOfFile( char* file_name){
 
 
 /**
+returns the full path name of where a new_file would be inserted in the directory of the old_file
+**/
+char* getNewFilePath(char* old_file, char* new_file_name){
+		if(old_file==NULL||new_file_name==NULL){ pRETURN_ERROR("can't pass in NULL string", NULL); }
+		
+		char* dir = getDirOfFile(old_file); //gets the directory where old_file lies
+		char* new_path = concatStr(dir, new_file_name);
+		free (dir);
+		
+		return new_path;
+}
+
+
+/**
+returns a string of a delimiter
+**/
+char* getStringRepOfDELIM( char c ){ 	 
+	 switch(c){
+	 	case ' ':
+			return "\\S";
+	 	case '\a':
+	 		return "\\a";
+	 	case '\b':
+	 		return "\\b";
+	 	case '\t':
+	 		return "\\t";
+	 	case '\n':
+	 		return "\\n";
+	 	case '\v':
+	 		return "\\v";
+	 	case '\f':
+	 		return "\\f";
+	 	case '\r':
+	 		return "\\r";
+	 	case '\\':
+	 		return "\\e";
+	 	case '\0':
+	 		return "\\0";
+	 	default:
+	 		pRETURN_ERROR("passed in non-delimiter",NULL);
+	 }
+	 	
+	return NULL;
+}
+
+
+/**
+checks if a string is a delimiter
+**/
+bool isDELIMStr(char* s){
+	if(s==NULL)
+		return false;
+	else if(strlen(s)!=2)
+		return false;
+		
+			
+	if(s[0]!='\\') //must start with esc char
+		return false;
+		
+	switch(s[1]){ //if matches one of the delimiters
+	 	case 'S':
+	 	case 'a':
+	 	case 'b':
+	 	case 't':
+	 	case 'n':
+	 	case 'v':
+	 	case 'f':
+	 	case 'r':
+	 	case 'e':
+	 	case '0':
+	 		return true; 
+	 		
+	 	default:
+	 		return false;
+	 }
+	
+	return false;
+}
+
+
+/**
 returns the type of the string given in
 @params: char* name - file_name or path_name
 @returns FileType:
@@ -232,7 +317,7 @@ bool isHuffmanCodebook(char* file_name){
 				if(fstr[i] == '\n'){ //reached end of token
 					isEncoding = true; //update to check format for encoding
 					
-				}else if(fstr[i] ==' ' || fstr[i] == '\t'){ //token should not have a tab or whitespace in the token
+				}else if(fstr[i] ==' ' || fstr[i] == '\t'){ //token should not have a tab or a space in the token
 					free(fstr); 
 					return false;
 					
