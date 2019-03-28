@@ -54,12 +54,12 @@ Frees a Token and its items
 void freeToken(Token* element){
 	if(element==NULL)
 		return;
-	
+
 	if(element->tok!=NULL && !isDELIMStr(element->tok))
 		free(element->tok);
 	if( element->hasFrequency==false && element->encoding!=NULL ) // if element has a Non-NULL Encoding
 		free(element->encoding);
-		
+
 	free(element);
 }
 
@@ -112,9 +112,9 @@ MAINTAINS AVL properties of the tree and balances if necessary
 static AVLNode* insertOrUpdateAVLRec(AVLNode* root, char* tok, Operation* op_ptr){
 	if(root ==NULL)//no elements in the AVLTree yet
 		return createAVLNode(tok);
-	
+
 	if(root->element->hasFrequency==false){ pRETURN_ERROR("can only insert/update AVL Tree if each node has a frequency", NULL); } //if node doesn't have a frequency
-	
+
 	//Comparisons and Insert
 	int strcmp_tok = strcmp(root->element->tok,tok);
 	if(strcmp_tok<0){ //tok passed in is greater than root's tok
@@ -340,57 +340,57 @@ static CodeNode* insertCodeTreeRec( CodeNode* root, char* tok, char* encoding, C
 	//BALANCING TREE
 	int balance_factor = (root==NULL)? 0 : (heightAVL(root->left)) - (heightAVL(root->right));
 	//update root to balanced root based on if comparing Lexicographically
-	root = (mode == cmpByEncodings)? BalanceAVL(root , balance_factor, tok, true) : BalanceAVL(root , balance_factor, tok, false);
+	root = (mode == cmpByEncodings)? BalanceAVL(root , balance_factor, tok, cmpByEncodings) : BalanceAVL(root , balance_factor, tok, cmpByTokens);
 	return root;
 }
 
 
 /**
-builds CodeTree based on the codebook given. Note: assuming codebook_name is a codebook
+builds CodeTree based on the codebodetree = insertCodeTreeReook given. Note: assuming codebook_name is a codebook
 if:
 	mode == cmpByTokens, builds Code Tree based on Tokens
 	mode == cmpByEncodings, builds Code Tree based on Encodings
 @returns CodeTree if successful
  returns NULL if error
 **/
-CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode){ 
+CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode){
 	//Tree to return
 	CodeNode* codetree = NULL;
-	
+
 	//Read file as string
 	char* fstr = readFile(codebook_name); //reads file into a string
-		if(fstr == NULL) return NULL;
+
 	char* fstr_cpy = fstr; //pointer to front of fstr
 	fstr_cpy += 2; //ignore first two characters
-	
-	
+
+
 	//LOOPING THROUGH CODEBOOK AND ADDING TO TREE
 		char* curr_token = strtok( fstr_cpy , "\n\t"); //split on next new line or tab
-	
+
 		char* encoding = NULL; //store encoding
 		char* tok = NULL; //store token
 		bool isEncoding = true; //if curr token is an encoding or a tok
-	
+
 	while( curr_token != NULL){
 		//Make a copy of curr_token to insert into tree
-		char* curr_cpy = (char*)malloc(strlen(curr_token)+1); 
+		char* curr_cpy = (char*)malloc(strlen(curr_token)+1);
 			if(curr_cpy == NULL){ pEXIT_ERROR("malloc"); }
 		strcpy(curr_cpy, curr_token);
-		
+
 		//Store respective token
 		if(isEncoding){ //if curr_token is an encoding, store curr_token
 			encoding = curr_cpy; //store curr_tok
 			isEncoding = false; //update if encoding or token
-			
+
 		}else{ //if curr_token is a tok, insert into tree
 			tok = curr_cpy;
 			codetree = insertCodeTreeRec( codetree, tok , encoding , mode); //insert and update root
 			isEncoding = true; //update if encoding or token
 		}
-		
+
 		curr_token = strtok( NULL, "\n\t"); //update curr_token
 	}
-	
+
 	free(fstr);
 	return codetree;
 }
@@ -407,12 +407,12 @@ Searches through CodeNode based on the key given, returns the tok/encoding assoc
 char* getCodeItem( CodeNode* root, char* key, CMPMode mode ){ //TODO: search function
 	if(root == NULL){ pRETURN_ERROR("tried to pass in NULL tree into getCodeItem()", NULL); }
 	else if( root->element->hasFrequency){ pRETURN_ERROR("cannot pass in a tree with no encodings into getCodeItem()", NULL); }
-	
+
 	CodeNode* ptr = root;
 	while(ptr!=NULL){
 		//compare key to ptr's key (ptr's key is determined by comparison mode)
-		int cmp_key = (mode == cmpByEncodings)? strcmp(key, ptr->element->encoding) : strcmp(key, ptr->element->tok); 
-		
+		int cmp_key = (mode == cmpByEncodings)? strcmp(key, ptr->element->encoding) : strcmp(key, ptr->element->tok);
+
 		if( cmp_key == 0 ){ //found key
 			return (mode == cmpByEncodings)? root->element->tok : root->element->encoding; //return token if comparing by encodings; return encoding if comparint by tokens
 		}else if( cmp_key > 0 ){ //if key>ptr's key, go left
@@ -421,7 +421,7 @@ char* getCodeItem( CodeNode* root, char* key, CMPMode mode ){ //TODO: search fun
 			ptr = ptr->right;
 		}
 	}
-		
+
 	return NULL; //not found
 }
 
@@ -777,7 +777,7 @@ void printToken(Token* wf, char* formatting){
 		printf("NULL %s",formatting);
 		return;
 	}
-	
+
 	if(wf->hasFrequency)
 		printf("%s:%d %s",wf->tok, wf->frequency,formatting);
 	else
