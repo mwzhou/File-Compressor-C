@@ -247,6 +247,7 @@ char* getNewExtensionAndPath( char* old_file_name, const char* extension ){
 
 }
 
+
 /**
 returns a string of a delimiter
 **/
@@ -277,6 +278,48 @@ char* getStringRepOfDELIM( char c ){
 	 }
 
 	return NULL;
+}
+
+/**
+returns the character that a string delimiter represents
+if not a delimiter, then return (char)17
+**/
+char getCharRepOfDELIM( char* s ){
+	if(s==NULL)
+		pRETURN_ERROR("s is null", (char)17);
+	if(strlen(s)!=2)
+		pRETURN_ERROR("not a delim", (char)17);
+
+
+	if(s[0]!='\\') //must start with esc char
+		pRETURN_ERROR("not a delim", (char)17);
+
+	switch(s[1]){ //if matches one of the delimiters
+	 	case 'S':
+			return ' ';
+	 	case 'a':
+			return '\a';
+	 	case 'b':
+			return '\b';
+	 	case 't':
+			return '\t';
+	 	case 'n':
+			return '\n';
+	 	case 'v':
+			return '\v';
+	 	case 'f':
+			return '\f';
+	 	case 'r':
+			return '\r';
+	 	case 'e':
+			return '\\';
+	 	case '0':
+	 		return '\0';
+	 	default:
+	 		pRETURN_ERROR("not a delim", (char)17);
+	 }
+
+	pRETURN_ERROR("not a delim", (char)17);
 }
 
 

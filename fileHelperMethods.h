@@ -28,7 +28,9 @@
 
 	char* appendCharToString( char* prev_str , char add_c);
 	char* concatStr(char* s1, char* s2);
+
 	char* getStringRepOfDELIM( char c );
+	char getCharRepOfDELIM( char* s );
 	bool isDELIMStr(char* s);
 
 	bool endsWithHCZ(char* file_name);

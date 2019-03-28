@@ -332,7 +332,7 @@ void recurse(char* path){
 			recurse(new_path);
 		}else if (type == isLNK){ //ignore
 			continue;
-		}( type == isREG ){ //new_path is a regular file
+		}else if( type == isREG ){ //new_path is a regular file
 			runFlag(new_path); //Note: flag only runs if the file meets the requirment for each respective flag in runFlag()
 		}
 
