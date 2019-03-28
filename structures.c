@@ -414,7 +414,7 @@ char* getCodeItem( CodeNode* root, char* key, CMPMode mode ){ //TODO: search fun
 		int cmp_key = (mode == cmpByEncodings)? strcmp(key, ptr->element->encoding) : strcmp(key, ptr->element->tok);
 
 		if( cmp_key == 0 ){ //found key
-			return (mode == cmpByEncodings)? root->element->tok : root->element->encoding; //return token if comparing by encodings; return encoding if comparint by tokens
+			return (mode == cmpByEncodings)? ptr->element->tok : ptr->element->encoding; //return token if comparing by encodings; return encoding if comparint by tokens
 		}else if( cmp_key > 0 ){ //if key>ptr's key, go left
 			ptr = ptr->left;
 		}else if ( cmp_key < 0 ){ //if key<ptr's key, go left

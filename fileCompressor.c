@@ -194,8 +194,7 @@ Note: checks on file_name have already been done in inputCheck() and runFlag()
 void compress( char* file_name ){ //TODO
 	//tree to search up tokens quickly and get an encoding
 		CodeNode* codebook_tree = buildCodebookTree( codebook_name, cmpByTokens);
-		printCodeTree(codebook_tree);
-		
+
 	//file contents of fname read into fstr (readFile is a fileHelperMethods.c method)
 		char* fstr = readFile(file_name);
 
@@ -225,7 +224,7 @@ void compress( char* file_name ){ //TODO
 
 					//finds encoding associated with tok1 and writes in fcompr
 					char* tok1_encoding = getCodeItem( codebook_tree, tok1, cmpByTokens);
-					free(tok1);
+						free(tok1);
 
 					if( tok1_encoding == NULL){ //if tok1 doesn't exist in codebook
 							free(fstr); close(fcompr); freeCodeTreeAndTok( codebook_tree );
