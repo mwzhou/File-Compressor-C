@@ -1,0 +1,85 @@
+The program contains three main files: fileCompressor.c, fileHelperMethods.c, and structures.c.
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+structures.c contains all the data structures used in this assignments, such as the making and balancing of different types of AVL trees and the the huffman coding.
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+fileCompress is where all the main functions for the project are, such as compress, decompress, and recurse. fileCompress calls on many methods from fileHelperMethods.c, which are all just helper methods needed within the main methods, as well as from structures.c.
+---------------------------------------------------------------------------------------------------------------------------------------
+Without recurssion, the program takes in three arguments for buildCodebook:
+./fileCompressor <path> -b
+	-the path taken in is that of the .txt file
+With Recursion, the program takes in four arguments:
+./fileCompressor <path> -b -R
+	-the path taken in is that of the folder that contains all of the other files required to decompress
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+buildCodebook takes the text file and creates the codebook of the .txt file, which takes //TODO
+	1)returning an Error if nothing is passed in for the file_name that should be getting a HuffmanCodebook
+	2)building the AVL tree for frequencies of the words passed in, which takes //TODO
+		-goes through a file, tokenizes it, and gets the frequency of each token
+			1)Tokenizing takes //TODO
+				-
+		-returns AVLTree* based on frequencies of each element
+			-inserting/updating takes: //TODO
+ 		-returns NULL is file wasn't passed in, or there were no tokens
+	3)builds the Huffman Tree using the AVL tree, which takes //TODO
+		-Takes in a AVLTree of toks and their frequencies in a file and performs huffman coding
+		-returns a huffman tree to be used in encoding
+	4)Creates the huffmanCodebook, which takes //TODO
+		-get path of HuffmanCodebook
+		-create a new file or overwrite old HuffmanCoding File if it already exists
+		-find the encodings and write them into the codebook using writeEncodings method
+			1)writeEncodings takes //TODO
+				-goes through Huffman Tree passed in and recursively changes each node's frequency into its corresponding encoding
+				-Every left is a 0, every right is a 1
+----------------------------------------------------------------------------------------------------------------------------------------
+Without recurssion, the program takes in four arguments for Compress:
+./fileCompressor <path> -c ./HuffmanCodebook
+	-the path taken in is that of the .txt file
+With recursion, the program takes in:
+./fileCompressor <path> -c -R
+	-We already know that the name of the codebook is HuffmanCodebook, so there is no need to add it as an argument.
+	-the path taken in is that of the folder that contains all of the other files required to decompress
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Compress takes the text file and the HuffmanCodebook and creates a <file_name>.hcz file and tores it in the same directory as the .txt file, which takes //TODO
+	1)Gets the path of the huffmanCodebook in the current directory
+		-returns and Error or codebook doesn't exist
+		-returns an error if file passed in is .txt file
+	2)Creates a codebook_tree to search up tokens quickly and get an encoding, which takes //TODO
+		-basically an AVLtree, but has a mode. In this case, mode is cmpByTokens, so the tree is built based on tokens, not encodings.
+	3)turns the original file into one giant string and stores it in a char* using the readFile() method, which takes //TODO
+	4)creates a new file and file path called <file_name>.hcz, or overwrites the file if it already exists.
+	5)uses a while loop and tokenizes the giant string created in step 3 by using the tokenizer, which takes //TODO
+		-finding instance of word till first dliminator and comparing it to tree created in step 2
+		-once found, writes encoding of word into the file created in step 4
+		-writes encoding of deliminator found into file created in step 4, and then continues
+---------------------------------------------------------------------------------------------------------------------------------------
+Without recurssion, the program takes in four arguments for Decompress:
+./fileCompressor <path> -d ./HuffmanCodebook
+	-the path taken in is that of the .hcz file
+With recursion, the program takes in:
+./fileCompressor <path> -d -R
+	-We already know that the name of the codebook is HuffmanCodebook, so there is no need to add it as an argument.
+	-the path taken in is that of the folder that contains all of the other files required to decompress.
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+decompresses takes the file_name.hcz given and writes decompressed file_name into the same directory, which takes //TODO
+	1)Gets the path of the huffmanCodebook in the current directory
+		-returns and Error or codebook doesn't exist
+		-returns an error if file passed in is .hcz file
+	2)Creates a codebook_tree to search up encodings quickly and get the token, which takes //TODO
+		-basically an AVLtree, but has a mode. In this case, mode is cmpByEncodings, so the tree is built based on encodings, not tokens.
+	3)turns the original .hcz file into one giant string and stores it in a char* using the readFile() method, which takes //TODO
+	4)creates a new file and file path called <file_name>, or overwrites the file if it already exists.
+	5) uses a while loop to go through each encoding of fstr_hcz using substrings, starting with index 0 and length of substring 1, which takes //TODO(assuming m elements in all of fstr_hcz, takes O(mn))
+		-first, tries to find substring in codebook_tree using substr method, which takes //TODO (assuming substring is of length n, takes O(n) time because of memcpy)
+		-If not found, adds another "letter" to the substring and tries to find again. Continues till an encoding is found.
+		-Once found, starts again from ending index of found substring, resetting length of substring to 1.
+
+
+
+
+
+
+
+
+
+
+

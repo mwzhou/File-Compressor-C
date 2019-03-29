@@ -271,6 +271,12 @@ char* getStringRepOfDELIM( char c ){
 	 		return "\\r";
 	 	case '\\':
 	 		return "\\e";
+		case '\'':
+				return "\\1";
+		case '\"':
+				return "\\2";
+		case '\?':
+				return "\\?";
 	 	case '\0':
 	 		return "\\0";
 	 	default:
@@ -313,6 +319,12 @@ char* getCharRepOfDELIM( char* s ){
 			return "\r";
 	 	case 'e':
 			return "\\";
+		case '1':
+				return "\'";
+		case '2':
+				return "\"";
+		case '?':
+				return "\?";
 	 	case '0':
 	 		return "\0";
 	 	default:
@@ -358,6 +370,9 @@ bool isDELIMStr(char* s){
 	 	case 'f':
 	 	case 'r':
 	 	case 'e':
+		case '1':
+		case '2':
+		case '?':
 	 	case '0':
 	 		return true;
 
@@ -380,6 +395,7 @@ returns the type of the string given in
 **/
 FileType typeOfFile(char* file_name){
 	if(file_name ==NULL){ pRETURN_ERROR("passed in NULL path", isUNDEF); }
+	if( file_name[(int)strlen(file_name)-1] == '~' ) return isUNDEF; //TODO
 
 	struct stat dpstat;
 	if(stat( file_name  , &dpstat) < 0){ pRETURN_ERROR("lstat failed", isUNDEF); }

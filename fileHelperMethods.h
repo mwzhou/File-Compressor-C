@@ -8,8 +8,9 @@
 	#define pRETURN_ERRORvoid(txt) do{ PRINT_ERROR(txt); perror(""); return; }while(0)
 
 //READABILITY MACROS
-	#define DELIMS " \a\b\t\n\v\f\r\\\0" //string of control characters as well as the space char to separate a file into tokens
+	#define DELIMS " \a\b\t\n\v\f\r\'\"\?\\\0" //string of control characters as well as the space char to separate a file into tokens
 	#define WRITE_AND_CHECKv(file, buf, nbytes) do{  if( write(file, buf , nbytes) < 0 ) { pRETURN_ERRORvoid("write()"); } }while(0) //writes to file, if failed, prints out error and returns void
+
 
 //ENUMS
 	//enum to differentiate between FileTypes
