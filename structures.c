@@ -116,8 +116,8 @@ static AVLNode* insertOrUpdateAVLRec(AVLNode* root, char* tok, Operation* op_ptr
 	if(root->element->hasFrequency==false){ pRETURN_ERROR("can only insert/update AVL Tree if each node has a frequency", NULL); } //if node doesn't have a frequency
 
 	//Comparisons and Insert
-	int strcmp_tok = strcmp(root->element->tok,tok);
-	if(strcmp_tok<0){ //tok passed in is greater than root's tok
+	int strcmp_tok = strcmp(tok, root->element->tok);
+	if(strcmp_tok<0){ //tok passed in is lessthan root's tok
 		root->left = insertOrUpdateAVLRec((root->left) , tok, op_ptr);
 	}else if(strcmp_tok>0){ //tok passed in is less than root's tok
 		root->right = insertOrUpdateAVLRec((root->right) , tok, op_ptr);
@@ -157,22 +157,22 @@ static AVLNode* BalanceAVL(AVLNode* root, int balance_factor, char* key , CMPMod
 
 	//initializes values of strcmp_left and strcmp_right based on comparison mode
 	if(mode == cmpByEncodings ){ //compares children's encodings
-		strcmp_left = (root->left==NULL)? 0 : strcmp( (root->left)->element->encoding , key);
-		strcmp_right = (root->right==NULL)? 0 : strcmp( (root->right)->element->encoding , key);
+		strcmp_left = (root->left==NULL)? 0 : strcmp( key, (root->left)->element->encoding);
+		strcmp_right = (root->right==NULL)? 0 : strcmp( key, (root->right)->element->encoding);
 	}else if( mode == cmpByTokens ){//compares children's toks
-		strcmp_left = (root->left==NULL)? 0 : strcmp( (root->left)->element->tok , key);
-		strcmp_right = (root->right==NULL)? 0 : strcmp( (root->right)->element->tok , key);
+		strcmp_left = (root->left==NULL)? 0 : strcmp( key, (root->left)->element->tok);
+		strcmp_right = (root->right==NULL)? 0 : strcmp( key, (root->right)->element->tok);
 	}
 
 
 	//Balancing - finds what type of imbalance root is
-	if(balance_factor>1 && strcmp_left<0){ //Case: left-left
+	if(balance_factor>1 && strcmp_left<0 ){ //Case: left-left
 		Case1Balance(&root,true);
-	}else if(balance_factor>1 && strcmp_left>0){ //Case: left-right
-		Case2Balance(&root,true);
-	}else if(balance_factor<-1 && strcmp_right<0){ //Case: right-right
+	}else if(balance_factor<-1 && strcmp_right>0 ){ //Case: right-right
 		Case1Balance(&root,false);
-	}else if(balance_factor<-1 && strcmp_right>0){ //Case: right-left
+	}else if(balance_factor>1 && strcmp_left>0 ){ //Case: left-right
+		Case2Balance(&root,true);
+	}else if(balance_factor<-1 && strcmp_right<0 ){ //Case: right-left
 		Case2Balance(&root,false);
 	}
 
@@ -239,6 +239,7 @@ static void Case2Balance(AVLNode** root_ptr, bool isLeftRight){
 
 		Case1Balance(root_ptr, true);
 
+	//Case with Right Left
 	}else{
 		//turn into Right-Right Case1
 			AVLNode* x = (*root_ptr)->right->left;
@@ -323,7 +324,7 @@ static CodeNode* insertCodeTreeRec( CodeNode* root, char* tok, char* encoding, C
 		return createCodeNode( tok, encoding );
 
 	//COMPARISONS AND INSERTING stores value of comparison between tokens or a comparison between encodings
-	int strcmp_tok = (mode == cmpByEncodings )? strcmp(root->element->encoding, encoding) : strcmp(root->element->tok,tok);
+	int strcmp_tok = (mode == cmpByEncodings )? strcmp(encoding, root->element->encoding) : strcmp(tok, root->element->tok);
 
 	if(strcmp_tok<0){
 		root->left = insertCodeTreeRec(root->left, tok, encoding, mode);
@@ -340,7 +341,7 @@ static CodeNode* insertCodeTreeRec( CodeNode* root, char* tok, char* encoding, C
 	//BALANCING TREE
 	int balance_factor = (root==NULL)? 0 : (heightAVL(root->left)) - (heightAVL(root->right));
 	//update root to balanced root based on if comparing Lexicographically
-	root = (mode == cmpByEncodings)? BalanceAVL(root , balance_factor, tok, cmpByEncodings) : BalanceAVL(root , balance_factor, tok, cmpByTokens);
+	root = (mode == cmpByEncodings)? BalanceAVL(root , balance_factor, encoding, cmpByEncodings) : BalanceAVL(root , balance_factor, tok, cmpByTokens);
 	return root;
 }
 
@@ -416,9 +417,9 @@ char* getCodeItem( CodeNode* root, char* key, CMPMode mode ){ //TODO: search fun
 		if( cmp_key == 0 ){ //found key
 			return (mode == cmpByEncodings)? ptr->element->tok : ptr->element->encoding; //return token if comparing by encodings; return encoding if comparint by tokens
 		}else if( cmp_key > 0 ){ //if key>ptr's key, go left
-			ptr = ptr->left;
-		}else if ( cmp_key < 0 ){ //if key<ptr's key, go left
 			ptr = ptr->right;
+		}else if ( cmp_key < 0 ){ //if key<ptr's key, go left
+			ptr = ptr->left;
 		}
 	}
 

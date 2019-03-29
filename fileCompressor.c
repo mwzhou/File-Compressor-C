@@ -22,19 +22,6 @@
 	//file/path name passed in, will be initialized to file/path name
 	char* orig_pathfile = NULL;
 
-	//file/path name passed in, will be initialized to file/path name
-	char* codebook_name = NULL;
-
-
-
-//TODO: (del note) DO NOT REMOVE BRACKETS ARROUND pEXIT_ERROR(txt); or pRETURN_ERROR(txt);
- 		//even if it looks ugly, it's a whole do while loop defined in a macro. if you remove the brackets, it won't run correctly!!!
-		//feel free to use these macros ( defined in fileHelperMethods.h ) to print out errors/return or exit
-
-		//sorry if some lines are multi-commands, error checks take up so much space, so I put it all on one line.
-		//if you wanna separate the lines feel free to do so (but with the brackets!)
-
-
 
 
 //BUILD_CODEBOOK methods////////////////////////////////////////////
@@ -54,7 +41,7 @@ void buildcodebook(char* file_name){
 		char* cb_path = getNewFilePath(file_name, "HuffmanCodebook");
 
 		//opening file:
-		int codebook = open(cb_path, O_WRONLY|O_CREAT, 0644); //creates a new file, overwrites old HuffmanCoding File if exists
+		int codebook = open(cb_path, O_WRONLY|O_CREAT|O_TRUNC, 0644); //creates a new file, overwrites old HuffmanCoding File if exists
 			if(codebook < 0){ pRETURN_ERRORvoid("tried to open HuffmanCodebook"); }
 			free(cb_path);
 
@@ -114,7 +101,6 @@ static AVLNode* buildFrequencyAVL(char* file_name){
 		int indOfDELIM = 0; //index to keep track of the first instance of a delimiter in fstr_ptr
 
 		while( (indOfDELIM = strcspn(fstr_ptr , DELIMS) ) < strlen(fstr_ptr) ){ //updates index of delimiter and stops once there are no more delimiters
-
 			//TOKEN BEFORE DELIM:
 				if(indOfDELIM!=0){ //if there is a token b4 the delimiter
 					//finding the token
@@ -125,7 +111,7 @@ static AVLNode* buildFrequencyAVL(char* file_name){
 
 					//insert tokB4 into AVL, frees tokB4 if insertOrUpdateAVL() did an Update
 					if( insertOrUpdateAVL(&freq_tree, tokB4) == UPDATED )
-						free(tokB4);
+							free(tokB4);
 				}
 
 
@@ -191,7 +177,11 @@ static TreeNode* huffmancoding(AVLNode* frequency_tree){
 compresses file_name given and writes <file_name>.hcz into the same directory
 Note: checks on file_name have already been done in inputCheck() and runFlag()
 **/
-void compress( char* file_name ){ //TODO
+void compress( char* file_name ){
+	char* codebook_name = getNewFilePath(file_name, "HuffmanCodebook"); //codebook in current directory
+	if(typeOfFile(codebook_name) != isREG ){ printf("%s\n", file_name); pRETURN_ERRORvoid("codebook doesn't exist"); }
+	if( endsWithHCZ(file_name)) { pRETURN_ERRORvoid("file can't end with hcz in compress"); }
+
 	//tree to search up tokens quickly and get an encoding
 		CodeNode* codebook_tree = buildCodebookTree( codebook_name, cmpByTokens);
 
@@ -201,9 +191,11 @@ void compress( char* file_name ){ //TODO
 	//compressed file to write to:
 		char* fcompr_path_name = getNewExtensionAndPath( file_name, ".hcz" ); //replaces extension with .hcz and gets string
 
-		int fcompr = open(fcompr_path_name , O_WRONLY| O_CREAT, 0644); //creates a new file called "fcomp_name" in directory, overwrites old file if exists
+		int fcompr = open(fcompr_path_name , O_WRONLY| O_CREAT|O_TRUNC, 0644); //creates a new file called "fcomp_name" in directory, overwrites old file if exists
 			if(fcompr < 0){ pRETURN_ERRORvoid("tried to open()"); }
 			free(fcompr_path_name);
+
+
 
 
 	//TOKENIZE AND WRITE TO FILE:
@@ -228,7 +220,7 @@ void compress( char* file_name ){ //TODO
 
 					if( tok1_encoding == NULL){ //if tok1 doesn't exist in codebook
 							free(fstr); close(fcompr); freeCodeTreeAndTok( codebook_tree );
-							printf("token: %s\n", tok1);
+							printf("token1: %s\n", tok1);
 							pRETURN_ERRORvoid("token doesn't exist in codebook");
 					}else{
 							WRITE_AND_CHECKv( fcompr , tok1_encoding , strlen(tok1_encoding) ); //writes encoding to file
@@ -246,7 +238,6 @@ void compress( char* file_name ){ //TODO
 
 					if( tok2_encoding == NULL){ //if tok2 doesn't exist in codebook
 							free(fstr); close(fcompr); freeCodeTreeAndTok( codebook_tree );
-							printf("token: %s\n", tok2);
 							pRETURN_ERRORvoid("token doesn't exist in codebook");
 					}else{
 							WRITE_AND_CHECKv( fcompr , tok2_encoding , strlen(tok2_encoding) ); //writes encoding to file
@@ -258,6 +249,7 @@ void compress( char* file_name ){ //TODO
 
 
 	free(fstr);
+	free(codebook_name);
 	close(fcompr);
 	freeCodeTreeAndTok( codebook_tree );
 }
@@ -271,9 +263,14 @@ void compress( char* file_name ){ //TODO
 decompresses given file_name.hcz given and writes decompressed file_name into the same directory
 Note: checks on file_name have already been done in inputCheck() and runFlag()
 **/
-void decompress( char* file_name ){ //TODO
+void decompress( char* file_name ){
+	char* codebook_name = getNewFilePath(file_name, "HuffmanCodebook"); //codebook in current directory
+	if(typeOfFile(codebook_name) != isREG ){ printf("%s\n", file_name); pRETURN_ERRORvoid("codebook doesn't exist"); }
+	if( !endsWithHCZ(file_name) ) { pRETURN_ERRORvoid("file must end with .hcz"); }
+
 	//tree to search up encodings quickly and get a token
 	CodeNode* codebook_tree = buildCodebookTree( codebook_name, cmpByEncodings);
+
 
 	//file contents of file_name read into fstr_hcz (readFile is a fileHelperMethods.c method)
 	char* fstr_hcz = readFile(file_name);
@@ -281,24 +278,34 @@ void decompress( char* file_name ){ //TODO
 	//decompressed file to write to:
 	char* fdec_path_name = getNewExtensionAndPath(file_name, NULL); //removes .hcz extension
 
-	int fdecompr = open(fdec_path_name , O_WRONLY| O_CREAT, 0644); //creates a new file in directory, overwrites old file if exists
+	int fdecompr = open(fdec_path_name , O_WRONLY|O_CREAT|O_TRUNC, 0644); //creates a new file in directory, overwrites old file if exists
 		if(fdecompr < 0){ pRETURN_ERRORvoid("tried to open()"); }
 		free(fdec_path_name);
 
+	int index = 0;
+	int length = 1;
+	while(index<strlen(fstr_hcz)){
+		char* find = substr(fstr_hcz,index,length+1);
+		char* found = getCodeItem(codebook_tree, find, cmpByEncodings);
+		if (found==NULL){
+			length+=1;
+		}else{
+			if(isDELIMStr(found)){
+				char* insert = getCharRepOfDELIM(found);
+				if(insert == NULL)
+					pEXIT_ERROR("This is not a delimiter");
+				WRITE_AND_CHECKv(fdecompr, insert, strlen(insert));
+			}
+			else
+				WRITE_AND_CHECKv(fdecompr, found, strlen(found));
 
-	/*TODO: decompress file passed in:
-		-find a way to get fdec_name
-		-go through fstr_hcz and try to extract each encoding
-		-USE char* getCodeItem( CodeNode* root, char* key, cmpByEncodings); to find token associated with encoding
-		-might be able to use [char* appendCharToString( char* prev_str , char add_c)] (in fileHelperMethods.c) but
-		 NOTE that I don't free the previous string in order to use it recusively in buildcodebook(), you'll have to free the string
-		-REMEMBER TO REPLACE THE STRING REPRESENTATION OF A DELIM WITH THE ACTUAL CHAR i.e. "\\t" with '\t'
-			can use the mehod: bool isDELIMStr(char* s); in [fileHelperMethods.h]
-	*/
-
-
-	//Frees
+			index += length;
+			length = 1;
+		}
+		free(find);
+	}
 	free(fstr_hcz);
+	free(codebook_name);
 	close(fdecompr);
 	freeCodeTreeAndTok( codebook_tree );
 }
@@ -315,25 +322,24 @@ void recurse(char* path){
 	//DIRECTORY VARIABLES
 	DIR* curr_dir = opendir(path);
 		if(curr_dir==NULL){ pEXIT_ERROR("opendir()"); }
-
 	struct dirent* dp;
 
-	//TRAVERSES THROUGH CURRENT DIRECTORY TO FIND ALL SUBDIRECTORIES //TODO check for symbolic link as well?
+	//TRAVERSES THROUGH CURRENT DIRECTORY TO FIND ALL SUBDIRECTORIES
 	while((dp = readdir(curr_dir))!=NULL){
-		if(strcmp(dp->d_name, ".")==0 || strcmp(dp->d_name, "..")==0) //if current/parent directory(ignore) TODO
+		if(strcmp(dp->d_name, ".")==0 || strcmp(dp->d_name, "..")==0) //if current/parent directory(ignore)
 			continue;
 
 		//Checks type of dp and combines filepath (frees after entering the directory)
-		char* new_path = combinedPath(path, dp->d_name);
+		char* new_path = combinedPath(path,dp->d_name);
 		FileType type = typeOfFile(new_path); //file type of new_path
+
 
 		//RECURSE if Sub-Directory, RUN-FLAG, if not
 		if( type == isDIR ){ //new_path is a directory
 			recurse(new_path);
-		}else if (type == isLNK){ //ignore
-			continue;
 		}else if( type == isREG ){ //new_path is a regular file
-			runFlag(new_path); //Note: flag only runs if the file meets the requirment for each respective flag in runFlag()
+			if( (flag=='c' && !endsWithHCZ(new_path)) || (flag=='d' && endsWithHCZ(new_path)) || flag=='b')
+				runFlag(new_path); //Note: flag only runs if the file meets the requirment for each respective flag in runFlag()
 		}
 
 		free(new_path);
@@ -358,17 +364,19 @@ bool runFlag(char* file_name){
 	if( typeOfFile(file_name)!= isREG ){ pRETURN_ERROR("must input a REG FILE into runFlag()", false); }
 	if ( sizeOfFile(file_name)== 0){ printf("Empty File: %s\n", file_name); return false; }
 
+	 if( strstr(file_name, "HuffmanCodebook") != NULL ){ //if Codebook, ignore
+		 return false;
+	 }
+
 	switch(flag){
 		case 'b':
-			if( strstr(file_name, "HuffmanCodebook") == NULL ) //if file sent in is not a HuffmanCodebook creates by b
+			//if file sent in is not a HuffmanCodebook creates by b
 				buildcodebook( file_name );
 			break;
 		case 'c':
-			if( !endsWithHCZ(file_name) ) //if the file does not end with hcz
 				compress ( file_name );
 			break;
 		case 'd':
-			if( endsWithHCZ(file_name) ) //if the file ends with hcz
 				decompress ( file_name );
 			break;
 		default:
@@ -398,7 +406,7 @@ bool inputCheck(int argc, char** argv){
 			if( s[1]=='b'||s[1]=='c'||s[1]=='d' ){
 				if(flag!='\0'){ pEXIT_ERROR("cannot have multiple flags"); } //already came across a flag
 				flag = s[1];
-			//if ard is a recursive flag
+			//if argc is a recursive flag
 			}else if( s[1]=='R' ){
 				if(isRecursive){ pEXIT_ERROR("cannot have multiple '-R' flags"); } //already came across '-R' flag
 				isRecursive = true;
@@ -406,33 +414,26 @@ bool inputCheck(int argc, char** argv){
 
 		//CHECK IF IS PATH/FILE and that it exists
 		}else{
-
 			if( typeOfFile(s) == isUNDEF ) { pEXIT_ERROR("undefined file name"); } //checking if PATH/FILE exists , if not, exit
 
-			//if arg is a HuffmanCodebook
-			if( isHuffmanCodebook(s) ){
-				if( codebook_name != NULL ){ pEXIT_ERROR("can only have one codebook"); } //codebook already initialized
-				codebook_name = s;
-
-			//if arg is a regular path/file
-			}else{
+			if(strstr(s, "HuffmanCodebook") == NULL){ //not codebook
 				if(orig_pathfile!=NULL){ pEXIT_ERROR("can only have at most one file/path"); }  //orig_pathfile already initialized
 				orig_pathfile = realpath(s, NULL); //gets real path
 			}
 
+
 		}
 
-	}
 
+
+	}
 
 	//CHECK if all necessary globals have been initialized
 		if(flag =='\0'){ pEXIT_ERROR("must specify a flag as an argument"); }
 		if( orig_pathfile == NULL ){ pEXIT_ERROR("must give in a path or a file as an argument"); }
 
 	//CHECK IF ARGUMENTS MATCH FLAG
-		if( (flag=='d'||flag=='c') && codebook_name==NULL ){ pEXIT_ERROR("must pass in huffman codebook for flags '-c' and '-b'"); } //-d and -c flags, but codebook not initialized
-
-		if(isRecursive && typeOfFile(orig_pathfile) != isDIR ){ isRecursive=false; } //'-R' flag called but path not handed in
+		if(isRecursive && typeOfFile(orig_pathfile) != isDIR ){ isRecursive=false; printf("passed in -R flag but only passed in a REGULAR file, will run flag as if only one iteration"); } //'-R' flag called but path not handed in
 		else if( !isRecursive && typeOfFile(orig_pathfile) != isREG ){ pEXIT_ERROR ( "must pass in a REGULAR FILE if not calling flag '-R'"); }//'-R' flag not called, but file is not a regular file
 
 	return true;
@@ -440,15 +441,17 @@ bool inputCheck(int argc, char** argv){
 
 
 int main(int argc, char** argv){
+
 	//CHECKS ARGUMENTS PASSED IN THROUGH TERMINAL
 		if(!inputCheck(argc, argv))
 			return 0;
 
 	//Running the respective flag operation
-		if(isRecursive) //recursive
+		if(isRecursive){ //recursive
 			recurse( orig_pathfile);
-		else
+		}else{
 			runFlag(orig_pathfile);
+		}
 
 	return 0;
 }

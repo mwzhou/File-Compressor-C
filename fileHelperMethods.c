@@ -271,6 +271,12 @@ char* getStringRepOfDELIM( char c ){
 	 		return "\\r";
 	 	case '\\':
 	 		return "\\e";
+		case '\'': // '
+				return "\\1";
+		case '\"':
+				return "\\2";
+		case '\?':
+				return "\\?";
 	 	case '\0':
 	 		return "\\0";
 	 	default:
@@ -284,42 +290,60 @@ char* getStringRepOfDELIM( char c ){
 returns the character that a string delimiter represents
 if not a delimiter, then return (char)17
 **/
-char getCharRepOfDELIM( char* s ){
+char* getCharRepOfDELIM( char* s ){
 	if(s==NULL)
-		pRETURN_ERROR("s is null", (char)17);
+		pRETURN_ERROR("s is null", NULL);
 	if(strlen(s)!=2)
-		pRETURN_ERROR("not a delim", (char)17);
+		pRETURN_ERROR("not a delim", NULL);
 
 
 	if(s[0]!='\\') //must start with esc char
-		pRETURN_ERROR("not a delim", (char)17);
+		pRETURN_ERROR("not a delim", NULL);
 
 	switch(s[1]){ //if matches one of the delimiters
 	 	case 'S':
-			return ' ';
+			return " ";
 	 	case 'a':
-			return '\a';
+			return "\a";
 	 	case 'b':
-			return '\b';
+			return "\b";
 	 	case 't':
-			return '\t';
+			return "\t";
 	 	case 'n':
-			return '\n';
+			return "\n";
 	 	case 'v':
-			return '\v';
+			return "\v";
 	 	case 'f':
-			return '\f';
+			return "\f";
 	 	case 'r':
-			return '\r';
+			return "\r";
 	 	case 'e':
-			return '\\';
+			return "\\";
+		case '1':
+				return "\'";
+		case '2':
+				return "\"";
+		case '?':
+				return "\?";
 	 	case '0':
-	 		return '\0';
+	 		return "\0";
 	 	default:
-	 		pRETURN_ERROR("not a delim", (char)17);
+	 		pRETURN_ERROR("not a delim", NULL);
 	 }
 
-	pRETURN_ERROR("not a delim", (char)17);
+	pRETURN_ERROR("not a delim", NULL);
+}
+
+/**
+returns a subtring from the start index to end of the length indexes of read
+**/
+char* substr(char* read, size_t start, size_t length){
+	char* ret = (char*)malloc(length*sizeof(char));
+	memcpy(ret, read+start, length);
+	ret[length-1] = '\0';
+	if(ret==NULL)
+		pEXIT_ERROR("Substring not found");
+	return ret;
 }
 
 
@@ -346,6 +370,9 @@ bool isDELIMStr(char* s){
 	 	case 'f':
 	 	case 'r':
 	 	case 'e':
+		case '1':
+		case '2':
+		case '?':
 	 	case '0':
 	 		return true;
 
@@ -368,6 +395,7 @@ returns the type of the string given in
 **/
 FileType typeOfFile(char* file_name){
 	if(file_name ==NULL){ pRETURN_ERROR("passed in NULL path", isUNDEF); }
+	if( file_name[(int)strlen(file_name)-1] == '~' ) return isUNDEF; //TODO
 
 	struct stat dpstat;
 	if(stat( file_name  , &dpstat) < 0){ pRETURN_ERROR("lstat failed", isUNDEF); }
@@ -387,6 +415,9 @@ FileType typeOfFile(char* file_name){
 returns true if file name ends in .hcz
 **/
 bool endsWithHCZ(char* file_name){
+	if(file_name==NULL){
+		pRETURN_ERROR("null string",false);
+	}
 	int len = strlen(file_name);
 	if(len<5) //must have enough character, minimum length is 5, i.e.: "c.hcz""
 		return false;
