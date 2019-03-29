@@ -1,37 +1,61 @@
 #ifndef DS_H
 #define DS_H
+#include "fileHelperMethods.h"
 
-	#define PRINT_ERROR(txt) (printf("ERROR: %s in: %s on line:%d\n",txt,__FILE__, __LINE__))
-	#define createAVLNode(s) (createTreeNode(createWordFreq(s,1)))
+//DEFINE STATEMENTS
+	#define printCodeTree(root) printAVLTree(root)
+	#define freeCodeTree(root) freeAVLTree(root)
+	
+//ENUMS	
+	//Comparison Mode to be used in AVLNode and CodeNode methods
+	typedef enum{ cmpByTokens, cmpByEncodings }CMPMode;
+	
+	//Operation returned by insertOrUpdateAVL()
+	typedef enum{ UPDATED, INSERTED }Operation;
+
+//STRUCTS
 	
 	/**
-	structure to associate a word with a frequency.
+	structure to associate a word with a frequency OR an encoding
 	**/
-	typedef struct WordFreq{
-		char* word;
-		int frequency;
-	}WordFreq;
-	
-	
+	typedef struct Token{
+		char* tok;
+		bool hasFrequency; //boolean to distinguish whether it has a frequency or encoding
+		union{ //Token can either have a frequency associated with the tok or a byte_encoding associated with the token
+			int frequency;
+			char* encoding;
+		};
+	}Token;
+
+
 	/**
-	structure to combine frequencies of each WordFreq element for huffman coding
+	structure to combine frequencies of each Token element for huffman coding
 	**/
 	typedef struct TreeNode{
-		WordFreq* element;
+		Token* element;
 		//Note: If element->word==NULL, it represents an combined frequency of the left and right subtrees
-		
+
 		struct TreeNode* left;
 		struct TreeNode* right;
-	}TreeNode;	
+	}TreeNode;
 
 
-	//AVLNode is same type as TreeNode, just made a distinction for more clarity
+	/**
+	structure to order tokens in a file lexiographically in a balanced tree and keep track of its frequencies
+	**/
 	typedef struct AVLNode{
-		WordFreq* element;
+		Token* element;
 		int height;
 		struct AVLNode* left;
 		struct AVLNode* right;
 	}AVLNode;
+
+
+	/**
+	Note: CodeNode is the same type as an AVL Node (different name for readability)
+	It's  a Codebook AVL Node used for searching toks and their encodings efficiently.
+	**/
+	typedef struct AVLNode CodeNode;
 
 
 	/**
@@ -43,10 +67,10 @@
 		struct QueueItem* prev;
 		struct QueueItem* next;
 	}QueueItem;
-	
-	
+
+
 	/**
-	Queue that keeps track of head and tail
+	Queue that keeps track of head and tail QueueItems
 	**/
 	typedef struct Queue{
 		QueueItem* front;
@@ -59,35 +83,49 @@
 	Ordered based on the Frequencies of elements.
 	**/
 	typedef struct MinHeap{
-		WordFreq** heapArr; //array of WordFreq pointers
+		Token** heapArr; //array of Token pointers
 		int size;
-	}MinHeap; 
+	}MinHeap;
 
+
+
+//METHOD SIGNATURES
+	Token* createTokenInt(char* word, int frequency);
+	Token* createTokenStr( char* tok, char* encoding);
+	void freeToken(Token* element);
+
+	AVLNode* createAVLNode(char* word);
+	Operation insertOrUpdateAVL(AVLNode**root_ptr, char* tok);
+	int sizeOfAVLTree(AVLNode* root);
+	void freeAVLTree(AVLNode* root);
+
+	CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode);
+	char* getCodeItem( CodeNode* root, char* key, CMPMode mode);
+	//Note:freeCodeTree(root) is the same as freeAVLTree(AVLNode* root) as defined in the macro
+	void freeCodeTreeAndTok(CodeNode* root);
 	
-	
-	//Method Signatures
-	WordFreq* createWordFreq(char* word, int frequency);
-	void freeWordFreq(WordFreq* element);
-	
-	AVLNode* createAVLNode(char* word);	
-	void insertOrUpdateAVL(AVLNode** root_ptr, char* word);
-	int sizeOfTree(AVLNode* root);
-	
-	TreeNode* createTreeNode(WordFreq* element);
+	TreeNode* createTreeNode(Token* element);
 	TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2);
 	void freeTreeOnly(TreeNode* root);
-	void freeTreeAndWF(TreeNode* root); //frees the word frequency and its string
-	
+	void freeTreeAndTok(TreeNode* root); //frees the Token and its elements
+
 	TreeNode* dequeue(Queue* q);
 	void enqueue(Queue* q, TreeNode* tree);
-	void freeQueue(Queue q);
-	
-	MinHeap createMinHeap(AVLNode* root);
-	WordFreq* removeMin(MinHeap* heap);
-	
-	void printWordFreq(WordFreq* element, char* s);
-	void printHeap(MinHeap heap);
+	int peekQueue(Queue* q);
+	bool hasSizeOne(Queue* q);
+	void freeQueue(Queue* q);
+
+	MinHeap buildMinHeap(AVLNode* root);
+	Token* removeMin(MinHeap* heap);
+	int peekMinHeap(MinHeap* heap);
+
+	TreeNode* pickMinTreeHuffman(MinHeap* heap, Queue* q);
+
+	void printToken(Token* element, char* formatting);
+	void printHeap(MinHeap* heap_ptr);
 	void printTree(TreeNode* root);
-	void printQueue(Queue q);
+	void printAVLTree(AVLNode* root);
+	//Note: printCodeTree(root) is same as printAVLTree(root) as defined in Macro
+	void printQueue(Queue* q_ptr);
 
 #endif
