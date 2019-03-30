@@ -355,44 +355,55 @@ if:
  returns NULL if error
 **/
 CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode){
+	if(codebook_name==NULL || !endsWithHuffmanCodebook(codebook_name) ){ pRETURN_ERROR("invalid codebook passed", NULL); }
+	
 	//Tree to return
 	CodeNode* codetree = NULL;
 
 	//Read file as string
-	char* fstr = readFile(codebook_name); //reads file into a string
-
-	char* fstr_cpy = fstr; //pointer to front of fstr
-	fstr_cpy += 2; //ignore first two characters
-
-
+		char* fstr = readFile(codebook_name); //reads file into a string
+		
+		//check if codebook matches correct format
+		if( fstr[0]!='\\' || fstr[ (int)strlen(fstr)-1 ]!='\n' ){ pRETURN_ERROR("doesn't match the correct format of HuffmanCodebook", NULL); }
+		
+		
 	//LOOPING THROUGH CODEBOOK AND ADDING TO TREE
-		char* curr_token = strtok( fstr_cpy , "\n\t"); //split on next new line or tab
+		char* curr_token = strtok( fstr+2 , "\n\t"); //split on next new line or tab
 
 		char* encoding = NULL; //store encoding
 		char* tok = NULL; //store token
 		bool isEncoding = true; //if curr token is an encoding or a tok
 
-	while( curr_token != NULL){
-		//Make a copy of curr_token to insert into tree
-		char* curr_cpy = (char*)malloc(strlen(curr_token)+1);
-			if(curr_cpy == NULL){ pEXIT_ERROR("malloc"); }
-		strcpy(curr_cpy, curr_token);
+		while( curr_token != NULL){
+			//Make a copy of curr_token to insert into tree
+			char* curr_cpy = (char*)malloc(strlen(curr_token)+1);
+				if(curr_cpy == NULL){ pEXIT_ERROR("malloc"); }
+			strcpy(curr_cpy, curr_token);
 
-		//Store respective token
-		if(isEncoding){ //if curr_token is an encoding, store curr_token
-			encoding = curr_cpy; //store curr_tok
-			isEncoding = false; //update if encoding or token
+			//Store respective token
+			if(isEncoding){ //if curr_cpy is an encoding, store curr_cpy
+				encoding = curr_cpy; //store curr_cpy as encoding
+				isEncoding = false;
 
-		}else{ //if curr_token is a tok, insert into tree
-			tok = curr_cpy;
-			codetree = insertCodeTreeRec( codetree, tok , encoding , mode); //insert and update root
-			isEncoding = true; //update if encoding or token
+			}else{ //if curr_token is a tok, insert into tree
+				tok = curr_cpy;
+				if(encoding==NULL){ pRETURN_ERROR("invalid codebook", NULL); }
+				
+				//insert and update root
+				codetree = insertCodeTreeRec( codetree, tok , encoding , mode); 
+				
+				//reset
+				encoding = NULL;
+				tok = NULL;
+				isEncoding = true;
+			}
+
+			curr_token = strtok( NULL, "\n\t"); //update curr_token
 		}
 
-		curr_token = strtok( NULL, "\n\t"); //update curr_token
-	}
-
 	free(fstr);
+	if(isEncoding==false || codetree==NULL){ pRETURN_ERROR("invalid codebook", NULL); }
+	
 	return codetree;
 }
 

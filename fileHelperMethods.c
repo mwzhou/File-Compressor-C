@@ -14,6 +14,8 @@ fileHelperMethods.c is a self-made file library since we're not allowed to use f
 #include"fileHelperMethods.h"
 
 
+//FILE methods/////////////////////////////////////////////////////////////////////
+
 /**
 returns size of file in bytes
 **/
@@ -37,11 +39,12 @@ char* readFile(char* file_name){
 	//INITIALIZING VARIABLES AND OPENING THE FILE
 		//Opening files
 		int file = open(file_name, O_RDONLY); //file
-			 if( file < 0 ){ pEXIT_ERROR("error opening file"); }
+			 if( file < 0 ){ printf("file_name: %s\n",file_name); pEXIT_ERROR("error opening file"); }
 
 		//Initializing file length in bytes
 		int file_len = sizeOfFile(file_name); //length of file in bytes
-
+			if(file_len == 0){ pEXIT_ERROR("can't read empty file"); }
+			
 		//Initializing File Strings to return
 		char* fstr = (char*)calloc((file_len + 1), 1); //string with file's contents, return this string on success
 			if( fstr == NULL ){ pEXIT_ERROR("calloc()"); }
@@ -59,7 +62,39 @@ char* readFile(char* file_name){
 
 
 /**
-Combines a path string with a file string and returns the new path
+returns the type of the string given in
+@params: char* name - file_name or path_name
+@returns FileType:
+	isDIR - directory
+	isREG - regular file
+	isLINK - link
+	isUNDEF - error
+**/
+FileType typeOfFile(char* file_name){
+	if(file_name ==NULL){ pRETURN_ERROR("passed in NULL path", isUNDEF); }
+	if( file_name[(int)strlen(file_name)-1] == '~' ) return isUNDEF; //TODO : verify
+
+	struct stat dpstat;
+	if(stat( file_name  , &dpstat) < 0){ return isUNDEF; } //file doesn't exist
+
+	//check if DIR, REG, or LINK, and returns the respective number (defined in macro)
+	if(S_ISREG(dpstat.st_mode)) //directory or file
+		return isREG;
+	else if(S_ISLNK(dpstat.st_mode)) //symbolic link
+		return isLNK;
+	else if(S_ISDIR(dpstat.st_mode))
+		return isDIR;
+	else
+		return isUNDEF;
+}
+
+
+
+
+//STRING MANIPULATION methods/////////////////////////////////////////////////////////////////////
+
+/**
+Combines a path name with a file name and returns the new path
 @returns: a copy of the new path
 returns: NULL if invalid, non-urgent issue
 **/
@@ -80,7 +115,7 @@ char* combinedPath(char* path_name, char* file_name){
 
 
 /**
-Combines two strings together into a new concatenated string
+Combines two strings together into a new concatenated string (dynamically allocated)
 NOTE: does not free original strings
 **/
 char* concatStr(char* s1, char* s2){
@@ -123,11 +158,21 @@ char* appendCharToString( char* prev_str , char add_c){
 
 /**
 gets the directory of a given filename
-eturns string of directory (malloced)
+returns string of directory (malloced)
 **/
-char* getDirOfFile( char* file_name){
+char* getDirOfFile( char* file_name ){
 	if(file_name == NULL){ pRETURN_ERROR("file_name passed in is NULL", NULL);  }
-	if( typeOfFile(file_name)!=isREG  ){ pRETURN_ERROR("file_name passed in is not a file", NULL); }
+	
+	//checks file_name type
+	FileType ftype = typeOfFile(file_name);
+	if( ftype == isDIR  ){ 
+		char* ret = (char*)malloc(strlen(file_name)+1);
+			if(ret==NULL){ pEXIT_ERROR("malloc"); }
+		strcpy(ret,file_name); 
+		return ret;
+	}
+	else if( ftype !=isREG  ){ pRETURN_ERROR("file_name passed in is not a file or directory", NULL); }
+
 
 	char* realp = realpath(file_name, NULL); //gets the real path of file_name
 
@@ -157,14 +202,14 @@ char* getDirOfFile( char* file_name){
 /**
 returns the full path name of where a new_file would be inserted in the directory of the old_file
 **/
-char* getNewFilePath(char* old_file, char* new_file_name){
-		if(old_file==NULL||new_file_name==NULL){ pRETURN_ERROR("can't pass in NULL string", NULL); }
+char* getNewFilePath(char* old_file_name, char* new_file_name){
+		if(old_file_name==NULL||new_file_name==NULL){ pRETURN_ERROR("can't pass in NULL string", NULL); }
 
-		char* dir = getDirOfFile(old_file); //gets the directory where old_file lies
+		char* dir = getDirOfFile(old_file_name); //gets the directory where old_file lies
 		char* dirslash = appendCharToString(dir, '/'); //adds dash to end
 		free (dir);
 
-		char* new_path = concatStr(dirslash, new_file_name);
+		char* new_path = concatStr(dirslash, new_file_name); //adds file name to path
 		free(dirslash);
 
 
@@ -249,7 +294,27 @@ char* getNewExtensionAndPath( char* old_file_name, const char* extension ){
 
 
 /**
-returns a string of a delimiter
+returns a subtring of s from the start_index to desired length of substring
+returns NULL if end_ind >= start_ind
+**/
+char* substr(char* s, size_t start_ind, size_t length){
+	char* ret = (char*)malloc(length); //malloc string to return
+		if(ret==NULL){ pEXIT_ERROR("malloc"); }
+		
+	memcpy(ret, s+start_ind, length); //copies s+start to length into ret
+	ret[length - 1] = '\0';
+	
+	if(ret==NULL){ pEXIT_ERROR("Substring not found"); }
+	return ret;
+}
+
+
+
+
+//DELIM methods/////////////////////////////////////////////////////////////////////
+
+/**
+returns a string representation of a delimiter
 **/
 char* getStringRepOfDELIM( char c ){
 	 switch(c){
@@ -286,9 +351,11 @@ char* getStringRepOfDELIM( char c ){
 	return NULL;
 }
 
+
 /**
-returns the character that a string delimiter represents
-if not a delimiter, then return (char)17
+returns the single character string that a string delimiter represents
+if not a delimiter, then returns NULL
+avoids having to do a strcmp to save time
 **/
 char* getCharRepOfDELIM( char* s ){
 	if(s==NULL)
@@ -334,21 +401,9 @@ char* getCharRepOfDELIM( char* s ){
 	pRETURN_ERROR("not a delim", NULL);
 }
 
-/**
-returns a subtring from the start index to end of the length indexes of read
-**/
-char* substr(char* read, size_t start, size_t length){
-	char* ret = (char*)malloc(length*sizeof(char));
-	memcpy(ret, read+start, length);
-	ret[length-1] = '\0';
-	if(ret==NULL)
-		pEXIT_ERROR("Substring not found");
-	return ret;
-}
-
 
 /**
-checks if a string is a delimiter
+checks if a string is a delimiter string without having to use strcmp (saves time)
 **/
 bool isDELIMStr(char* s){
 	if(s==NULL)
@@ -384,40 +439,15 @@ bool isDELIMStr(char* s){
 }
 
 
-/**
-returns the type of the string given in
-@params: char* name - file_name or path_name
-@returns FileType:
-	isDIR - directory
-	isREG - regular file
-	isLINK - link
-	isUNDEF - error
-**/
-FileType typeOfFile(char* file_name){
-	if(file_name ==NULL){ pRETURN_ERROR("passed in NULL path", isUNDEF); }
-	if( file_name[(int)strlen(file_name)-1] == '~' ) return isUNDEF; //TODO
 
-	struct stat dpstat;
-	if(stat( file_name  , &dpstat) < 0){ pRETURN_ERROR("lstat failed", isUNDEF); }
 
-	//check if DIR, REG, or LINK, and returns the respective number (defined in macro)
-	if(S_ISREG(dpstat.st_mode)) //directory or file
-		return isREG;
-	else if(S_ISLNK(dpstat.st_mode)) //symbolic link
-		return isLNK;
-	else if(S_ISDIR(dpstat.st_mode))
-		return isDIR;
-	else
-		return isUNDEF;
-}
+//FILE-CHECKING methods/////////////////////////////////////////////////////////////////////
 
 /**
-returns true if file name ends in .hcz
+returns true if file name ends in .hcz AND is att least 5 characters
 **/
 bool endsWithHCZ(char* file_name){
-	if(file_name==NULL){
-		pRETURN_ERROR("null string",false);
-	}
+	if(file_name==NULL){ pRETURN_ERROR("null string",false);}
 	int len = strlen(file_name);
 	if(len<5) //must have enough character, minimum length is 5, i.e.: "c.hcz""
 		return false;
@@ -430,72 +460,23 @@ bool endsWithHCZ(char* file_name){
 
 
 /**
-Goes through file_name given and checks if the file matches the format of a huffman codebook
+returns true if file_name ends with "HuffmanCodebook"
 **/
-bool isHuffmanCodebook(char* file_name){
-	if( typeOfFile(file_name) != isREG ) //file passed in is not a regular file
+bool endsWithHuffmanCodebook(char* file_name){
+	if(file_name==NULL){ pRETURN_ERROR("null string",false);}
+	
+	int len = strlen(file_name);
+	if(len<15) //must have enough characters for "HuffmanCodebook"
 		return false;
 
-
-	//READ FILE as a string
-		char* fstr = readFile(file_name);
-			if( fstr == NULL ) //error reading file
-				return false;
-
-
-	//CHECK FORMAT OF FILE
-		//checking first line:
-		if(fstr[0] != '\\' && fstr[0] != '\n'){ //first line must be in the format of "\\\n"
-			free(fstr);
+	//loop through end of file_name and check if it matches "HuffmanCodebook"
+	char* hc = "HuffmanCodebook";
+	int i, j;
+	for( i=len-1, j=14; i>=0 && j>=0; i--, j--){
+		if(file_name[i] != hc[j])
 			return false;
-		}
-
-
-		//checking contents:
-		int len_fstr = strlen(fstr);
-			if(len_fstr< 3){ //must have at least 3 characters in huffman codebook
-				free(fstr);
-				return false;
-			}
-		bool isEncoding = true; //boolean to check format of encoding/token
-
-		//loop in the body of the file
-		int i;
-		for(i = 2; i< len_fstr-1; i++){
-			//check format of encoding
-			if(isEncoding){
-				if( fstr[i] == '\t' ){ //reached end of current encoding
-					isEncoding = false; //update to check format for token
-
-				}else if( !(fstr[i] == '0' || fstr[i] == '1') ){ //encoding must be a string of '0's and '1's, if not: return false
-					free(fstr);
-					return false;
-				}
-
-			//check format of token
-			}else{
-				if(fstr[i] == '\n'){ //reached end of token
-					isEncoding = true; //update to check format for encoding
-
-				}else if(fstr[i] ==' ' || fstr[i] == '\t'){ //token should not have a tab or a space in the token
-					free(fstr);
-					return false;
-
-				}
-			}
-		}
-
-		if(!isEncoding){ //did not end the body with a token (should have set isEncoding=true)
-			free(fstr);
-			return false;
-		}
-
-		//checking terminating line:
-		if( fstr[len_fstr-2]!='\n' && fstr[len_fstr-1]!='\n' ){ //last character befor terminating line must be "\n" and terminating line must be "\n"
-			free(fstr);
-			return false;
-		}
-
-	free(fstr);
+	}
+	
 	return true;
 }
+
