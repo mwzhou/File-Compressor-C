@@ -282,20 +282,28 @@ void decompress( char* file_name ){
 		if(fdecompr < 0){ pRETURN_ERRORvoid("tried to open()"); }
 		free(fdec_path_name);
 
+
+	//loops through each encoding of fstr_hcz, tries to find each substring in codebook_tree. If not found, adds another "letter" to the substring and tries to find. If found, starts again from ending index of found substring.
 	int index = 0;
 	int length = 1;
 	while(index<strlen(fstr_hcz)){
 		char* find = substr(fstr_hcz,index,length+1);
 		char* found = getCodeItem(codebook_tree, find, cmpByEncodings);
+
+		//if substring not found, add another to ending index of substring
 		if (found==NULL){
 			length+=1;
+		//if found, increase starting index by length of found, reset ending index to start index+1
 		}else{
+			//account for if encoding is Deliminator. If it is, write in the corresponding eliminator, not what is stored
 			if(isDELIMStr(found)){
 				char* insert = getCharRepOfDELIM(found);
 				if(insert == NULL)
 					pEXIT_ERROR("This is not a delimiter");
 				WRITE_AND_CHECKv(fdecompr, insert, strlen(insert));
 			}
+
+			//if not deliminator, write it into file.
 			else
 				WRITE_AND_CHECKv(fdecompr, found, strlen(found));
 
