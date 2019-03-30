@@ -101,7 +101,8 @@
 
 	CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode);
 	char* getCodeItem( CodeNode* root, char* key, CMPMode mode);
-	//Note:freeCodeTree(root) is the same as freeAVLTree(AVLNode* root) as defined in the macr
+	//Note:freeCodeTree(root) is the same as freeAVLTree(AVLNode* root) as defined in the macro
+	void freeCodeTreeAndTok(CodeNode* root);
 	
 	TreeNode* createTreeNode(Token* element);
 	TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2);
