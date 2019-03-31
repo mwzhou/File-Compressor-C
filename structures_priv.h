@@ -7,7 +7,7 @@ these are private methods only meant to be accessed by structures.c
 
 #include "structures.h"	
 	
-//MECROS
+//MACROS
 	#define heightAVL(node) (((node)==NULL)? 0: (node)->height)
 	
 //METHOD SIGNATURES

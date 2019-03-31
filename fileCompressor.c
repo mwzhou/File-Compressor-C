@@ -25,9 +25,10 @@
 	//codebook name, will be initializzed to codebook name passed in as arg
 	char* codebook_name = NULL;
 	
-	//TREE FOR ALL FLAGS
+	//TREE STRUCTURE FOR ALL FLAGS
 		//if flag is b - tree is a frequency tree, keeps track of tokens
-		//if flag is c/d - tree is a codebook search tree to quickly search up tokens and get encodings or vice versa
+		//if flag is c - tree is a codebook search tree to quickly search up tokens and get encodings
+		//if flag is d - tree is a codebook search tree to quickly search up encodings and get tokens
 	CodeNode* tree = NULL;
 
 
@@ -62,6 +63,7 @@ void buildcodebook(char* file_name){
 /**
 goes through the Huffman Tree passed in and changes each node's frequency into the encoding for that word.
 Adds each NON-NULL encoding for a NON-NULL token into the codebook
+the encoding is recursively updated depending on how the tree was traversed
 **/
 static void writeEncodings(int codebook, TreeNode* root, char* encoding){ 
 	if( root == NULL )
@@ -90,8 +92,7 @@ static void writeEncodings(int codebook, TreeNode* root, char* encoding){
 
 /**
 goes through a file, tokenizes it, and gets the frequency of each token, then adds it to the tree
-@params: file_name, and a pointer to a frequency tree
- returns NULL is file wasn't passed in, or there were no tokens
+@params: file_name, and a pointer to an AVL tree where tokens are stored
 **/
 static void buildFrequencyAVL(char* file_name){
 	if(file_name == NULL ){ pRETURN_ERRORvoid("cannot pass in NULL file_name"); }
@@ -151,16 +152,16 @@ static TreeNode* huffmancoding(){
 	if( tree->left==NULL && tree->right==NULL ){ 
 		TreeNode* ret = createTreeNode(  createTokenInt(NULL, tree->element->frequency) );
 		ret->left = createTreeNode( tree->element );
+		//free global AVL Tree and set it to NULL
 		free(tree);
 		tree=NULL;
 		return ret;
 	}
 	
 	//HUFFMAN CODING
-	
-	//Variables
 	MinHeap tokens_heap = buildMinHeap(tree);
-		freeAVLTree(tree); //do not need frequencies anymore, free AVLNodes (not the element though)
+		//free global AVL Tree and set it to NULL
+		freeAVLTree(tree);
 		tree = NULL;
 		
 	Queue trees_queue = {NULL,NULL};
@@ -187,7 +188,7 @@ compresses file_name given and writes <file_name>.hcz into the same directory
 **/
 void compress( char* file_name ){
 	if( file_name==NULL ){ pRETURN_ERRORvoid("passed in NULL file_name"); }
-	if( endsWithHCZ(file_name) ){ pRETURN_ERRORvoid("cannot compress already compressed file. file can't end with hcz"); }
+	if( endsWithHCZ(file_name) ){ printf("file:%s\n",file_name); pRETURN_ERRORvoid("cannot compress already compressed file. file can't end with hcz"); }
 
 	//file contents of fname read into fstr (readFile is a fileHelperMethods.c method)
 		char* fstr = readFile(file_name);
@@ -202,7 +203,7 @@ void compress( char* file_name ){
 			
 
 	//TOKENIZE AND WRITE TO FILE:
-	//TOKENIZES fstr INTO A TOKEN AND A DELIM TOKEN - loops through fstr until there are no more delimiters
+		//TOKENIZES fstr INTO A TOKEN AND A DELIM TOKEN - loops through fstr until there are no more delimiters
 		char* fstr_ptr = fstr; //pointer to front of string for manipulation later
 		int indOfDELIM = 0; //index to keep track of the first instance of a delimiter in fstr_ptr
 
@@ -213,28 +214,28 @@ void compress( char* file_name ){
 					//finding the token (mallocs and copies)
 					char* tok1 = (char*)malloc( indOfDELIM + 1 );
 						if(tok1 ==NULL){ pEXIT_ERROR("malloc"); }
-						tok1[indOfDELIM] = '\0'; //string terminator
-						memcpy(tok1, fstr_ptr , indOfDELIM);//copy (indOfDELIM) number of characters from fstr into tok
-
+						tok1[indOfDELIM] = '\0';
+						memcpy(tok1, fstr_ptr, indOfDELIM);//copy (indOfDELIM) number of characters from fstr into tok
 
 					//finds encoding associated with tok1 and writes in fcompr
 					char* tok1_encoding = getCodeItem( tree, tok1, cmpByTokens);
 						free(tok1);
 						
 					//Error Check: if tok1 doesn't exist in codebook
-					if( tok1_encoding == NULL){ 
-						//free, delete, and remove
-							free(fstr); remove(fcompr_name); free(fcompr_name); close(fcompr);
-						//error output
-							printf("token:\"%s\" in file:%s\n", tok1, file_name);
-							pRETURN_ERRORvoid("token doesn't exist in codebook, will now delete compressed file");
+						if( tok1_encoding == NULL){ 
+							//free, delete, and remove
+								free(fstr); remove(fcompr_name); free(fcompr_name); close(fcompr);
+							//error output
+								printf("token:\"%s\" in file:%s\n", tok1, file_name);
+								pRETURN_ERRORvoid("token doesn't exist in codebook, will now delete compressed file");
 					
-					//if it exists		
-					}else{ 
-						WRITE_AND_CHECKv( fcompr , tok1_encoding , strlen(tok1_encoding) ); //writes encoding to file
-					}
+					//if token exists, write encoding into the file		
+						}else{ 
+							WRITE_AND_CHECKv( fcompr , tok1_encoding , strlen(tok1_encoding) ); //writes encoding to file
+						}
 
 				}
+
 
 			//TOKEN OF DELIM:
 				//finding the token
@@ -244,15 +245,15 @@ void compress( char* file_name ){
 				//finds encoding associated with tok2 and writes in fcompr
 					char* tok2_encoding = getCodeItem( tree, tok2, cmpByTokens); //finds token
 					
-					//Error Check: if token does not exist in codebook
+				//Error Check: if token does not exist in codebook
 					if( tok2_encoding == NULL){ 
 						//free, delete, and remove
 							free(fstr); remove(fcompr_name); free(fcompr_name); close(fcompr);
 						//error output
 							printf("token:\"%s\" in file:%s\n", tok2, file_name);
 							pRETURN_ERRORvoid("token doesn't exist in codebook, will now delete compressed file");
-						
-					//if it exists in codebook
+				
+				//if Token exists in codebook, write the encoding into the file
 					}else{ 
 						WRITE_AND_CHECKv( fcompr , tok2_encoding , strlen(tok2_encoding) ); //writes encoding to file
 					}
@@ -278,7 +279,7 @@ decompresses given file_name.hcz given and writes decompressed file_name into th
 **/
 void decompress( char* file_name){
 	if( file_name==NULL ){ pRETURN_ERRORvoid("passed in NULL file name"); }
-	if( !endsWithHCZ(file_name) ) { pRETURN_ERRORvoid("file must end with .hcz"); }
+	if( !endsWithHCZ(file_name) ) { printf("file:%s\n",file_name); pRETURN_ERRORvoid("file must end with .hcz"); }
 
 	//file contents of file_name read into fstr_hcz (readFile is a fileHelperMethods.c method)
 	char* fstr_hcz = readFile(file_name);
@@ -365,10 +366,10 @@ void recurse(char* path){
 	
 	//TRAVERSES THROUGH CURRENT DIRECTORY TO FIND ALL SUBDIRECTORIES
 	while((dp = readdir(curr_dir))!=NULL){
-		if(strcmp(dp->d_name, ".")==0 || strcmp(dp->d_name, "..")==0) //if current/parent directory(ignore)
-			continue;
+		//if current/parent directory(ignore)
+		if(strcmp(dp->d_name, ".")==0 || strcmp(dp->d_name, "..")==0) continue;
 			
-		//FINDS NEW_PATH NAME AND RECURSES IF DIRECTORY
+		//FINDS NEW_PATH NAME AND RECURSES IF NEW_PATH IS A DIRECTORY
 		char* new_path = combinedPath(path,dp->d_name);
 		if( typeOfFile(new_path) == isDIR ){
 			runFlag(new_path);
@@ -407,16 +408,16 @@ void runFlag(char* pathfile_name){
 			
 		//TRAVERSES THROUGH CURRENT DIRECTORY TO FIND ALL ITS FILES
 		while( (dpf = readdir(dir_pf))!=NULL ){
-			if(strcmp(dpf->d_name, ".")==0 || strcmp(dpf->d_name, "..")==0) //if current/parent directory(ignore)
-				continue;
-						
-			//GETS CURR FILE NAME AND RUNS FLAG IF REGULAR FILE
-			char* currf_name = combinedPath( pathfile_name ,dpf->d_name ); //gets current file name
-
-			if( typeOfFile( currf_name )==isREG ){ 
+			//if current/parent directory(ignore)
+			if(strcmp(dpf->d_name, ".")==0 || strcmp(dpf->d_name, "..")==0) continue;
+				
+			//get current file name
+			char* currf_name = combinedPath( pathfile_name ,dpf->d_name ); 
+			
+			//runs flag on current file if it's a regular file
+			if( typeOfFile( currf_name ) == isREG ){ 
 				switch(flag){
 					case 'b':
-						if( endsWithHCZ(currf_name) ){ printf("can't build codebook out of compressed file %s\n", currf_name); continue; }
 						buildFrequencyAVL( currf_name ); //adds onto the tree for every file
 						break;
 					case 'c':
@@ -432,22 +433,24 @@ void runFlag(char* pathfile_name){
 				}
 				
 			}
+			
+			//free current file name after using it
 			free(currf_name);
 		}
-			
+		
+		//close directory after done looping through all files	
 		closedir(dir_pf);
 		
+		
 			
-	//PATH/FILE IS A REG FILE
+	//IF PATH/FILE IS A REG FILE
 	}else if( type_pf == isREG ){
 		
 		switch(flag){
 			case 'b':
-				if( endsWithHCZ( pathfile_name ) ){ printf("can't build codebook out of compressed file %s\n", pathfile_name); break; }
 				buildFrequencyAVL( pathfile_name ); //gets frequency of each token in file
 				break;
 			case 'c':
-				if( endsWithHCZ( pathfile_name ) ){ printf("can't compress an already compressed file %s\n", pathfile_name); break; }
 				compress ( pathfile_name );
 				break;
 			case 'd':
@@ -476,35 +479,44 @@ void inputCheck(int argc, char** argv){
 		//CHECK IF FLAG - if it is initialize it
 		if(strlen(s) == 2 && s[0]=='-'){
 
-			//if arg is a regular flag
+			//Regular flag
 			if( s[1]=='b'||s[1]=='c'||s[1]=='d' ){
 				if(flag!='\0'){ pEXIT_ERROR("cannot have multiple flags"); } //already came across a flag
-				flag = s[1];
-			//if argc is a recursive flag
+				flag = s[1]; //initialize flag
+				
+			//Recursive flag
 			}else if( s[1]=='R' ){
 				if(isRecursive){ pEXIT_ERROR("cannot have multiple '-R' flags"); } //already came across '-R' flag
-				isRecursive = true;
+				isRecursive = true; //initialize recursive boolean
 			}
 
 
 		//CHECK IF IS PATH/FILE and that it exists - if it is, initialize it
 		}else{
+			if( flag=='\0' ){ pEXIT_ERROR("must specify flag(s) before specifying file arguments!"); }
 			if( typeOfFile(s) == isUNDEF ) { printf("argument:%s\n",s); pEXIT_ERROR("undefined file name"); } //checking if PATH/FILE exists , if not, exit
-
-			if( !endsWithHuffmanCodebook(s) ){ //not codebook
-				if(orig_pathfile!=NULL){ pEXIT_ERROR("can only have at most one file/path"); }  //orig_pathfile already initialized
-				orig_pathfile = realpath(s, NULL); //gets real path
-			}else{ //if codebook
-				if(codebook_name!=NULL){ pEXIT_ERROR("can only have at most one codebook"); }  //codebook_name already initialized
-				codebook_name = s;
+				
+			//Path/File
+			if(orig_pathfile==NULL){
+				if( ( (flag=='c'||flag=='d')&& i!=argc-2)){ printf("argument:%s\n",s); pEXIT_ERROR("File must be specified as second to last argument if flag -c or -d. Last argument is reserved for the codebook."); }
+				else if( (flag=='b'&&i!=argc-1) ){ printf("argument:%s\n",s); pEXIT_ERROR("Just a single file must be specified as last argument if flag -b. Can't have multiple files/flags"); }
+				
+				orig_pathfile = realpath(s, NULL); //gets real path and initializes orig_pathfile
+			
+			//Codebook
+			}else{ 
+				if(i!=argc-1){ printf("argument:%s\n",s); pEXIT_ERROR("codebook must be specified as last argument"); }
+				if(flag=='b'){ pEXIT_ERROR("no reason to pass in multiple files for -b flag"); }
+				codebook_name = s; //initializes codebook name
 			}
 		}
 	}
+	
 
 	//CHECK if all necessary globals have been initialized
-		if( flag!='b' &&  flag!='c' && flag!='d' ){ pEXIT_ERROR("must specify a flag as an argument AND flag must be -b, -c, or -d"); }
+		if(flag=='\0'){ pEXIT_ERROR("must specify flag as an argument"); }
 		if( orig_pathfile == NULL ){ pEXIT_ERROR("must give in a path or a file as an argument"); }
-
+		
 	//CHECK IF ARGUMENTS MATCH FLAG
 		if(isRecursive && typeOfFile(orig_pathfile) != isDIR ){ isRecursive=false; printf("passed in -R flag but only passed in a REGULAR file, will run flag as if NOT recursive\n"); } //'-R' flag called but path not handed in
 		if( (flag=='c'||flag=='d') && codebook_name == NULL ){ pEXIT_ERROR("must specify a codebook when running -c or -d flags"); }
@@ -532,10 +544,15 @@ int main(int argc, char** argv){
 		runFlag(orig_pathfile);
 	}
 
-	//if flag is b, builds codebook in directory of executable
-	if(flag=='b') buildcodebook(orig_pathfile);
-	//If flag is c or d, frees tree
-	else if(flag=='c' || flag=='d') freeCodeTreeAndTok( tree );
-
+	//if flag is b, builds a single codebook in directory of executable using the tree creates
+	if(flag=='b') 
+		buildcodebook(orig_pathfile);
+	//If flag is c or d, frees the tree
+	else if(flag=='c' || flag=='d') 
+		freeCodeTreeAndTok( tree );
+	
+	//free the original path/file since it was malloced getting the real path
+	free(orig_pathfile);
+	
 	return 0;
 }

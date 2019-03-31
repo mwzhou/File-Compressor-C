@@ -356,7 +356,7 @@ if:
  returns EMPTY CODEBOOK if codebook is empty
 **/
 CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode){
-	if(codebook_name==NULL || !endsWithHuffmanCodebook(codebook_name) ){ pRETURN_ERROR("invalid codebook passed", NULL); }
+	if(codebook_name==NULL ){ pRETURN_ERROR("NULL codebook name passed", NULL); }
 	
 	//Tree to return
 	CodeNode* codetree = NULL;
@@ -367,7 +367,7 @@ CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode){
 			
 		//check if codebook matches correct format
 		int f_len = strlen(fstr);
-		if( f_len<3 || !(fstr[0]=='\\' && fstr[1]=='\n' && fstr[ f_len-1 ]=='\n') ){ pRETURN_ERROR("doesn't match the correct format of HuffmanCodebook", NULL); }
+		if( f_len<3 || !(fstr[0]=='\\' && fstr[1]=='\n' && fstr[ f_len-1 ]=='\n') ){ free(fstr); printf("file:%s\n",codebook_name); pRETURN_ERROR("doesn't match the correct format of HuffmanCodebook", NULL); }
 		
 		
 	//edge case: if no tokens in codebook
@@ -387,6 +387,7 @@ CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode){
 			//return sincgle node
 			return createCodeNode(tok,encode);
 		} 
+		
 		
 	//LOOPING THROUGH CODEBOOK AND ADDING TO TREE
 		char* curr_token = strtok( fstr+2 , "\n\t"); //split on next new line or tab
@@ -408,7 +409,7 @@ CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode){
 
 			}else{ //if curr_token is a tok, insert into tree
 				tok = curr_cpy;
-				if(encoding==NULL){ pRETURN_ERROR("invalid codebook", NULL); }
+				if(encoding==NULL){ free(fstr); freeCodeTreeAndTok(codetree); printf("file:%s\n",codebook_name); pRETURN_ERROR("invalid codebook", NULL); }
 				
 				//insert and update root
 				codetree = insertCodeTreeRec( codetree, tok , encoding , mode); 
@@ -423,7 +424,7 @@ CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode){
 		}
 
 	free(fstr);
-	if(isEncoding==false || codetree==NULL){ pRETURN_ERROR("invalid codebook", NULL); }
+	if(isEncoding==false || codetree==NULL){ freeCodeTreeAndTok(codetree); printf("file:%s\n",codebook_name); pRETURN_ERROR("invalid codebook", NULL); }
 	
 	return codetree;
 }

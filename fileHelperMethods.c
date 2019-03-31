@@ -85,7 +85,6 @@ returns the type of the string given in
 @returns FileType:
 	isDIR - directory
 	isREG - regular file
-	isLINK - link
 	isUNDEF - error
 **/
 FileType typeOfFile(char* file_name){
@@ -98,8 +97,6 @@ FileType typeOfFile(char* file_name){
 	//check if DIR, REG, or LINK, and returns the respective number (defined in macro)
 	if(S_ISREG(dpstat.st_mode)) //directory or file
 		return isREG;
-	else if(S_ISLNK(dpstat.st_mode)) //symbolic link
-		return isLNK;
 	else if(S_ISDIR(dpstat.st_mode))
 		return isDIR;
 	else
@@ -112,6 +109,7 @@ FileType typeOfFile(char* file_name){
 //STRING MANIPULATION methods/////////////////////////////////////////////////////////////////////
 
 /**
+To be used in fileCompressor.c recurse() to keep track of paths
 Combines a path name with a file name and returns the new path
 @returns: a copy of the new path
 returns: NULL if invalid, non-urgent issue
@@ -144,7 +142,7 @@ char* getNewExtensionAndPath( char* old_file_name, const char* extension ){
 
 	//IF REMOVING THE EXTENSION	
 	if(extension == NULL){
-		int chars_b4Dot = lengthBeforeChar( oldfname_path, '.');
+		int chars_b4Dot = lengthBeforeLastOccChar( oldfname_path, '.');
 			if(chars_b4Dot==-1){ pRETURN_ERROR("error, no extension to remove from.", NULL); }
 			
 		//malloc enough space for file_name without the extension
@@ -176,7 +174,7 @@ char* getNewExtensionAndPath( char* old_file_name, const char* extension ){
 returns number of characters in s before the last occurrence of c
 returns -1 if hits a '/' character before the dot
 **/
-int lengthBeforeChar( char* s, char c){
+int lengthBeforeLastOccChar( char* s, char c){
 	//FINDING NUMBER OF CHARACTERS before the '.' if it exists, if no dot, it returns -1
 		int len = strlen(s);
 		int i;
@@ -193,6 +191,7 @@ int lengthBeforeChar( char* s, char c){
 
 
 /**
+To be used in fileCompressor.c writeEncodings() to keep track of encodings of each node in a huffman tree.
 Appends a character to the end of a string, returns a malloced new string with a character appended to the end
 @params: char* prev_str = string to append to
 		 char add_c = character to add
@@ -216,6 +215,7 @@ char* appendCharToString( char* prev_str , char add_c){
 
 
 /**
+To be used in fileCompressor.c for decompress.
 returns a subtring of s from the start_index to desired length of substring
 returns NULL if length>strlen(s) or could not get a substring
 **/
@@ -280,7 +280,7 @@ char* getStringRepOfDELIM( char c ){
 /**
 returns the single character string that a string delimiter represents
 if not a delimiter, then returns NULL
-avoids having to do a strcmp to save time
+getCharRepOfDELIM() avoids having to do a strcmp to save time
 **/
 char* getCharRepOfDELIM( char* s ){
 	if(s==NULL)
@@ -328,7 +328,7 @@ char* getCharRepOfDELIM( char* s ){
 
 
 /**
-checks if a string is a delimiter string without having to use strcmp (saves time)
+checks if a string is a delimiter string without having to use strcmp (to save time)
 **/
 bool isDELIMStr(char* s){
 	if(s==NULL)
@@ -369,39 +369,17 @@ bool isDELIMStr(char* s){
 //FILE-CHECKING methods/////////////////////////////////////////////////////////////////////
 
 /**
-returns true if file name ends in .hcz AND is att least 5 characters
+returns true if file name ends in .hcz
 **/
 bool endsWithHCZ(char* file_name){
 	if(file_name==NULL){ pRETURN_ERROR("null string",false);}
 	int len = strlen(file_name);
-	if(len<5) //must have enough character, minimum length is 5, i.e.: "c.hcz""
+	if(len<4) //minimum length is 4, i.e.: ".hcz""
 		return false;
 
 	if( file_name[len-4]=='.' && file_name[len-3]=='h' && file_name[len-2]=='c' && file_name[len-1]=='z' ) //ends with .hcz
 		return true;
 
 	return false;
-}
-
-
-/**
-returns true if file_name ends with "HuffmanCodebook"
-**/
-bool endsWithHuffmanCodebook(char* file_name){
-	if(file_name==NULL){ pRETURN_ERROR("null string",false);}
-	
-	int len = strlen(file_name);
-	if(len<15) //must have enough characters for "HuffmanCodebook"
-		return false;
-
-	//loop through end of file_name and check if it matches "HuffmanCodebook"
-	char* hc = "HuffmanCodebook";
-	int i, j;
-	for( i=len-1, j=14; i>=0 && j>=0; i--, j--){
-		if(file_name[i] != hc[j])
-			return false;
-	}
-	
-	return true;
 }
 

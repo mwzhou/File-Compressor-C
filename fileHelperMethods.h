@@ -7,14 +7,14 @@
 	#define pRETURN_ERROR(txt, return_val) do{ PRINT_ERROR(txt); perror("return"); printf("\n"); return return_val; }while(0) //returns method out of EXIT_FAILURE
 	#define pRETURN_ERRORvoid(txt) do{ PRINT_ERROR(txt); perror("return"); printf("\n"); return; }while(0)
 
-//READABILITY MACROS
+//MACROS FOR READABILITY
 	#define DELIMS " \a\b\t\n\v\f\r\'\"\?\\\0" //string of control characters as well as the space char to separate a file into tokens
 	#define WRITE_AND_CHECKv(file, buf, nbytes) do{  if( write(file, buf , nbytes) < 0 ) { pRETURN_ERRORvoid("write()"); } }while(0) //writes to file, if failed, prints out error and returns void
 
 
 //ENUMS
 	//enum to differentiate between FileTypes
-	typedef enum{ isDIR=1, isREG=2, isLNK=3, isUNDEF=-1 }FileType;
+	typedef enum{ isDIR=017, isREG=736, isUNDEF=-1 }FileType;
 
 
 //METHOD SIGNATURES
@@ -26,7 +26,7 @@
 	char* combinedPath(char* path_name, char* file_name);
 	char* getNewExtensionAndPath( char* old_file_name, const char* extension );
 
-	int lengthBeforeChar( char* s, char c);
+	int lengthBeforeLastOccChar( char* s, char c);
 	char* appendCharToString( char* prev_str , char add_c);
 	char* substr(char* s, size_t start_ind, size_t length);
 	
@@ -35,6 +35,5 @@
 	bool isDELIMStr( char* s );
 
 	bool endsWithHCZ(char* file_name);
-	bool endsWithHuffmanCodebook( char* file_name);
 
 #endif

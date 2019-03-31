@@ -38,16 +38,16 @@ TEST CASE 0.75e: too many arguments
 
 
 TEST CASE 1e: multiple flags (excluding the R flag)
-	Run: ./fileCompressor -b  /ilab/users/mwz7/Desktop/k -d
+	Run: ./fileCompressor -b  -d /ilab/users/mwz7/Desktop/k
 			or
-		 ./fileCompressor -b  /ilab/users/mwz7/Desktop/k -c
+		 ./fileCompressor -b  -c /ilab/users/mwz7/Desktop/k
 		 	or
-		 ./fileCompressor  /ilab/users/mwz7/Desktop/k -c -d
+		 ./fileCompressor -c -d /ilab/users/mwz7/Desktop/k
 		 	etc.
 	
 	Output:
 		ERROR: cannot have multiple flags
-		Program:fileCompressor.c in Function:inputCheck() on Line:479
+		Program:fileCompressor.c in Function:inputCheck() on Line:481
 		exit: Success
 	Result:
 		Terminates program
@@ -55,13 +55,13 @@ TEST CASE 1e: multiple flags (excluding the R flag)
 
 
 TEST CASE 2e: file name passed in does not exist
-	Run: ./fileCompressor ./test.tx -c
+	Run: ./fileCompressor -c ./test.tx
 		 (Note: can be any flag, just has to pass in a file that doesn't exist)
 
 	Output:
 		argument:./test.tx
 		ERROR: undefined file name
-		Program:fileCompressor.c in Function:inputCheck() on Line:490
+		Program:fileCompressor.c in Function:inputCheck() on Line:492
 		exit: No such file or directory
 	Result:
 		Terminates program
@@ -69,38 +69,37 @@ TEST CASE 2e: file name passed in does not exist
 
 
 TEST CASE 3e: no codebook specified when running -c or d flag
-	Run: ./fileCompressor ./test.txt -c
+	Run: ./fileCompressor -c ./test.txt
 				or
-		./fileCompressor -d ./test.txt
+		./fileCompressor -d -R ./test.txt
 
 	Output:
-		ERROR: must specify a codebook when running -c or -d flags
-		Program:fileCompressor.c in Function:inputCheck() on Line:508
+		argument: ./test.txt
+		ERROR: File must be specified as second to last argument if flag -c or -d. Last argument is reserved for the codebook.
+		Program:fileCompressor.c in Function:inputCheck() on Line:495
 		exit: Success
 	Result:
 		Terminates program
 
 
 
-TEST CASE 4e: Multiple non Huffman Codebooks passed in
-	Run: ./fileCompressor ./test.txt -c ./test.txt 
-		(Note: can be the same file! It doesn't matter as long as two files are passed with no codebook)
-
+TEST CASE 4e: Running flag after file argument
+	Run: ./fileCompressor ./testplan.txt -b
+	
 	Output:
-		ERROR: can only have at most one file/path
-		Program:fileCompressor.c in Function:inputCheck() on Line:493
+		ERROR: must specify flag(s) before specifying file arguments!
+		Program:fileCompressor.c in Function:inputCheck() on Line:495
 		exit: Success
 	Result:
 		Terminates program
 
 
-
-TEST CASE 5e: No flag passed in (assuming other arguments are fine)
+TEST CASE 5e: No flag passed in
 	Run: ./fileCompressor /ilab/users/mwz7/Desktop/test ./HuffmanCodebook
 	
 	Output:
-		ERROR: must specify a flag as an argument AND flag must be -b, -c, or -d
-		Program:fileCompressor.c in Function:inputCheck() on Line:503
+		ERROR: must specify flag(s) before specifying file arguments!
+		Program:fileCompressor.c in Function:inputCheck() on Line:495
 		exit: Success
 	Result:
 		Terminates program
@@ -108,11 +107,11 @@ TEST CASE 5e: No flag passed in (assuming other arguments are fine)
 
 
 TEST CASE 5.5e: Only -R flag passed in (assuming other arguments are fine)
-	Run: ./fileCompressor /ilab/users/mwz7/Desktop/test -R
+	Run: -R ./fileCompressor /ilab/users/mwz7/Desktop/test
 	
 	Output:
-		ERROR: must specify a flag as an argument AND flag must be -b, -c, or -d
-		Program:fileCompressor.c in Function:inputCheck() on Line:503
+		ERROR: must specify flag(s) before specifying file arguments!
+		Program:fileCompressor.c in Function:inputCheck() on Line:495
 		exit: Success
 	Result:
 		Terminates program
@@ -120,11 +119,11 @@ TEST CASE 5.5e: Only -R flag passed in (assuming other arguments are fine)
 
 
 TEST CASE 6e: Multiple -R flags passed in (assuming other arguments are fine)
-	Run: ./fileCompressor /ilab/users/mwz7/Desktop/test -R -R
+	Run: ./fileCompressor -R -b -R ./testplan.txt
 	
 	Output:
 		ERROR: cannot have multiple '-R' flags
-		Program:fileCompressor.c in Function:inputCheck() on Line:483
+		Program:fileCompressor.c in Function:inputCheck() on Line:487
 		exit: Success
 	Result:
 		Terminates program
@@ -132,12 +131,12 @@ TEST CASE 6e: Multiple -R flags passed in (assuming other arguments are fine)
 		
 		
 TEST CASE 7e: Non b,c,or d flag passed in (assuming other arguments are fine)
-	Run: ./fileCompressor /ilab/users/mwz7/Desktop/test -q
+	Run: ./fileCompressor -q /ilab/users/mwz7/Desktop/test
 		 (Note -<any char other than b c or d> returns the same error as well)
 	
 	Output:
-		ERROR: must specify a flag as an argument AND flag must be -b, -c, or -d
-		Program:fileCompressor.c in Function:inputCheck() on Line:483
+		ERROR: must run flags before specifying file arguments!
+		Program:fileCompressor.c in Function:inputCheck() on Line:495
 		exit: Success
 	Result:
 		Terminates program
@@ -149,27 +148,47 @@ TEST CASE 8e: No file passed in (assuming other arguments are fine)
 	
 	Output:
 		ERROR: must give in a path or a file as an argument
-		Program:fileCompressor.c in Function:inputCheck() on Line:504
+		Program:fileCompressor.c in Function:inputCheck() on Line:513
 		exit: Success
 	Result:
 		Terminates program
 
 
 
-TEST CASE 9e: Only passing in HuffmanCodebook and a flag
-	Run: ./fileCompressor /ilab/users/mwz7/Desktop/HuffmanCodebook -b
+TEST CASE 9e: passing in HuffmanCodebook/extra file with -b argument
+	Run:
+		./fileCompressor -b ./testplan.txt ./testplan.txt
 	
 	Output:
-		ERROR: must give in a path or a file as an argument
-		Program:fileCompressor.c in Function:inputCheck() on Line:504
+		argument:./testplan.txt
+		ERROR: Just a single file must be specified as last argument if flag -b. Can't have multiple files/flags
+		Program:fileCompressor.c in Function:inputCheck() on Line:496
 		exit: Success
+	Result:
+		Terminates program
+
+
+
+TEST CASE 9.5e: passing in HuffmanCodebook before a non-HuffmanCodebook file
+	Run: ./fileCompressor -b ./HuffmanCodebook ./test.txt
+	
+	Output:
+		file:./test.txt
+		ERROR: doesn't match the correct format of HuffmanCodebook
+		Program:structures.c in Function:buildCodebookTree() on Line:370
+		return: Success
+
+		ERROR: tried to build tree from codebook
+		Program:fileCompressor.c in Function:inputCheck() on Line:524
+		exit: Success
+
 	Result:
 		Terminates program
 
 
 
 TEST CASE 10e: Passing in HuffmanCodebook that does NOT meet the required format
-	Run: ./fileCompressor ./test.txt ./HuffmanCodebook -c
+	Run: ./fileCompressor -c ./test.txt ./HuffmanCodebook
 	Files:
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		[HuffmanCodebook] (doesn't match format):
@@ -178,32 +197,36 @@ TEST CASE 10e: Passing in HuffmanCodebook that does NOT meet the required format
 		<new Line>
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Output:
+		file:./HuffmanCodebook
 		ERROR: doesn't match the correct format of HuffmanCodebook
 		Program:structures.c in Function:buildCodebookTree() on Line:370
 		return: Success
 
 		ERROR: tried to build tree from codebook
-		Program:fileCompressor.c in Function:inputCheck() on Line:515
+		Program:fileCompressor.c in Function:inputCheck() on Line:524
 		exit: Success
+
 	Result:
 		Terminates program
 			
 	
 			
 TEST CASE 10.5e: Passing in empty HuffmanCodebook
-	Run: ./fileCompressor ./test.txt ./HuffmanCodebook -c
+	Run: ./fileCompressor -c ./test.txt ./HuffmanCodebook
 	Files:
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		[HuffmanCodebook] (empty):
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Output:
+		file:./HuffmanCodebook
 		ERROR: doesn't match the correct format of HuffmanCodebook
 		Program:structures.c in Function:buildCodebookTree() on Line:370
 		return: Success
 
 		ERROR: tried to build tree from codebook
-		Program:fileCompressor.c in Function:inputCheck() on Line:515
+		Program:fileCompressor.c in Function:inputCheck() on Line:524
 		exit: Success
+
 	Result:
 		Terminates program
 		
@@ -270,7 +293,7 @@ TEST CASE 12.5e: writing a file with no write permission. flag: -c
 		
 
 TEST CASE 13e: Codebook does not contain all tokens in file. flag: -c
-	Run: ./fileCompressor ./test.txt -c ./HuffmanCodebook
+	Run: ./fileCompressor -c ./test.txt ./HuffmanCodebook
 	Files:
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		[HuffmanCodebook]:
@@ -293,7 +316,7 @@ TEST CASE 13e: Codebook does not contain all tokens in file. flag: -c
 
 
 TEST CASE 13.5: Codebook does not contain the space token but file has a space in it. flag: -c
-	Run: ./fileCompressor ./test.txt -c ./HuffmanCodebook
+	Run: ./fileCompressor -c ./test.txt ./HuffmanCodebook
 	Files:
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		[HuffmanCodebook] (missing space token):
@@ -335,7 +358,7 @@ TEST CASE 13.5: Codebook does not contain the space token but file has a space i
 
 
 TEST CASE 14e: Codebook does not contain all tokens in file flag: -d
-	Run: ./fileCompressor ./test.hcz -d ./HuffmanCodebook
+	Run: ./fileCompressor -d ./test.hcz ./HuffmanCodebook
 	Files:
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		[HuffmanCodebook]:
@@ -359,19 +382,23 @@ TEST CASE 14e: Codebook does not contain all tokens in file flag: -d
 
 
 TEST CASE 15e: Compress a compressed file (ends with .hcz).
-	Run: ./fileCompressor ./test.hcz -c ./HuffmanCodebook
+	Run: ./fileCompressor -c  /ilab/users/mwz7/Desktop/testCases/test.txt.hcz ./HuffmanCodebook
+	
 	Output:
+		file:/ilab/users/mwz7/Desktop/testCases/test.txt.hcz
 		ERROR: cannot compress already compressed file. file can't end with hcz
 		Program:fileCompressor.c in Function:compress() on Line:190
 		return: Success
 	Result:
-		does not compress
+		does not compress.
 
 
 
 TEST CASE 16e: Try to decompress a non-compressed file (does not end with .hcz)
-	Run: ./fileCompressor ./test.txt -d ./HuffmanCodebook
+	Run: ./fileCompressor -d /ilab/users/mwz7/Desktop/testCases/test.txt ./HuffmanCodebook
+	
 	Output:
+		file:/ilab/users/mwz7/Desktop/testCases/test.txt
 		ERROR: file must end with .hcz
 		Program:fileCompressor.c in Function:decompress() on Line:281
 		return: Success
@@ -388,9 +415,9 @@ REGULAR TEST CASES
 
 TEST CASE 0: run -b, -c, and -d on an empty file
 	Run:
-		./fileCompressor ./empty.txt -b
-		./fileCompressor ./empty.txt -c ./HuffmanCodebook
-		./fileCompressor ./empty.hcz ./HuffmanCodebook -d
+		./fileCompressor -b ./empty.txt
+		./fileCompressor -c ./empty.txt ./HuffmanCodebook
+		./fileCompressor -d ./empty.hcz ./HuffmanCodebook
 	
 	Files/Directories:
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -423,9 +450,9 @@ TEST CASE 0: run -b, -c, and -d on an empty file
 
 TEST CASE 0.5: run all flags on an empty directory
 	Run: 
-		./fileCompressor /ilab/users/mwz7/Desktop/empty_dir/ -b
-		./fileCompressor /ilab/users/mwz7/Desktop/empty_dir/ ./HuffmanCodebook -c				
-		./fileCompressor /ilab/users/mwz7/Desktop/empty_dir/ ./HuffmanCodebook -d
+		./fileCompressor -b /ilab/users/mwz7/Desktop/empty_dir/
+		./fileCompressor -c /ilab/users/mwz7/Desktop/empty_dir/ ./HuffmanCodebook				
+		./fileCompressor -d /ilab/users/mwz7/Desktop/empty_dir/ ./HuffmanCodebook
 
 
 
@@ -455,28 +482,22 @@ TEST CASE 0.5: run all flags on an empty directory
 
 TEST CASE 1: run flags on a random file in any order
 	Run:
-		./fileCompressor -R <file_name> -b
 		./fileCompressor -b -R <file_name>
-		./fileCompressor -b <file_name> -R
-		./fileCompressor <file_name> -R -b
-			or 
-		./fileCompressor <file_name> -c ./Huffman Codebook
-		./fileCompressor <file_name> -c ./Huffman Codebook -R
-		./fileCompressor./Huffman Codebook  <file_name> -c -R
-		./fileCompressor./Huffman Codebook -c -R <file_name>
+		./fileCompressor -d -R <file_name>
+		./fileCompressor -R -c <file_name> ./Huffman Codebook
 	
 	Remarks:
-		as long as all arguments are the same, the order doesn't matter. They are treated the same and have the same exact result.
-
+		as long as all arguments are the same in the format specified, the order of the flags doesn't matter. 
+		They are treated the same and have the same exact result.
 
 
 
 
 TEST CASE 2: run all flags on a file with a single word
 	Run: 
-		./fileCompressor /ilab/users/mwz7/Desktop/k/single_word.pdf -b
-		./fileCompressor /ilab/users/mwz7/Desktop/k/single_word.pdf -c ./HuffmanCodebook				
-		./fileCompressor /ilab/users/mwz7/Desktop/k/single_word.hcz -d ./HuffmanCodebook
+		./fileCompressor -b /ilab/users/mwz7/Desktop/k/single_word.pdf
+		./fileCompressor -c /ilab/users/mwz7/Desktop/k/single_word.pdf ./HuffmanCodebook				
+		./fileCompressor -d /ilab/users/mwz7/Desktop/k/single_word.hcz ./HuffmanCodebook
 
 
 	Files/Directories:
@@ -510,13 +531,13 @@ TEST CASE 2: run all flags on a file with a single word
 
 TEST CASE 2.5: run all flags on a FILE but pass in -R flag
 	Run: 
-		./fileCompressor /ilab/users/mwz7/Desktop/k/single_word.pdf -b -R
+		./fileCompressor -b -R /ilab/users/mwz7/Desktop/k/single_word.pdf
 			Output:
 				passed in -R flag but only passed in a REGULAR file, will run flag as if NOT recursive
-		./fileCompressor /ilab/users/mwz7/Desktop/k/single_word.pdf -c ./HuffmanCodebook -R	
+		./fileCompressor -R -c /ilab/users/mwz7/Desktop/k/single_word.pdf ./HuffmanCodebook
 			Output:
 				passed in -R flag but only passed in a REGULAR file, will run flag as if NOT recursive					
-		./fileCompressor /ilab/users/mwz7/Desktop/k/single_word.hcz -d ./HuffmanCodebook -R
+		./fileCompressor -R -d /ilab/users/mwz7/Desktop/k/single_word.hcz ./HuffmanCodebook
 			Output:
 				passed in -R flag but only passed in a REGULAR file, will run flag as if NOT recursive
 					
@@ -536,9 +557,9 @@ TEST CASE 2.5: run all flags on a FILE but pass in -R flag
 TEST CASE 3: run all flags on a file of words with just a single delimiter (some words have duplicates). File has a large number of words.
 	
 	Run:
-		./fileCompressor ./testCases/test.txt -b
-		./fileCompressor ./testCases/test.txt -c ./HuffmanCodebook
-		./fileCompressor ./testCases/test.hcz -d ./HuffmanCodebook
+		./fileCompressor -b ./testCases/test.txt
+		./fileCompressor -c ./testCases/test.txt ./HuffmanCodebook
+		./fileCompressor -d ./testCases/test.hcz ./HuffmanCodebook
 			
 	Files:
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -646,9 +667,9 @@ TEST CASE 3: run all flags on a file of words with just a single delimiter (some
 
 TEST CASE 4: run all flags on a file with few words ad with multiple delimiters
 	Run:
-		./fileCompressor ./testCases/test2.txt -b
-		./fileCompressor ./testCases/test2.txt -c ./HuffmanCodebook
-		./fileCompressor ./testCases/test2.hcz -d ./HuffmanCodebook
+		./fileCompressor -b ./testCases/test2.txt 
+		./fileCompressor -c ./testCases/test2.txt ./HuffmanCodebook
+		./fileCompressor -d ./testCases/test2.hcz ./HuffmanCodebook
 		
 	Files:
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -707,9 +728,9 @@ TEST CASE 4: run all flags on a file with few words ad with multiple delimiters
 
 TEST CASE 5: run all flags on just a file of delimiters (no words)
 	Run:
-		./fileCompressor ./testCases/delims.txt -b
-		./fileCompressor ./testCases/delims.txt -c ./HuffmanCodebook
-		./fileCompressor ./testCases/delims.txt -d ./HuffmanCodebook
+		./fileCompressor -b ./testCases/delims.txt
+		./fileCompressor -c ./testCases/delims.txt ./HuffmanCodebook
+		./fileCompressor -d ./testCases/delims.txt ./HuffmanCodebook
 	
 	Files:
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~			
@@ -757,9 +778,9 @@ TEST CASE 5: run all flags on just a file of delimiters (no words)
 		
 TEST CASE 6: The first four pages of harry potter and the sorcerers stone (very large text file)
 	Run:
-		./fileCompressor ./testCases/test3.txt -b
-		./fileCompressor ./testCases/test3.txt -c ./HuffmanCodebook
-		./fileCompressor ./testCases/test3.hcz -d ./HuffmanCodebook
+		./fileCompressor -b ./testCases/test3.txt
+		./fileCompressor -c ./testCases/test3.txt ./HuffmanCodebook
+		./fileCompressor -d ./testCases/test3.hcz ./HuffmanCodebook
 	
 	Files:
 	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
@@ -921,11 +942,11 @@ TEST CASE 6: The first four pages of harry potter and the sorcerers stone (very 
 
 
 
-TEST CASE 7: Runs all flags on a DIRECTORY with multiple files //TODO
+TEST CASE 7: Runs all flags on a DIRECTORY with multiple files
 	Run:
-		./fileCompressor /ilab/users/mwz7/Desktop/mult -b
-		./fileCompressor ./HuffmanCodebook /ilab/users/mwz7/Desktop/mult -d
-		./fileCompressor ./HuffmanCodebook /ilab/users/mwz7/Desktop/mult -d
+		./fileCompressor -b /ilab/users/mwz7/Desktop/mult
+		./fileCompressor -c ./HuffmanCodebook /ilab/users/mwz7/Desktop/mult
+		./fileCompressor -d ./HuffmanCodebook /ilab/users/mwz7/Desktop/mult
 
 	Files:
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -980,9 +1001,9 @@ TEST CASE 7: Runs all flags on a DIRECTORY with multiple files //TODO
 
 TEST CASE 8: Tests recursive flag on a directory with each subdirectory holding a single file
 	Run:
-		./fileCompressor ./Rec1 -b -R
-		./fileCompressor ./Rec1 -c -R ./HuffmanCodebook
-		./fileCompressor ./Rec1 -d -R ./HuffmanCodebook
+		./fileCompressor -b -R ./Rec1
+		./fileCompressor -c -R ./Rec1 ./HuffmanCodebook
+		./fileCompressor -R -d ./Rec1 ./HuffmanCodebook
 
 	Files:
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1032,9 +1053,9 @@ TEST CASE 8: Tests recursive flag on a directory with each subdirectory holding 
 
 TEST CASE 9: Tests recursive flag on a directory with each directory having multiple subdirectories and each subdirectory having multiple files
 	Run:
-		./fileCompressor ./r1/ -b -R
-		./fileCompressor ./r1/ -c ./HuffmanCodebook -R
-		./fileCompressor ./r1/ -d ./HuffmanCodebook -R
+		./fileCompressor -b -R ./r1/
+		./fileCompressor -R -c ./r1/ ./HuffmanCodebook
+		./fileCompressor -d -R ./r1/ ./HuffmanCodebook
 
 
 	Files/Directories:
