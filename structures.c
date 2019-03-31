@@ -353,6 +353,7 @@ if:
 	mode == cmpByEncodings, builds Code Tree based on Encodings
 @returns CodeTree if successful
  returns NULL if error
+ returns EMPTY CODEBOOK if codebook is empty
 **/
 CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode){
 	if(codebook_name==NULL || !endsWithHuffmanCodebook(codebook_name) ){ pRETURN_ERROR("invalid codebook passed", NULL); }
@@ -362,10 +363,30 @@ CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode){
 
 	//Read file as string
 		char* fstr = readFile(codebook_name); //reads file into a string
-		
+			if(fstr==NULL){ pRETURN_ERROR("error reading codebook_name", NULL); }
+			
 		//check if codebook matches correct format
-		if( fstr[0]!='\\' || fstr[ (int)strlen(fstr)-1 ]!='\n' ){ pRETURN_ERROR("doesn't match the correct format of HuffmanCodebook", NULL); }
+		int f_len = strlen(fstr);
+		if( f_len<3 || !(fstr[0]=='\\' && fstr[1]=='\n' && fstr[ f_len-1 ]=='\n') ){ pRETURN_ERROR("doesn't match the correct format of HuffmanCodebook", NULL); }
 		
+		
+	//edge case: if no tokens in codebook
+		if(f_len == 3 ){
+			//malloc and copy tokens
+			char* tok = (char*)malloc(3); //tok is malloced str "E\", will never find a match with a legitimate token since '\\' is a Delim
+				if(tok==NULL){ pEXIT_ERROR("malloc"); }
+				tok[0] = 'E';
+				tok[1] = '\\';
+				tok[2] = '\0';
+			char* encode = (char*)malloc(3); //encode is malloced str "B\", will never find a match with a legitimate encoding since it's a string not entirely of 0s and 1s
+				if(encode==NULL){ pEXIT_ERROR("malloc"); }
+				encode[0] = 'B';
+				encode[1] = '\\';
+				encode[2] = '\0';
+				
+			//return sincgle node
+			return createCodeNode(tok,encode);
+		} 
 		
 	//LOOPING THROUGH CODEBOOK AND ADDING TO TREE
 		char* curr_token = strtok( fstr+2 , "\n\t"); //split on next new line or tab
@@ -416,7 +437,7 @@ Searches through CodeNode based on the key given, returns the tok/encoding assoc
 @returns: String Item associated with key (if mode is cmpByEncodings, returns the token; if not, returns the encoding)
  returns NULL if error
 **/
-char* getCodeItem( CodeNode* root, char* key, CMPMode mode ){ //TODO: search function
+char* getCodeItem( CodeNode* root, char* key, CMPMode mode ){ 
 	if(root == NULL){ pRETURN_ERROR("tried to pass in NULL tree into getCodeItem()", NULL); }
 	else if( root->element->hasFrequency){ pRETURN_ERROR("cannot pass in a tree with no encodings into getCodeItem()", NULL); }
 
@@ -474,7 +495,7 @@ TreeNode* createTreeNode(Token* element){
 merges two trees into one and returns the root (the combined frequency)
 Note: the root->element->tok=NULL (because it only represents a frequency!)
 **/
-TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2){ //TODO
+TreeNode* mergeTrees(TreeNode* t1, TreeNode* t2){ 
 	if((t1==NULL&&t2==NULL)){
 		pRETURN_ERROR("cannot pass in TWO NULL TreeNodes into mergeTrees() (at most one tree can be NULL)", NULL);
 	}else if(t1==NULL){

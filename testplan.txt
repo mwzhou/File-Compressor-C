@@ -1,244 +1,1111 @@
-FIRST TEST CASE: test.txt
-Simple, just a lot of words
-~~~~~~~~~~~~~~~~~~
-Running:
-./fileCompressor ./testCases/test.txt -b
-./fileCompressor ./testCases/test.hcz -c ./HuffmanCodebook
-	-tests to make sure method returns error if the file sent in is not found/does not exist
-	-RETURNS with:
-		-ERROR: lstat failed in: fileHelperMethods.c on line:401
-		 No such file or directory
-		 ERROR: undefined file name in: fileCompressor.c on line:417
-		 No such file or directory
-./fileCompressor ./testCases/test.txt -c ./HuffmanCodebook
-./fileCompressor ./testCases/test.txt -d ./HuffmanCodebook
-	-tests to make sure method returns if a non-hcz file is sent in
-	-RETURNS with:
-		-ERROR: file must end with .hcz in: fileCompressor.c on line:269
-./fileCompressor ./testCases/test.hcz -d ./HuffmanCodebook
-~~~~~~~~~~~~~~~~~~
-IN test.txt:
-The only aspect that really matters with the codebook is that each token has its own unique bit sequence. So long as each token has this, then it does not matter which file or location you swap out the tokens for their codes are. Creating the Huffman Tree just ensures that this happens and to create it you need the frequencies of each token, but the frequencies themselves are just to ensure you end up with the smallest possible unique bit sequences for all tokens. Whether using one file or multiple files, you record each token and its corresponding frequency, then using this you can now create and use the codebook on all the files you just got the tokens from.
--------------------------------------------------------------------------------------------------------------------------------------------------
-SECOND TEST CASE: test2.txt
-Few words, but with multiple deliminators
-~~~~~~~~~~~~~~~~~~
-Running:
-./fileCompressor ./testCases/test2.txt -b
-./fileCompressor ./testCases/test2.txt -c ./HuffmanCodebook
-./fileCompressor ./testCases/test2.hcz -d ./HuffmanCodebook
-~~~~~~~~~~~~~~~~~~
-IN test2.txt:
-I'm Happy and 	"I know it
-So
-Clap you're hands? 
-	If you're
-"Happy and you \know it"
-\Do a dance
--------------------------------------------------------------------------------------------------------------------------------------------------
-THIRD TEST CASE: test3.txt
-The first four pages of harry potter and the sorcerers stone
-~~~~~~~~~~~~~~~~~~
-Running:
-./fileCompressor ./testCases/test3.txt -b
-./fileCompressor ./testCases/test3.txt -c ./HuffmanCodebook
-./fileCompressor ./testCases/test3.hcz -d ./HuffmanCodebook
-~~~~~~~~~~~~~~~~~~
-IN test3.txt:
-Harry Potter and the Sorcerer's Stone
-CHAPTER ONE
-THE BOY WHO LIVED
-Mr. and Mrs. Dursley, of number four, Privet Drive, were proud to say
-that they were perfectly normal, thank you very much. They were the last
-people you'd expect to be involved in anything strange or mysterious,
-because they just didn't hold with such nonsense.
-Mr. Dursley was the director of a firm called Grunnings, which made
-drills. He was a big, beefy man with hardly any neck, although he did
-have a very large mustache. Mrs. Dursley was thin and blonde and had
-nearly twice the usual amount of neck, which came in very useful as she
-spent so much of her time craning over garden fences, spying on the
-neighbors. The Dursleys had a small son called Dudley and in their
-opinion there was no finer boy anywhere.
-The Dursleys had everything they wanted, but they also had a secret, and
-their greatest fear was that somebody would discover it. They didn't
-think they could bear it if anyone found out about the Potters. Mrs.
-Potter was Mrs. Dursley's sister, but they hadn't met for several years;
-in fact, Mrs. Dursley pretended she didn't have a sister, because her
-sister and her good-for-nothing husband were as unDursleyish as it was
-possible to be. The Dursleys shuddered to think what the neighbors would
-say if the Potters arrived in the street. The Dursleys knew that the
-Potters had a small son, too, but they had never even seen him. This boy
-was another good reason for keeping the Potters away; they didn't want
-Dudley mixing with a child like that.
-When Mr. and Mrs. Dursley woke up on the dull, gray Tuesday our story
-starts, there was nothing about the cloudy sky outside to suggest that
-strange and mysterious things would soon be happening all over the
-country. Mr. Dursley hummed as he picked out his most boring tie for
-work, and Mrs. Dursley gossiped away happily as she wrestled a screaming
-Dudley into his high chair.
-None of them noticed a large, tawny owl flutter past the window.
-At half past eight, Mr. Dursley picked up his briefcase, pecked Mrs.
-Dursley on the cheek, and tried to kiss Dudley good-bye but missed,
-2
-because Dudley was now having a tantrum and throwing his cereal at the
-walls. "Little tyke," chortled Mr. Dursley as he left the house. He got
-into his car and backed out of number four's drive.
-It was on the corner of the street that he noticed the first sign of
-something peculiar -- a cat reading a map. For a second, Mr. Dursley
-didn't realize what he had seen -- then he jerked his head around to
-look again. There was a tabby cat standing on the corner of Privet
-Drive, but there wasn't a map in sight. What could he have been thinking
-of? It must have been a trick of the light. Mr. Dursley blinked and
-stared at the cat. It stared back. As Mr. Dursley drove around the
-corner and up the road, he watched the cat in his mirror. It was now
-reading the sign that said Privet Drive -- no, looking at the sign; cats
-couldn't read maps or signs. Mr. Dursley gave himself a little shake and
-put the cat out of his mind. As he drove toward town he thought of
-nothing except a large order of drills he was hoping to get that day.
-But on the edge of town, drills were driven out of his mind by something
-else. As he sat in the usual morning traffic jam, he couldn't help
-noticing that there seemed to be a lot of strangely dressed people
-about. People in cloaks. Mr. Dursley couldn't bear people who dressed in
-funny clothes -- the getups you saw on young people! He supposed this
-was some stupid new fashion. He drummed his fingers on the steering
-wheel and his eyes fell on a huddle of these weirdos standing quite
-close by. They were whispering excitedly together. Mr. Dursley was
-enraged to see that a couple of them weren't young at all; why, that man
-had to be older than he was, and wearing an emerald-green cloak! The
-nerve of him! But then it struck Mr. Dursley that this was probably some
-silly stunt -- these people were obviously collecting for something...
-yes, that would be it. The traffic moved on and a few minutes later, Mr.
-Dursley arrived in the Grunnings parking lot, his mind back on drills.
-Mr. Dursley always sat with his back to the window in his office on the
-ninth floor. If he hadn't, he might have found it harder to concentrate
-on drills that morning. He didn't see the owls swoop ing past in broad
-daylight, though people down in the street did; they pointed and gazed
-open- mouthed as owl after owl sped overhead. Most of them had never
-seen an owl even at nighttime. Mr. Dursley, however, had a perfectly
-normal, owl-free morning. He yelled at five different people. He made
-several important telephone calls and shouted a bit more. He was in a
-very good mood until lunchtime, when he thought he'd stretch his legs
-and walk across the road to buy himself a bun from the bakery.
-3
-He'd forgotten all about the people in cloaks until he passed a group of
-them next to the baker's. He eyed them angrily as he passed. He didn't
-know why, but they made him uneasy. This bunch were whispering
-excitedly, too, and he couldn't see a single collecting tin. It was on
-his way back past them, clutching a large doughnut in a bag, that he
-caught a few words of what they were saying.
-"The Potters, that's right, that's what I heard yes, their son, Harry"
-Mr. Dursley stopped dead. Fear flooded him. He looked back at the
-whisperers as if he wanted to say something to them, but thought better
-of it.
-He dashed back across the road, hurried up to his office, snapped at his
-secretary not to disturb him, seized his telephone, and had almost
-finished dialing his home number when he changed his mind. He put the
-receiver back down and stroked his mustache, thinking... no, he was
-being stupid. Potter wasn't such an unusual name. He was sure there were
-lots of people called Potter who had a son called Harry. Come to think
-of it, he wasn't even sure his nephew was called Harry. He'd never even
-seen the boy. It might have been Harvey. Or Harold. There was no point
-in worrying Mrs. Dursley; she always got so upset at any mention of her
-sister. He didn't blame her -- if he'd had a sister like that... but all
-the same, those people in cloaks...
-He found it a lot harder to concentrate on drills that afternoon and
-when he left the building at five o'clock, he was still so worried that
-he walked straight into someone just outside the door.
-"Sorry," he grunted, as the tiny old man stumbled and almost fell. It
-was a few seconds before Mr. Dursley realized that the man was wearing a
-violet cloak. He didn't seem at all upset at being almost knocked to the
-ground. On the contrary, his face split into a wide smile and he said in
-a squeaky voice that made passersby stare, "Don't be sorry, my dear sir,
-for nothing could upset me today! Rejoice, for You-Know-Who has gone at
-last! Even Muggles like yourself should be celebrating, this happy,
-happy day!"
-And the old man hugged Mr. Dursley around the middle and walked off.
-Mr. Dursley stood rooted to the spot. He had been hugged by a complete
-stranger. He also thought he had been called a Muggle, whatever that
-was. He was rattled. He hurried to his car and set off for home, hoping
-4
-he was imagining things, which he had never hoped before, because he
-didn't approve of imagination.
-As he pulled into the driveway of number four, the first thing he saw --
-and it didn't improve his mood -- was the tabby cat he'd spotted that
-morning. It was now sitting on his garden wall. He was sure it was the
-same one; it had the same markings around its eyes.
-"Shoo!" said Mr. Dursley loudly. The cat didn't move. It just gave him a
-stern look. Was this normal cat behavior? Mr. Dursley wondered. Trying
-to pull himself together, he let himself into the house. He was still
-determined not to mention anything to his wife.
-Mrs. Dursley had had a nice, normal day. She told him over dinner all
-about Mrs. Next Door's problems with her daughter and how Dudley had
-learned a new word ("Won't!"). Mr. Dursley tried to act normally. When
-Dudley had been put to bed, he went into the living room in time to
-catch the last report on the evening news:
-"And finally, bird-watchers everywhere have reported that the nation's
-owls have been behaving very unusually today. Although owls normally
-hunt at night and are hardly ever seen in daylight, there have been
-hundreds of sightings of these birds flying in every direction since
-sunrise. Experts are unable to explain why the owls have suddenly
-changed their sleeping pattern." The newscaster allowed himself a grin.
-"Most mysterious. And now, over to Jim McGuffin with the weather. Going
-to be any more showers of owls tonight, Jim?"
-"Well, Ted," said the weatherman, "I don't know about that, but it's not
-only the owls that have been acting oddly today. Viewers as far apart as
-Kent, Yorkshire, and Dundee have been phoning in to tell me that instead
-of the rain I promised yesterday, they've had a downpour of shooting
-stars! Perhaps people have been celebrating Bonfire Night early -- it's
-not until next week, folks! But I can promise a wet night tonight."
-Mr. Dursley sat frozen in his armchair. Shooting stars all over Britain?
-Owls flying by daylight? Mysterious people in cloaks all over the place?
-And a whisper, a whisper about the Potters...
-Mrs. Dursley came into the living room carrying two cups of tea. It was
-no good. He'd have to say something to her. He cleared his throat
-nervously. "Er -- Petunia, dear -- you haven't heard from your sister
-lately, have you?"
--------------------------------------------------------------------------------------------------------------------------------------------------
-FOURTH TEST CASE: Rec1
-Tests recursive function
-~~~~~~~~~~~~~~~~~~
-Running:
-./fileCompressor ./Rec1 -b
-	-Tests to make sure error is returned for inputs (since this is not Recursive, must have regular file to run)
-	-RETURNS:
-		-ERROR: must pass in a REGULAR FILE if not calling flag '-R' in: fileCompressor.c on line:437
-./fileCompressor ./Rec1 -b -R
-./fileCompressor ./Rec1 -c -R
-./fileCompressor ./Rec1 -d -R
-~~~~~~~~~~~~~~~~~~
-IN ./Rec1/test.txt:
-Are you	in the 	super Day For prudntial?
-Do you	
-think
-Competition
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ERROR TEST CASES (test cases to check for errors):
+	Note: line numbers may be slightly different at time of submission (due to edits of source files)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+[INPUT CHECKS]:
 
-Committe is goin to work out?	 Are we even going to
-Competition
-this year?
-I hope this works	out well because there was a lot of effort	put into it.
-What do	you
-think?
-To the people 	at the back of the row
-If you are short	
-please come to the front!!! We would	like to ee faces everyone!!?
-He said "I like pie very much, but no worms"
-~~~~~~~~~~~~~~~~~~
-IN ./Rec1/Rec2/test.txt:
-yoy yo	###1ljfj 
-hdgio dios powkf jj?gkfugiud if skg if kjfs if jhgg if ' fuuifighf' dghfhgfj"dijigld'guhfjhgjkfn dlhgj;djgjgjk/dhfuhdgj
-Prnjal suckslfjdg glfdgfj dljfsjhe does not do any 	work ?d/////fgf what is wrong with him'udhgh"hdhfkz=
-fjhusu ddugupdj /jsi idoigimjfgo$idiog 8fhglkkl&kjgkjldkg kdfajd 	ghfg jfljjfkfl!jkjfglls dkjgojsf )djgkljklcj(ljfkgjkj)lkjgkl'huih"
-we are a;; in this togetherrrr kljjlk 'gijg" ujhfgj[jdgjg]dghgkj	hfhggkljf doioer lurtj riru pranjal
-~~~~~~~~~~~~~~~~~~
-IN ./Rec1/Rec2/Rec3/test.txt:
-dhrishti woo dhrishti ' dghg" jd	 dhrishti ffkjgk I hfifg rhea fjjkdjfjsd aarush /dfdjf/ ssri/ riyaldjklfklf'diufjkdh"hfjkd
-	hdjfhdk ^fkdkkl 'dfhdh"hhfjalj ]fhdhfk/jdkjfjd/hfdkjdh|kfhkhddkl\ndfjd&djkfkldhdkfl; ldkjlkfdldsf/ dfidhlk \dhfdjfl 'dyfdhk"iodflkj
-dhrishti jjdfl;l kldkfl; 8lkdfkdj*kldfkl /djfkld	jdfjkl\djfmed'jfialk"hdfdkj dio
-~~~~~~~~~~~~~~~~~~
-IN ./Rec1/Rec2/Rec3/Rec4/test.txt:
-Hi
-#&Y89 F%E4532	r5T&*Q*
-GY7g67	t&*YFg9 t	
- u	TIOJN //
-aND TO YOU"'
--------------------------------------------------------------------------------------------------------------------------------------------------
+TEST CASE 0e: no arguments passed
+	Run: ./fileCompressor
+
+	Output:
+		ERROR: Must pass inbetween 2 to 4 arguments in addition to the executable
+		Program:fileCompressor.c in Function:inputCheck() on Line:467
+		exit: Success
+	Result:
+		Terminates program
+
+
+TEST CASE 0.5e: not enough arguments passed
+	Run: ./fileCompressor 1
+
+	Output:
+		ERROR: Must pass inbetween 2 to 4 arguments in addition to the executable
+		Program:fileCompressor.c in Function:inputCheck() on Line:467
+		exit: Success
+	Result:
+		Terminates program
+		
+
+TEST CASE 0.75e: too many arguments
+	Run: ./fileCompressor 1 2 3 4 5
+	
+	Output:
+		ERROR: Must pass inbetween 2 to 4 arguments in addition to the executable
+		Program:fileCompressor.c in Function:inputCheck() on Line:467
+		exit: Success
+	Result:
+		Terminates program
+
+
+TEST CASE 1e: multiple flags (excluding the R flag)
+	Run: ./fileCompressor -b  /ilab/users/mwz7/Desktop/k -d
+			or
+		 ./fileCompressor -b  /ilab/users/mwz7/Desktop/k -c
+		 	or
+		 ./fileCompressor  /ilab/users/mwz7/Desktop/k -c -d
+		 	etc.
+	
+	Output:
+		ERROR: cannot have multiple flags
+		Program:fileCompressor.c in Function:inputCheck() on Line:479
+		exit: Success
+	Result:
+		Terminates program
+
+
+
+TEST CASE 2e: file name passed in does not exist
+	Run: ./fileCompressor ./test.tx -c
+		 (Note: can be any flag, just has to pass in a file that doesn't exist)
+
+	Output:
+		argument:./test.tx
+		ERROR: undefined file name
+		Program:fileCompressor.c in Function:inputCheck() on Line:490
+		exit: No such file or directory
+	Result:
+		Terminates program
+
+
+
+TEST CASE 3e: no codebook specified when running -c or d flag
+	Run: ./fileCompressor ./test.txt -c
+				or
+		./fileCompressor -d ./test.txt
+
+	Output:
+		ERROR: must specify a codebook when running -c or -d flags
+		Program:fileCompressor.c in Function:inputCheck() on Line:508
+		exit: Success
+	Result:
+		Terminates program
+
+
+
+TEST CASE 4e: Multiple non Huffman Codebooks passed in
+	Run: ./fileCompressor ./test.txt -c ./test.txt 
+		(Note: can be the same file! It doesn't matter as long as two files are passed with no codebook)
+
+	Output:
+		ERROR: can only have at most one file/path
+		Program:fileCompressor.c in Function:inputCheck() on Line:493
+		exit: Success
+	Result:
+		Terminates program
+
+
+
+TEST CASE 5e: No flag passed in (assuming other arguments are fine)
+	Run: ./fileCompressor /ilab/users/mwz7/Desktop/test ./HuffmanCodebook
+	
+	Output:
+		ERROR: must specify a flag as an argument AND flag must be -b, -c, or -d
+		Program:fileCompressor.c in Function:inputCheck() on Line:503
+		exit: Success
+	Result:
+		Terminates program
+
+
+
+TEST CASE 5.5e: Only -R flag passed in (assuming other arguments are fine)
+	Run: ./fileCompressor /ilab/users/mwz7/Desktop/test -R
+	
+	Output:
+		ERROR: must specify a flag as an argument AND flag must be -b, -c, or -d
+		Program:fileCompressor.c in Function:inputCheck() on Line:503
+		exit: Success
+	Result:
+		Terminates program
+		
+
+
+TEST CASE 6e: Multiple -R flags passed in (assuming other arguments are fine)
+	Run: ./fileCompressor /ilab/users/mwz7/Desktop/test -R -R
+	
+	Output:
+		ERROR: cannot have multiple '-R' flags
+		Program:fileCompressor.c in Function:inputCheck() on Line:483
+		exit: Success
+	Result:
+		Terminates program
+
+		
+		
+TEST CASE 7e: Non b,c,or d flag passed in (assuming other arguments are fine)
+	Run: ./fileCompressor /ilab/users/mwz7/Desktop/test -q
+		 (Note -<any char other than b c or d> returns the same error as well)
+	
+	Output:
+		ERROR: must specify a flag as an argument AND flag must be -b, -c, or -d
+		Program:fileCompressor.c in Function:inputCheck() on Line:483
+		exit: Success
+	Result:
+		Terminates program
+
+
+
+TEST CASE 8e: No file passed in (assuming other arguments are fine)
+	Run: ./fileCompressor -b -R
+	
+	Output:
+		ERROR: must give in a path or a file as an argument
+		Program:fileCompressor.c in Function:inputCheck() on Line:504
+		exit: Success
+	Result:
+		Terminates program
+
+
+
+TEST CASE 9e: Only passing in HuffmanCodebook and a flag
+	Run: ./fileCompressor /ilab/users/mwz7/Desktop/HuffmanCodebook -b
+	
+	Output:
+		ERROR: must give in a path or a file as an argument
+		Program:fileCompressor.c in Function:inputCheck() on Line:504
+		exit: Success
+	Result:
+		Terminates program
+
+
+
+TEST CASE 10e: Passing in HuffmanCodebook that does NOT meet the required format
+	Run: ./fileCompressor ./test.txt ./HuffmanCodebook -c
+	Files:
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[HuffmanCodebook] (doesn't match format):
+		\The
+		10sxsx011101
+		<new Line>
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	Output:
+		ERROR: doesn't match the correct format of HuffmanCodebook
+		Program:structures.c in Function:buildCodebookTree() on Line:370
+		return: Success
+
+		ERROR: tried to build tree from codebook
+		Program:fileCompressor.c in Function:inputCheck() on Line:515
+		exit: Success
+	Result:
+		Terminates program
+			
+	
+			
+TEST CASE 10.5e: Passing in empty HuffmanCodebook
+	Run: ./fileCompressor ./test.txt ./HuffmanCodebook -c
+	Files:
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[HuffmanCodebook] (empty):
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	Output:
+		ERROR: doesn't match the correct format of HuffmanCodebook
+		Program:structures.c in Function:buildCodebookTree() on Line:370
+		return: Success
+
+		ERROR: tried to build tree from codebook
+		Program:fileCompressor.c in Function:inputCheck() on Line:515
+		exit: Success
+	Result:
+		Terminates program
+		
+	
+		
+-------------------------------------------------------------------------------------------------------------------		
+[OTHER ERROR CHECKS]:
+
+
+TEST CASE 11e: reading a file with no read permission
+	Run: ./fileCompressor  -b /ilab/users/mwz7/Desktop/k/no_read_p.txt 
+		(no_read_p.txt has no read permissions)
+		(can run any flag)
+	
+	Output:		 
+		ERROR: error opening file (O_RDONLY)
+		Program:fileHelperMethods.c in Function:readFile() on Line:44
+		return: Permission denied
+
+		ERROR: error reading file name
+		Program:fileCompressor.c in Function:buildFrequencyAVL() on Line:101
+		return: Permission denied
+	Result:
+		flag is not run
+
+
+
+TEST CASE 12e: writing a file with no write permission. flag: -b
+	Run: ./fileCompressor -b ./test.txt 
+		 (HuffmanCodebook already exists in directory and has no write permissions)
+		 
+	Output:	
+		file:HuffmanCodebook
+		ERROR: tried to open file flags: (O_WRONLY|O_CREAT|O_TRUNC)
+		Program:fileHelperMethods.c in Function:openFileW() on Line:75
+		return: Permission denied
+
+		ERROR: open write
+		Program:fileCompressor.c in Function:buildcodebook() on Line:46
+		return: Permission denied	 
+	Result:
+		HuffmanCodebook is not overwritten
+	
+		
+	
+TEST CASE 12.5e: writing a file with no write permission. flag: -c
+	Run: ./fileCompressor -c ./test.txt ./HuffmanCodebook
+		 (test.hcz already exists and has no write permissions)	
+
+	Output:
+		ERROR: tried to open file flags: (O_WRONLY|O_CREAT|O_TRUNC)
+		Program:fileHelperMethods.c in Function:openFileW() on Line:75
+		return: Permission denied
+
+		ERROR: open write
+		Program:fileCompressor.c in Function:compress() on Line:201
+		return: Permission denied
+	Result:
+		test.hcz is not overwritten
+
+	Remarks: 
+		note -d is simillar if the file name to write to is already created and has no write permission
+		
+		
+
+TEST CASE 13e: Codebook does not contain all tokens in file. flag: -c
+	Run: ./fileCompressor ./test.txt -c ./HuffmanCodebook
+	Files:
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[HuffmanCodebook]:
+		/
+		<new line>
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[test.txt]:
+		The only aspect that really matters with the codebook is that each token has its own unique bit sequence.
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	Output:
+		token:"The" in file:/ilab/users/mwz7/Desktop/Asst2-master/test.txt
+		ERROR: token doesn't exist in codebook, will not create compressed file
+		Program:fileCompressor.c in Function:compress() on Line:231
+		return: Success
+	Result:
+		file "test.hcz" is deleted.
+
+
+
+TEST CASE 13.5: Codebook does not contain the space token but file has a space in it. flag: -c
+	Run: ./fileCompressor ./test.txt -c ./HuffmanCodebook
+	Files:
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[HuffmanCodebook] (missing space token):
+		\
+		10000	own
+		10001	only
+		10010	matters
+		10011	its
+		10100	the
+		10101	is
+		10110	each
+		10111	codebook
+		11000	bit
+		11001	\n
+		1101	that
+		111000	The
+		111001	with
+		111010	unique
+		111011	token
+		111100	aspect
+		111101	has
+		111110	sequence.
+		111111	really
+		<new line>
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[test.txt]:
+		The only aspect that really matters with the codebook is that each token has its own unique bit sequence.
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		
+	Output:
+		token:"\S" in file:/ilab/users/mwz7/Desktop/Asst2-master/test.txt
+		ERROR: token doesn't exist in codebook, will not create compressed file
+		Program:fileCompressor.c in Function:compress() on Line:254
+		return: Success
+	Result:
+		file "test.hcz" is deleted
+
+
+
+TEST CASE 14e: Codebook does not contain all tokens in file flag: -d
+	Run: ./fileCompressor ./test.hcz -d ./HuffmanCodebook
+	Files:
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[HuffmanCodebook]:
+		/
+		10000	own
+		<new line>
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[test.txt]:
+		11100
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	Output:
+		file:/ilab/users/mwz7/Desktop/Asst2-master/test.hcz
+		ERROR: could not find token for all encodings in file, will delete decompressed file
+		Program:fileCompressor.c in Function:decompress() on Line:308
+		return: Success
+	Result:
+		"test" is deleted
+
+
+
+TEST CASE 15e: Compress a compressed file (ends with .hcz).
+	Run: ./fileCompressor ./test.hcz -c ./HuffmanCodebook
+	Output:
+		ERROR: cannot compress already compressed file. file can't end with hcz
+		Program:fileCompressor.c in Function:compress() on Line:190
+		return: Success
+	Result:
+		does not compress
+
+
+
+TEST CASE 16e: Try to decompress a non-compressed file (does not end with .hcz)
+	Run: ./fileCompressor ./test.txt -d ./HuffmanCodebook
+	Output:
+		ERROR: file must end with .hcz
+		Program:fileCompressor.c in Function:decompress() on Line:281
+		return: Success
+	Result:
+		does not decompress.
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+REGULAR TEST CASES
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+TEST CASE 0: run -b, -c, and -d on an empty file
+	Run:
+		./fileCompressor ./empty.txt -b
+		./fileCompressor ./empty.txt -c ./HuffmanCodebook
+		./fileCompressor ./empty.hcz ./HuffmanCodebook -d
+	
+	Files/Directories:
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[empty.txt] (empty):
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	Output: 
+		none
+	
+	Result: 
+		runs as expected. 100% match from original file and decompressed file in the end.
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[HuffmanCodebook](created in executable directory):
+		\
+		<new line>
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[empty.hcz] (empty):
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[empty] (empty):
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	Remarks:
+		Technically an empty file is valid, so the Huffman Codebook wouldn't be empty, it just wouldn't have any tokens.
+
+
+
+
+
+TEST CASE 0.5: run all flags on an empty directory
+	Run: 
+		./fileCompressor /ilab/users/mwz7/Desktop/empty_dir/ -b
+		./fileCompressor /ilab/users/mwz7/Desktop/empty_dir/ ./HuffmanCodebook -c				
+		./fileCompressor /ilab/users/mwz7/Desktop/empty_dir/ ./HuffmanCodebook -d
+
+
+
+	Files/Directories:
+		===================================================================================
+		DIRECTORY - empty_dir:
+			contents: (nothing)
+		===================================================================================
+	
+	Results:
+		Runs as expected. empty_dir is still empty since there's no files to compress/decompress.
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[HuffmanCodebook](created in executable directory):
+		\
+		<new line>
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		===================================================================================
+		DIRECTORY - empty_dir:
+			contents: (nothing)
+		===================================================================================
+
+	Remarks:
+		Simillar to test case 0, the Huffman Codebook would still exist, it's just empty.
+
+
+
+
+TEST CASE 1: run flags on a random file in any order
+	Run:
+		./fileCompressor -R <file_name> -b
+		./fileCompressor -b -R <file_name>
+		./fileCompressor -b <file_name> -R
+		./fileCompressor <file_name> -R -b
+			or 
+		./fileCompressor <file_name> -c ./Huffman Codebook
+		./fileCompressor <file_name> -c ./Huffman Codebook -R
+		./fileCompressor./Huffman Codebook  <file_name> -c -R
+		./fileCompressor./Huffman Codebook -c -R <file_name>
+	
+	Remarks:
+		as long as all arguments are the same, the order doesn't matter. They are treated the same and have the same exact result.
+
+
+
+
+
+TEST CASE 2: run all flags on a file with a single word
+	Run: 
+		./fileCompressor /ilab/users/mwz7/Desktop/k/single_word.pdf -b
+		./fileCompressor /ilab/users/mwz7/Desktop/k/single_word.pdf -c ./HuffmanCodebook				
+		./fileCompressor /ilab/users/mwz7/Desktop/k/single_word.hcz -d ./HuffmanCodebook
+
+
+	Files/Directories:
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[single_word.pdf] (in DIR /ilab/users/mwz7/Desktop/k/): 
+		hello
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	Results:
+		Runs as expected.
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[HuffmanCodebook](created in executable directory):
+		\
+		0	\n
+		1	hello
+		<new line>
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[single_word.hcz](created in /ilab/users/mwz7/Desktop/k/):
+		10
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[single_word](created in /ilab/users/mwz7/Desktop/k/):
+		hello
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	Remarks:
+		Note: Test Case 2 is also testing for a different file extension other than .txt and also running a file in a different directory other than the executable.
+		Note: the Huffman Codebook accounts for the \n at the end of a file from the text editor. The decompressed file is still exactly the same.
+
+
+TEST CASE 2.5: run all flags on a FILE but pass in -R flag
+	Run: 
+		./fileCompressor /ilab/users/mwz7/Desktop/k/single_word.pdf -b -R
+			Output:
+				passed in -R flag but only passed in a REGULAR file, will run flag as if NOT recursive
+		./fileCompressor /ilab/users/mwz7/Desktop/k/single_word.pdf -c ./HuffmanCodebook -R	
+			Output:
+				passed in -R flag but only passed in a REGULAR file, will run flag as if NOT recursive					
+		./fileCompressor /ilab/users/mwz7/Desktop/k/single_word.hcz -d ./HuffmanCodebook -R
+			Output:
+				passed in -R flag but only passed in a REGULAR file, will run flag as if NOT recursive
+					
+	Files: 
+		same as above
+		
+	Results:
+		runs as expected.
+		same as above
+		
+	Remarks:
+		If user passes in a single word but also the R flag, the program treats it as if no R flag in the first place.
+
+
+
+
+TEST CASE 3: run all flags on a file of words with just a single delimiter (some words have duplicates). File has a large number of words.
+	
+	Run:
+		./fileCompressor ./testCases/test.txt -b
+		./fileCompressor ./testCases/test.txt -c ./HuffmanCodebook
+		./fileCompressor ./testCases/test.hcz -d ./HuffmanCodebook
+			
+	Files:
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[test.txt] (in DIR /testCases/):
+		The only aspect that really matters with the codebook is that each token has its own unique bit sequence. So long as each token has this, then it does not matter which file or location you swap out the tokens for their codes are. Creating the Huffman Tree just ensures that this happens and to create it you need the frequencies of each token, but the frequencies themselves are just to ensure you end up with the smallest possible unique bit sequences for all tokens. Whether using one file or multiple files, you record each token and its corresponding frequency, then using this you can now create and use the codebook on all the files you just got the tokens from.
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	Results:
+		Everything runs as expected. The end-result decompressed file has a 100% match with the original file.
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[HuffmanCodebook] (created in same directory as executable):
+		\
+		0	\S
+		1000000	smallest
+		10000010	Creating
+		10000011	Huffman
+		100001	that
+		100010	just
+		100011	token
+		10010	you
+		100110	and
+		10011100	The
+		10011101	\n
+		10011110	but
+		10011111	use
+		10100000	frequency,
+		10100001	their
+		10100010	from.
+		10100011	themselves
+		10100100	can
+		10100101	got
+		10100110	this,
+		10100111	happens
+		10101000	token,
+		10101001	is
+		10101010	tokens.
+		10101011	codes
+		10101100	up
+		10101101	which
+		10101110	Tree
+		10101111	corresponding
+		10110000	location
+		10110001	sequence.
+		10110010	record
+		10110011	really
+		10110100	long
+		10110101	own
+		10110110	matter
+		10110111	are
+		10111000	only
+		10111001	one
+		10111010	on
+		10111011	of
+		10111100	now
+		10111101	not
+		10111110	does
+		10111111	matters
+		11000000	multiple
+		11000001	need
+		11000010	So
+		11000011	Whether
+		11000100	are.
+		11000101	end
+		11000110	ensure
+		11000111	as
+		11001000	ensures
+		11001001	out
+		11001010	aspect
+		11001011	files
+		11001100	possible
+		11001101	swap
+		11001110	files,
+		11001111	sequences
+		1101000	frequencies
+		1101001	it
+		1101010	using
+		1101011	its
+		1101100	has
+		1101101	or
+		1101110	bit
+		1101111	unique
+		1110000	codebook
+		1110001	this
+		1110010	for
+		1110011	with
+		1110100	file
+		1110101	tokens
+		1110110	then
+		1110111	create
+		1111000	to
+		1111001	all
+		111101	each
+		11111	the
+		<new line>
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[test.hcz] (created in /testCases/):
+		1001110001011100001100101001000010101100110101111110111001101111101110000010101001010000101111010100011011011000110101101011010101101111011011100101100010110000100101101000110001110111101010001101101100010100110011101100110100101011111001011110101011011001010110101110100011011010101100000100100110011010110010010111110111010101110010010100001010101011011000100010000010011111010000011010101110010001001100100001000010111000101010011101001100111100001110111011010010100100110000010111110110100001011101101111010101010000100111100111110110100001010001101011011101000100111100001100011001001001100010101010110001110011011111010000000110011000110111101101110011001111011100100111100101010101001100001101101010010111001011101000110110101100000001100111001001001011001001111010100011010011001101011010101111010100000011101100110101001110001010010010100100010111100011101110100110010011111011111011100000101110100111100101111101100101101001001000100101001010111110111010101010001010011101
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[test] (created in /testCases/):
+		The only aspect that really matters with the codebook is that each token has its own unique bit sequence. So long as each token has this, then it does not matter which file or location you swap out the tokens for their codes are. Creating the Huffman Tree just ensures that this happens and to create it you need the frequencies of each token, but the frequencies themselves are just to ensure you end up with the smallest possible unique bit sequences for all tokens. Whether using one file or multiple files, you record each token and its corresponding frequency, then using this you can now create and use the codebook on all the files you just got the tokens from.
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		
+		
+		
+
+TEST CASE 4: run all flags on a file with few words ad with multiple delimiters
+	Run:
+		./fileCompressor ./testCases/test2.txt -b
+		./fileCompressor ./testCases/test2.txt -c ./HuffmanCodebook
+		./fileCompressor ./testCases/test2.hcz -d ./HuffmanCodebook
+		
+	Files:
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[test2.txt] (in DIR /testCases/):
+		I'm Happy and 	"I know it
+		So
+		Clap you're hands? 
+			If you're
+		"Happy and you \know it"
+		\Do a dance
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		
+	Results:
+		Everything runs as expected. The end-result decompressed file has a 100% match with the original file.
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[HuffmanCodebook] (created in same directory as executable):
+		\
+		0000	and
+		00010	a
+		000110	Clap
+		000111	Do
+		0010	\1
+		0011	\2
+		010	\n
+		0110	you
+		011100	dance
+		011101	hands
+		011110	\?
+		011111	If
+		10	\S
+		110000	m
+		110001	So
+		11001	I
+		11010	re
+		11011	it
+		11100	know
+		11101	\e
+		11110	Happy
+		11111	\t
+		<new line>
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[test2.hcz] (in DIR /testCases/): 
+		11001001011000010111101000001011111001111001101110010110110101100010100001101001100010110101001110101111010010111110111111001100010110100100011111101000001001101011101111001011011001101011101000111100001010011100010
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[test2] (in DIR /testCases/): 
+		I'm Happy and 	"I know it
+		So
+		Clap you're hands? 
+			If you're
+		"Happy and you \know it"
+		\Do a dance
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		
+		
+		
+
+TEST CASE 5: run all flags on just a file of delimiters (no words)
+	Run:
+		./fileCompressor ./testCases/delims.txt -b
+		./fileCompressor ./testCases/delims.txt -c ./HuffmanCodebook
+		./fileCompressor ./testCases/delims.txt -d ./HuffmanCodebook
+	
+	Files:
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~			
+		[delims.txt] (in DIR /testCases/): 
+		
+ 	 	\
+
+
+
+
+
+
+
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~		
+	
+	Results:
+		Everything runs as expected. The end-result decompressed file has a 100% match with the original file.
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[HuffmanCodebook] (created in executable directory):
+		\
+		00	\S
+		010	\e
+		011	\t
+		1	\n
+		<new line>
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[delims.hcz] (created in /testCases/):
+		100011000110101111111
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~			
+		[delims] (created in /testCases/): 
+		
+ 	 	\
+
+
+
+
+
+
+
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+		
+TEST CASE 6: The first four pages of harry potter and the sorcerers stone (very large text file)
+	Run:
+		./fileCompressor ./testCases/test3.txt -b
+		./fileCompressor ./testCases/test3.txt -c ./HuffmanCodebook
+		./fileCompressor ./testCases/test3.hcz -d ./HuffmanCodebook
+	
+	Files:
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	[test3.txt]
+	Harry Potter and the Sorcerer's Stone
+	CHAPTER ONE
+	THE BOY WHO LIVED
+	Mr. and Mrs. Dursley, of number four, Privet Drive, were proud to say
+	that they were perfectly normal, thank you very much. They were the last
+	people you'd expect to be involved in anything strange or mysterious,
+	because they just didn't hold with such nonsense.
+	Mr. Dursley was the director of a firm called Grunnings, which made
+	drills. He was a big, beefy man with hardly any neck, although he did
+	have a very large mustache. Mrs. Dursley was thin and blonde and had
+	nearly twice the usual amount of neck, which came in very useful as she
+	spent so much of her time craning over garden fences, spying on the
+	neighbors. The Dursleys had a small son called Dudley and in their
+	opinion there was no finer boy anywhere.
+	The Dursleys had everything they wanted, but they also had a secret, and
+	their greatest fear was that somebody would discover it. They didn't
+	think they could bear it if anyone found out about the Potters. Mrs.
+	Potter was Mrs. Dursley's sister, but they hadn't met for several years;
+	in fact, Mrs. Dursley pretended she didn't have a sister, because her
+	sister and her good-for-nothing husband were as unDursleyish as it was
+	possible to be. The Dursleys shuddered to think what the neighbors would
+	say if the Potters arrived in the street. The Dursleys knew that the
+	Potters had a small son, too, but they had never even seen him. This boy
+	was another good reason for keeping the Potters away; they didn't want
+	Dudley mixing with a child like that.
+	When Mr. and Mrs. Dursley woke up on the dull, gray Tuesday our story
+	starts, there was nothing about the cloudy sky outside to suggest that
+	strange and mysterious things would soon be happening all over the
+	country. Mr. Dursley hummed as he picked out his most boring tie for
+	work, and Mrs. Dursley gossiped away happily as she wrestled a screaming
+	Dudley into his high chair.
+	None of them noticed a large, tawny owl flutter past the window.
+	At half past eight, Mr. Dursley picked up his briefcase, pecked Mrs.
+	Dursley on the cheek, and tried to kiss Dudley good-bye but missed,
+	2
+	because Dudley was now having a tantrum and throwing his cereal at the
+	walls. "Little tyke," chortled Mr. Dursley as he left the house. He got
+	into his car and backed out of number four's drive.
+	It was on the corner of the street that he noticed the first sign of
+	something peculiar -- a cat reading a map. For a second, Mr. Dursley
+	didn't realize what he had seen -- then he jerked his head around to
+	look again. There was a tabby cat standing on the corner of Privet
+	Drive, but there wasn't a map in sight. What could he have been thinking
+	of? It must have been a trick of the light. Mr. Dursley blinked and
+	stared at the cat. It stared back. As Mr. Dursley drove around the
+	corner and up the road, he watched the cat in his mirror. It was now
+	reading the sign that said Privet Drive -- no, looking at the sign; cats
+	couldn't read maps or signs. Mr. Dursley gave himself a little shake and
+	put the cat out of his mind. As he drove toward town he thought of
+	nothing except a large order of drills he was hoping to get that day.
+	But on the edge of town, drills were driven out of his mind by something
+	else. As he sat in the usual morning traffic jam, he couldn't help
+	noticing that there seemed to be a lot of strangely dressed people
+	about. People in cloaks. Mr. Dursley couldn't bear people who dressed in
+	funny clothes -- the getups you saw on young people! He supposed this
+	was some stupid new fashion. He drummed his fingers on the steering
+	wheel and his eyes fell on a huddle of these weirdos standing quite
+	close by. They were whispering excitedly together. Mr. Dursley was
+	enraged to see that a couple of them weren't young at all; why, that man
+	had to be older than he was, and wearing an emerald-green cloak! The
+	nerve of him! But then it struck Mr. Dursley that this was probably some
+	silly stunt -- these people were obviously collecting for something...
+	yes, that would be it. The traffic moved on and a few minutes later, Mr.
+	Dursley arrived in the Grunnings parking lot, his mind back on drills.
+	Mr. Dursley always sat with his back to the window in his office on the
+	ninth floor. If he hadn't, he might have found it harder to concentrate
+	on drills that morning. He didn't see the owls swoop ing past in broad
+	daylight, though people down in the street did; they pointed and gazed
+	open- mouthed as owl after owl sped overhead. Most of them had never
+	seen an owl even at nighttime. Mr. Dursley, however, had a perfectly
+	normal, owl-free morning. He yelled at five different people. He made
+	several important telephone calls and shouted a bit more. He was in a
+	very good mood until lunchtime, when he thought he'd stretch his legs
+	and walk across the road to buy himself a bun from the bakery.
+	3
+	He'd forgotten all about the people in cloaks until he passed a group of
+	them next to the baker's. He eyed them angrily as he passed. He didn't
+	know why, but they made him uneasy. This bunch were whispering
+	excitedly, too, and he couldn't see a single collecting tin. It was on
+	his way back past them, clutching a large doughnut in a bag, that he
+	caught a few words of what they were saying.
+	"The Potters, that's right, that's what I heard yes, their son, Harry"
+	Mr. Dursley stopped dead. Fear flooded him. He looked back at the
+	whisperers as if he wanted to say something to them, but thought better
+	of it.
+	He dashed back across the road, hurried up to his office, snapped at his
+	secretary not to disturb him, seized his telephone, and had almost
+	finished dialing his home number when he changed his mind. He put the
+	receiver back down and stroked his mustache, thinking... no, he was
+	being stupid. Potter wasn't such an unusual name. He was sure there were
+	lots of people called Potter who had a son called Harry. Come to think
+	of it, he wasn't even sure his nephew was called Harry. He'd never even
+	seen the boy. It might have been Harvey. Or Harold. There was no point
+	in worrying Mrs. Dursley; she always got so upset at any mention of her
+	sister. He didn't blame her -- if he'd had a sister like that... but all
+	the same, those people in cloaks...
+	He found it a lot harder to concentrate on drills that afternoon and
+	when he left the building at five o'clock, he was still so worried that
+	he walked straight into someone just outside the door.
+	"Sorry," he grunted, as the tiny old man stumbled and almost fell. It
+	was a few seconds before Mr. Dursley realized that the man was wearing a
+	violet cloak. He didn't seem at all upset at being almost knocked to the
+	ground. On the contrary, his face split into a wide smile and he said in
+	a squeaky voice that made passersby stare, "Don't be sorry, my dear sir,
+	for nothing could upset me today! Rejoice, for You-Know-Who has gone at
+	last! Even Muggles like yourself should be celebrating, this happy,
+	happy day!"
+	And the old man hugged Mr. Dursley around the middle and walked off.
+	Mr. Dursley stood rooted to the spot. He had been hugged by a complete
+	stranger. He also thought he had been called a Muggle, whatever that
+	was. He was rattled. He hurried to his car and set off for home, hoping
+	4
+	he was imagining things, which he had never hoped before, because he
+	didn't approve of imagination.
+	As he pulled into the driveway of number four, the first thing he saw --
+	and it didn't improve his mood -- was the tabby cat he'd spotted that
+	morning. It was now sitting on his garden wall. He was sure it was the
+	same one; it had the same markings around its eyes.
+	"Shoo!" said Mr. Dursley loudly. The cat didn't move. It just gave him a
+	stern look. Was this normal cat behavior? Mr. Dursley wondered. Trying
+	to pull himself together, he let himself into the house. He was still
+	determined not to mention anything to his wife.
+	Mrs. Dursley had had a nice, normal day. She told him over dinner all
+	about Mrs. Next Door's problems with her daughter and how Dudley had
+	learned a new word ("Won't!"). Mr. Dursley tried to act normally. When
+	Dudley had been put to bed, he went into the living room in time to
+	catch the last report on the evening news:
+	"And finally, bird-watchers everywhere have reported that the nation's
+	owls have been behaving very unusually today. Although owls normally
+	hunt at night and are hardly ever seen in daylight, there have been
+	hundreds of sightings of these birds flying in every direction since
+	sunrise. Experts are unable to explain why the owls have suddenly
+	changed their sleeping pattern." The newscaster allowed himself a grin.
+	"Most mysterious. And now, over to Jim McGuffin with the weather. Going
+	to be any more showers of owls tonight, Jim?"
+	"Well, Ted," said the weatherman, "I don't know about that, but it's not
+	only the owls that have been acting oddly today. Viewers as far apart as
+	Kent, Yorkshire, and Dundee have been phoning in to tell me that instead
+	of the rain I promised yesterday, they've had a downpour of shooting
+	stars! Perhaps people have been celebrating Bonfire Night early -- it's
+	not until next week, folks! But I can promise a wet night tonight."
+	Mr. Dursley sat frozen in his armchair. Shooting stars all over Britain?
+	Owls flying by daylight? Mysterious people in cloaks all over the place?
+	And a whisper, a whisper about the Potters...
+	Mrs. Dursley came into the living room carrying two cups of tea. It was
+	no good. He'd have to say something to her. He cleared his throat
+	nervously. "Er -- Petunia, dear -- you haven't heard from your sister
+	lately, have you?"
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	Results:
+		Everything runs as expected. The end-result decompressed file has a 100% match with the original file.
+		Note: too large to copy and paste results, but a text matcher returned a 100% match.
+
+
+
+
+TEST CASE 7: Runs all flags on a DIRECTORY with multiple files //TODO
+	Run:
+		./fileCompressor /ilab/users/mwz7/Desktop/mult -b
+		./fileCompressor ./HuffmanCodebook /ilab/users/mwz7/Desktop/mult -d
+		./fileCompressor ./HuffmanCodebook /ilab/users/mwz7/Desktop/mult -d
+
+	Files:
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[a.txt] (in DIR /mult/)
+		hello my name
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[b.txt] (in DIR /mult/)
+		I can sing!
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[c.txt] (in DIR /mult/)
+		wow hello sing
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+	Results:
+		runs as expected
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[HuffmanCodebook] (created in executable directory):
+		\
+		00	\n
+		0100	sing
+		0101	sing!
+		0110	name
+		0111	wow
+		100	hello
+		1010	my
+		10110	I
+		10111	can
+		11	\S
+		<new line>
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[a.hcz] (in DIR /mult/)
+		10011101011011000
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[a.hcz] (in DIR /mult/)
+		10110111011111010100
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[a.hcz] (in DIR /mult/)
+		01111110011010000
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		
+		(copying all files would take too much space)
+		All decompressed files match their original files
+
+
+
+
+TEST CASE 8: Tests recursive flag on a directory with each subdirectory holding a single file
+	Run:
+		./fileCompressor ./Rec1 -b -R
+		./fileCompressor ./Rec1 -c -R ./HuffmanCodebook
+		./fileCompressor ./Rec1 -d -R ./HuffmanCodebook
+
+	Files:
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		IN ./Rec1/test.txt:
+		Are you	in the 	super Day For prudntial?
+		Do you	
+		think
+		Competition
+
+		Committe is goin to work out?	 Are we even going to
+		Competition
+		this year?
+		I hope this works	out well because there was a lot of effort	put into it.
+		What do	you
+		think?
+		To the people 	at the back of the row
+		If you are short	
+		please come to the front!!! We would	like to ee faces everyone!!?
+		He said "I like pie very much, but no worms"
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		IN ./Rec1/Rec2/test.txt:
+		yoy yo	###1ljfj 
+		hdgio dios powkf jj?gkfugiud if skg if kjfs if jhgg if ' fuuifighf' dghfhgfj"dijigld'guhfjhgjkfn dlhgj;djgjgjk/dhfuhdgj
+		Prnjal suckslfjdg glfdgfj dljfsjhe does not do any 	work ?d/////fgf what is wrong with him'udhgh"hdhfkz=
+		fjhusu ddugupdj /jsi idoigimjfgo$idiog 8fhglkkl&kjgkjldkg kdfajd 	ghfg jfljjfkfl!jkjfglls dkjgojsf )djgkljklcj(ljfkgjkj)lkjgkl'huih"
+		we are a;; in this togetherrrr kljjlk 'gijg" ujhfgj[jdgjg]dghgkj	hfhggkljf doioer lurtj riru pranjal
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		IN ./Rec1/Rec2/Rec3/test.txt:
+		dhrishti woo dhrishti ' dghg" jd	 dhrishti ffkjgk I hfifg rhea fjjkdjfjsd aarush /dfdjf/ ssri/ riyaldjklfklf'diufjkdh"hfjkd
+			hdjfhdk ^fkdkkl 'dfhdh"hhfjalj ]fhdhfk/jdkjfjd/hfdkjdh|kfhkhddkl\ndfjd&djkfkldhdkfl; ldkjlkfdldsf/ dfidhlk \dhfdjfl 'dyfdhk"iodflkj
+		dhrishti jjdfl;l kldkfl; 8lkdfkdj*kldfkl /djfkld	jdfjkl\djfmed'jfialk"hdfdkj dio
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		IN ./Rec1/Rec2/Rec3/Rec4/test.txt:
+		Hi
+		#&Y89 F%E4532	r5T&*Q*
+		GY7g67	t&*YFg9 t	
+		 u	TIOJN //
+		aND TO YOU"'
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	Results:
+		(copying all files would take too much space)
+		Everything runs as expected when run-line command is correct. The end-result decompressed file has a 100% match with the original file.
+
+
+
+
+TEST CASE 9: Tests recursive flag on a directory with each directory having multiple subdirectories and each subdirectory having multiple files
+	Run:
+		./fileCompressor ./r1/ -b -R
+		./fileCompressor ./r1/ -c ./HuffmanCodebook -R
+		./fileCompressor ./r1/ -d ./HuffmanCodebook -R
+
+
+	Files/Directories:
+			===================================================================================
+			[DIRECTORY - r1]: ./r1/
+				> [dir] r2
+				> [dir] r2.5
+			===================================================================================
+			===================================================================================
+			[DIRECTORY - r2]: ./r1/r2
+				> hi.txt
+					~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+					[hi.txt]
+					hi
+					~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			===================================================================================
+			===================================================================================
+			[DIRECTORY - r2.5]: ./r1/r2.5
+				> [dir] r3.5
+				> [dir] r3.75
+				> r3f.txt
+					~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+					[r3f.txt]
+					r3f.txt
+					~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~			
+				> r35f.txt
+					~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+					[r35f.txt]
+					r35f.txt
+					~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~			
+			===================================================================================
+			===================================================================================
+			[DIRECTORY - r3.75]: ./r1/r2.5/r3.75
+			 	(empty)
+			===================================================================================
+			===================================================================================
+			[DIRECTORY - r3.5]: ./r1/r2.5/r3.5
+				> [dir] r3
+			===================================================================================
+			===================================================================================
+			[DIRECTORY - r3]: ./r1/r2.5/r3.5/r3
+				> maybe.txt
+					~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+					[maybe.txt]
+					maybe
+					~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+				> no.txt
+					~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+					[no.txt]
+					no
+					~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~				
+				> yes.txt
+					~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+					[yes.txt]
+					yes
+					~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~				
+			===================================================================================
+		
+	Results:
+		runs as expected. all files are written in their correct directory. 100% match with each original file.
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[HuffmanCodebook] (created in executable directory):
+		\
+		000	no
+		001	maybe
+		0100	hi
+		0101	yes
+		0110	r3f.txt
+		0111	r35.txt
+		1	\n
+		<new line>
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		
+		(Note: won't copy the rest of the results since it takes up a considerable amount of space, but it works)

@@ -14,12 +14,13 @@
 
 //ENUMS
 	//enum to differentiate between FileTypes
-	typedef enum{ isDIR, isREG, isLNK, isUNDEF }FileType;
+	typedef enum{ isDIR=1, isREG=2, isLNK=3, isUNDEF=-1 }FileType;
 
 
 //METHOD SIGNATURES
 	int sizeOfFile(char* file_name);
 	char* readFile(char* file_name);
+	int openFileW(char* file_name);
 	FileType typeOfFile(char* file_name);
 
 	char* combinedPath(char* path_name, char* file_name);
