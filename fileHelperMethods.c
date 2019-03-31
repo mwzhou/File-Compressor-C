@@ -90,7 +90,7 @@ returns the type of the string given in
 **/
 FileType typeOfFile(char* file_name){
 	if(file_name ==NULL){ pRETURN_ERROR("passed in NULL path", isUNDEF); }
-	if( file_name[(int)strlen(file_name)-1] == '~' ) return isUNDEF; //TODO : verify
+	if( file_name[(int)strlen(file_name)-1] == '~' ) return isUNDEF; 
 
 	struct stat dpstat;
 	if(stat( file_name  , &dpstat) < 0){ return isUNDEF; } //file doesn't exist
@@ -133,21 +133,62 @@ char* combinedPath(char* path_name, char* file_name){
 
 
 /**
-Combines two strings together into a new concatenated string (dynamically allocated)
-NOTE: does not free original strings
+if extension is NULL, removes file_name's extension, otherwise, adds on the extension to file name and returns new file_name
 **/
-char* concatStr(char* s1, char* s2){
-	if(s1==NULL || s2==NULL){ pRETURN_ERROR("cannot pass in NULL string into combinedPath()", NULL); }
+char* getNewExtensionAndPath( char* old_file_name, const char* extension ){
+	if( old_file_name == NULL){ pRETURN_ERROR("can't pass in NULL file_name", NULL); }
+	if( typeOfFile(old_file_name)!=isREG  ){ pRETURN_ERROR("file_name passed in is not a file", NULL); }
 
-	//reallocate enough space
-	char* ret = (char*)malloc( 1 + strlen(s1) + strlen(s2) );
-		if(ret==NULL){ pEXIT_ERROR("malloc"); }
+	//get real path of old_file_name
+	char* oldfname_path = realpath( old_file_name, NULL); 
 
-	//copies and concatenates string
-	strcpy(ret, s1);
-	strcat(ret, s2);
+	//IF REMOVING THE EXTENSION	
+	if(extension == NULL){
+		int chars_b4Dot = lengthBeforeChar( oldfname_path, '.');
+			if(chars_b4Dot==-1){ pRETURN_ERROR("error, no extension to remove from.", NULL); }
+			
+		//malloc enough space for file_name without the extension
+		char* ret = malloc( chars_b4Dot + 1 );
+		memcpy (ret, oldfname_path, chars_b4Dot);
+			ret[chars_b4Dot] = '\0';
+			free(oldfname_path);
 
-	return ret;
+		return ret;
+	
+	//IF ADDING THE EXTENSION
+	}else{
+		//realloc space for extension
+		char* ret = realloc( oldfname_path, (strlen(oldfname_path)  + (strlen(extension)) + 1) );
+			if(ret == NULL){ pEXIT_ERROR("realloc"); } //realloc error
+		//add the extension to the end of file_name
+		ret = strcat(ret , extension);
+		
+		return ret;
+	}
+
+
+	return NULL; //if dot at first char
+
+}
+
+
+/**
+returns number of characters in s before the last occurrence of c
+returns -1 if hits a '/' character before the dot
+**/
+int lengthBeforeChar( char* s, char c){
+	//FINDING NUMBER OF CHARACTERS before the '.' if it exists, if no dot, it returns -1
+		int len = strlen(s);
+		int i;
+		for(i = len; i>=0; i--){
+			if( s[i] == '/'){
+				return -1;
+			}else if ( s[i] == c){
+				return i;
+			}
+		}
+		
+		return -1;
 }
 
 
@@ -171,142 +212,6 @@ char* appendCharToString( char* prev_str , char add_c){
 		new_str[len_prev+1] = '\0'; //terminating character
 
 	return new_str;
-}
-
-
-/**
-gets the directory of a given filename
-returns string of directory (malloced)
-**/
-char* getDirOfFile( char* file_name ){
-	if(file_name == NULL){ pRETURN_ERROR("file_name passed in is NULL", NULL);  }
-	
-	//checks file_name type
-	FileType ftype = typeOfFile(file_name);
-	if( ftype == isDIR  ){ 
-		char* ret = (char*)malloc(strlen(file_name)+1);
-			if(ret==NULL){ pEXIT_ERROR("malloc"); }
-		strcpy(ret,file_name); 
-		return ret;
-	}
-	else if( ftype !=isREG  ){ pRETURN_ERROR("file_name passed in is not a file or directory", NULL); }
-
-
-	char* realp = realpath(file_name, NULL); //gets the real path of file_name
-
-	//FINDS NUM CHARACTERS BEFORE SLASH
-	int chars_b4Slash;
-	for( chars_b4Slash = strlen(realp)-1 ; chars_b4Slash>=0; chars_b4Slash--){
-		if(realp[chars_b4Slash]== '/') break;
-	}
-	if(chars_b4Slash <= 0){ pRETURN_ERROR("error, no instance of '/'", NULL); }
-
-
-	//malloc string to return and copies the number of charactes before the slash
-	char* ret = (char*)malloc(chars_b4Slash+1);
-		if(ret==NULL){ pEXIT_ERROR("malloc"); }
-	memcpy(ret, realp, chars_b4Slash);//copy characters before the slash
-		ret[chars_b4Slash] = '\0';
-		free(realp);
-
-	//check if return string is a directory
-	if( typeOfFile(ret)==isDIR  )
-		return ret;
-	else
-		return NULL;
-}
-
-
-/**
-returns the full path name of where a new_file would be inserted in the directory of the old_file
-**/
-char* getNewFilePath(char* old_file_name, char* new_file_name){
-		if(old_file_name==NULL||new_file_name==NULL){ pRETURN_ERROR("can't pass in NULL string", NULL); }
-
-		char* dir = getDirOfFile(old_file_name); //gets the directory where old_file lies
-		char* dirslash = appendCharToString(dir, '/'); //adds dash to end
-		free (dir);
-
-		char* new_path = concatStr(dirslash, new_file_name); //adds file name to path
-		free(dirslash);
-
-		return new_path;
-}
-
-
-/**
-replaces old_file_name's extension with a new extension and returns the PATH of the filename with the new extension (the path is in the directory of thr old file)
-If extension passed in is NULL, removes the extension and returns the path
-
-i.e. getNewExtension("file.txt", ".hcz"); returns <file.txt's path>/"file.hcz"
-	   getNewExtension("file.txt", NULL); returns <file.txt's path>/"file"
-**/
-char* getNewExtensionAndPath( char* old_file_name, const char* extension ){
-	if( old_file_name == NULL){ pRETURN_ERROR("can't pass in NULL file_name", NULL); }
-	if( typeOfFile(old_file_name)!=isREG  ){ pRETURN_ERROR("file_name passed in is not a file", NULL); }
-
-
-	char* oldfname_path = realpath( old_file_name, NULL); //get real path of old_file_name
-
-
-	//FINDING NUMBER OF CHARACTERS before the '.' if it exists, if no dot, it returns -1
-	int len_oldfnpath = strlen(oldfname_path);
-	int chars_b4Dot = -1;
-
-	int i;
-	for(i = len_oldfnpath ; i>=0; i--){
-		if( oldfname_path[i] == '/'){
-			chars_b4Dot = -1;
-			break;
-		}else if ( oldfname_path[i] == '.'){
-			chars_b4Dot = i;
-			break;
-		}
-	}
-
-
-	//IF REMOVING THE EXTENSION
-	if(extension == NULL){ //want to remove extension
-		if(chars_b4Dot==-1){ pRETURN_ERROR("error, no extension to remove from.", NULL); }
-
-		//malloc enouth space without extension
-		char* ret = malloc( chars_b4Dot + 1 );
-		memcpy (ret, oldfname_path, chars_b4Dot);
-			ret[chars_b4Dot] = '\0';
-			free(oldfname_path);
-
-		return ret;
-	}
-
-
-	//IF REPLACING THE EXTENSION
-	if( chars_b4Dot == -1){ //there is no dot
-		//realloc space for extension
-			char* ret = realloc( oldfname_path, (len_oldfnpath  + (strlen(extension)) + 1) );
-				if(ret == NULL){ pEXIT_ERROR("realloc"); } //realloc error
-		//add the extension to the end
-			ret = strcat(ret , extension);
-
-		return ret;
-
-	}else if( chars_b4Dot!= 0 ){ // there is a dot after the first character
-
-		//mallocspace for extension
-			char* ret = (char*)malloc( chars_b4Dot + strlen(extension) + 1 ); // Make space for adding the extension.
-				if(ret == NULL){ pEXIT_ERROR("realloc"); } //realloc error
-		//copies oldfname_path before the dot into ret and frees old string
-			memcpy(ret, oldfname_path , chars_b4Dot);
-				ret[chars_b4Dot] = '\0';
-				free(oldfname_path);
-		//add extension to end
-			ret = strcat(ret , extension); //copy the extension to the end
-
-		return ret;
-	}
-
-
-	return NULL; //if dot at first char
-
 }
 
 

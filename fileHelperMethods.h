@@ -24,12 +24,10 @@
 	FileType typeOfFile(char* file_name);
 
 	char* combinedPath(char* path_name, char* file_name);
-	char* getDirOfFile(char* file_name);
-	char* getNewFilePath(char* old_file_name, char* new_file_name);
 	char* getNewExtensionAndPath( char* old_file_name, const char* extension );
 
+	int lengthBeforeChar( char* s, char c);
 	char* appendCharToString( char* prev_str , char add_c);
-	char* concatStr(char* s1, char* s2);
 	char* substr(char* s, size_t start_ind, size_t length);
 	
 	char* getStringRepOfDELIM( char c );

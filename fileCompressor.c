@@ -42,7 +42,7 @@ void buildcodebook(char* file_name){
 	
 	//Create File Of Codebook:
 		//opening file:
-		int codebook = openFileW("HuffmanCodebook");
+		int codebook = openFileW("./HuffmanCodebook");
 			if(codebook<0){ pRETURN_ERRORvoid("open write"); } //if error opening file
 		
 	//Build Huffman Tree
@@ -416,12 +416,12 @@ void runFlag(char* pathfile_name){
 			if( typeOfFile( currf_name )==isREG ){ 
 				switch(flag){
 					case 'b':
-						if( !endsWithHCZ(currf_name) )//if not compressed file
-							buildFrequencyAVL( currf_name ); //adds onto the tree for every file
+						if( endsWithHCZ(currf_name) ){ printf("can't build codebook out of compressed file %s\n", currf_name); continue; }
+						buildFrequencyAVL( currf_name ); //adds onto the tree for every file
 						break;
 					case 'c':
-						if( !endsWithHCZ(currf_name) ) //if not compressed file - compress
-							compress ( currf_name );
+						if( endsWithHCZ(currf_name) ){ printf("can't compress an already compressed file %s\n", currf_name); continue; }
+						compress ( currf_name );
 						break;
 					case 'd':
 						if( endsWithHCZ(currf_name) )//if compressed file - decompress
@@ -443,10 +443,11 @@ void runFlag(char* pathfile_name){
 		
 		switch(flag){
 			case 'b':
-				if( endsWithHCZ(pathfile_name) ){ pEXIT_ERROR("cannot build a codebook out of a compressed file"); }
+				if( endsWithHCZ( pathfile_name ) ){ printf("can't build codebook out of compressed file %s\n", pathfile_name); break; }
 				buildFrequencyAVL( pathfile_name ); //gets frequency of each token in file
 				break;
 			case 'c':
+				if( endsWithHCZ( pathfile_name ) ){ printf("can't compress an already compressed file %s\n", pathfile_name); break; }
 				compress ( pathfile_name );
 				break;
 			case 'd':
@@ -533,9 +534,8 @@ int main(int argc, char** argv){
 
 	//if flag is b, builds codebook in directory of executable
 	if(flag=='b') buildcodebook(orig_pathfile);
-	
-	//frees tree
-	if(flag=='c' || flag=='d') freeCodeTreeAndTok( tree );
+	//If flag is c or d, frees tree
+	else if(flag=='c' || flag=='d') freeCodeTreeAndTok( tree );
 
 	return 0;
 }

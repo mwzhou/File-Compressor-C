@@ -288,7 +288,7 @@ TEST CASE 13e: Codebook does not contain all tokens in file. flag: -c
 		Program:fileCompressor.c in Function:compress() on Line:231
 		return: Success
 	Result:
-		file "test.hcz" is deleted.
+		file "test.txt.hcz" is deleted.
 
 
 
@@ -330,7 +330,7 @@ TEST CASE 13.5: Codebook does not contain the space token but file has a space i
 		Program:fileCompressor.c in Function:compress() on Line:254
 		return: Success
 	Result:
-		file "test.hcz" is deleted
+		file "test.txt.hcz" is deleted
 
 
 
@@ -344,7 +344,7 @@ TEST CASE 14e: Codebook does not contain all tokens in file flag: -d
 		<new line>
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		[test.txt]:
+		[test.txt.hcz]:
 		11100
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
@@ -354,7 +354,7 @@ TEST CASE 14e: Codebook does not contain all tokens in file flag: -d
 		Program:fileCompressor.c in Function:decompress() on Line:308
 		return: Success
 	Result:
-		"test" is deleted
+		"test.txt" is deleted
 
 
 
@@ -408,10 +408,10 @@ TEST CASE 0: run -b, -c, and -d on an empty file
 		<new line>
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		[empty.hcz] (empty):
+		[empty.txt.hcz] (empty):
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		[empty] (empty):
+		[empty.txt] (empty):
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	Remarks:
@@ -495,11 +495,11 @@ TEST CASE 2: run all flags on a file with a single word
 		<new line>
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		[single_word.hcz](created in /ilab/users/mwz7/Desktop/k/):
+		[single_word.pdf.hcz](created in /ilab/users/mwz7/Desktop/k/):
 		10
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		[single_word](created in /ilab/users/mwz7/Desktop/k/):
+		[single_word,pdf](created in /ilab/users/mwz7/Desktop/k/):
 		hello
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -634,10 +634,10 @@ TEST CASE 3: run all flags on a file of words with just a single delimiter (some
 		11111	the
 		<new line>
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		[test.hcz] (created in /testCases/):
+		[test.txt.hcz] (created in /testCases/):
 		1001110001011100001100101001000010101100110101111110111001101111101110000010101001010000101111010100011011011000110101101011010101101111011011100101100010110000100101101000110001110111101010001101101100010100110011101100110100101011111001011110101011011001010110101110100011011010101100000100100110011010110010010111110111010101110010010100001010101011011000100010000010011111010000011010101110010001001100100001000010111000101010011101001100111100001110111011010010100100110000010111110110100001011101101111010101010000100111100111110110100001010001101011011101000100111100001100011001001001100010101010110001110011011111010000000110011000110111101101110011001111011100100111100101010101001100001101101010010111001011101000110110101100000001100111001001001011001001111010100011010011001101011010101111010100000011101100110101001110001010010010100100010111100011101110100110010011111011111011100000101110100111100101111101100101101001001000100101001010111110111010101010001010011101
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		[test] (created in /testCases/):
+		[test.txt] (created in /testCases/):
 		The only aspect that really matters with the codebook is that each token has its own unique bit sequence. So long as each token has this, then it does not matter which file or location you swap out the tokens for their codes are. Creating the Huffman Tree just ensures that this happens and to create it you need the frequencies of each token, but the frequencies themselves are just to ensure you end up with the smallest possible unique bit sequences for all tokens. Whether using one file or multiple files, you record each token and its corresponding frequency, then using this you can now create and use the codebook on all the files you just got the tokens from.
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		
@@ -690,10 +690,10 @@ TEST CASE 4: run all flags on a file with few words ad with multiple delimiters
 		11111	\t
 		<new line>
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		[test2.hcz] (in DIR /testCases/): 
+		[test2.txt.hcz] (in DIR /testCases/): 
 		11001001011000010111101000001011111001111001101110010110110101100010100001101001100010110101001110101111010010111110111111001100010110100100011111101000001001101011101111001011011001101011101000111100001010011100010
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		[test2] (in DIR /testCases/): 
+		[test2.txt] (in DIR /testCases/): 
 		I'm Happy and 	"I know it
 		So
 		Clap you're hands? 
@@ -736,11 +736,11 @@ TEST CASE 5: run all flags on just a file of delimiters (no words)
 		1	\n
 		<new line>
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		[delims.hcz] (created in /testCases/):
+		[delims.txt.hcz] (created in /testCases/):
 		100011000110101111111
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~			
-		[delims] (created in /testCases/): 
+		[delims.txt] (created in /testCases/): 
 		
  	 	\
 
@@ -960,15 +960,15 @@ TEST CASE 7: Runs all flags on a DIRECTORY with multiple files //TODO
 		<new line>
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		[a.hcz] (in DIR /mult/)
+		[a.txt.hcz] (in DIR /mult/)
 		10011101011011000
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		[a.hcz] (in DIR /mult/)
+		[a.txt.hcz] (in DIR /mult/)
 		10110111011111010100
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		[a.hcz] (in DIR /mult/)
+		[a.txt.hcz] (in DIR /mult/)
 		01111110011010000
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		
