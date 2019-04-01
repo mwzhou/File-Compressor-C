@@ -221,7 +221,7 @@ returns NULL if length>strlen(s) or could not get a substring
 **/
 char* substr(char* s, size_t start_ind, size_t length){
 	if( s==NULL||start_ind<0||length<0 ){ pRETURN_ERROR("faulty parameters", NULL); }
-	if( length > strlen(s) ){ pRETURN_ERROR("length cannot be larger than the string passed in",NULL); }
+	if( length-1 > strlen(s) ){ pRETURN_ERROR("length-1 cannot be larger than the string passed in",NULL); }
 		
 	char* ret = (char*)malloc(length); //malloc string to return
 		if(ret==NULL){ pEXIT_ERROR("malloc"); }

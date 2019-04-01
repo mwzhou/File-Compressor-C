@@ -100,13 +100,19 @@ static void buildFrequencyAVL(char* file_name){
 	//READ FILE
 		char* fstr = readFile(file_name); //file read into a string
 			if(fstr==NULL){ pRETURN_ERRORvoid("error reading file name"); }
-			
+		
+	//edge case: file has no delimiters
+		if( strcspn(fstr , DELIMS) >= strlen(fstr) ){
+			insertOrUpdateAVL(&tree, fstr);
+			return;
+		}
 			
 	//TOKENIZES fstr INTO A TOKEN AND A DELIM TOKEN - loops through fstr until there are no more delimiters
 		char* fstr_ptr = fstr; //pointer to front of string for manipulation later
 		int indOfDELIM = 0; //index to keep track of the first instance of a delimiter in fstr_ptr
-
+	
 		while( (indOfDELIM = strcspn(fstr_ptr , DELIMS) ) < strlen(fstr_ptr) ){ //updates index of delimiter and stops once there are no more delimiters
+			
 			//TOKEN BEFORE DELIM:
 				if(indOfDELIM!=0){ //if there is a token b4 the delimiter
 					//finding the token
@@ -188,8 +194,7 @@ compresses file_name given and writes <file_name>.hcz into the same directory
 **/
 void compress( char* file_name ){
 	if( file_name==NULL ){ pRETURN_ERRORvoid("passed in NULL file_name"); }
-	if( endsWithHCZ(file_name) ){ printf("file:%s\n",file_name); pRETURN_ERRORvoid("cannot compress already compressed file. file can't end with hcz"); }
-
+	
 	//file contents of fname read into fstr (readFile is a fileHelperMethods.c method)
 		char* fstr = readFile(file_name);
 			if(fstr==NULL){ pRETURN_ERRORvoid("error reading codebook_name"); }
@@ -201,12 +206,33 @@ void compress( char* file_name ){
 		int fcompr = openFileW(fcompr_name);
 			if(fcompr<0){ free(fstr); free(fcompr_name); pRETURN_ERRORvoid("open write"); } //if error opening file
 			
-
+	
+	//edge case: file has no delimiters
+		if( strcspn(fstr , DELIMS) >= strlen(fstr) ){
+			//get encoding associated with string
+			char* fcode = getCodeItem( tree, fstr, cmpByTokens);
+			
+			//if file string is not found in codebook
+			if( fcode == NULL){
+				//free, delete, and remove
+				free(fstr); remove(fcompr_name); free(fcompr_name); close(fcompr);
+				//error output
+					printf("file has no delimiters and is not a token:%s\n", file_name);
+					pRETURN_ERRORvoid("token doesn't exist in codebook, will now delete compressed file");
+			
+			//if file string is found in codebook
+			}else{
+				WRITE_AND_CHECKv( fcompr , fcode , strlen(fcode) );
+				return;
+			}
+		}
+		
+		
 	//TOKENIZE AND WRITE TO FILE:
 		//TOKENIZES fstr INTO A TOKEN AND A DELIM TOKEN - loops through fstr until there are no more delimiters
 		char* fstr_ptr = fstr; //pointer to front of string for manipulation later
 		int indOfDELIM = 0; //index to keep track of the first instance of a delimiter in fstr_ptr
-
+		
 		while( (indOfDELIM = strcspn(fstr_ptr , DELIMS) ) < strlen(fstr_ptr) ){ //updates index of delimiter and stops once there are no more delimiters
 
 			//TOKEN BEFORE DELIM:
@@ -299,9 +325,9 @@ void decompress( char* file_name){
 	int substr_start = 0;
 	int substr_length = 1;
 	while(substr_start  <  file_len){
-	
+		
 		//ERROR CHECK: if reached end of file and could not find substring
-		if( substr_length+1 > file_len){ 
+		if( substr_length > file_len){ 
 			//delete, free, and close
 				remove(fdec_name); free(fdec_name); free(fstr_hcz); close(fdecompr);
 			//Output Error
@@ -315,7 +341,6 @@ void decompress( char* file_name){
 			if(curr_substr == NULL){ remove(fdec_name); free(fdec_name);free(fstr_hcz);close(fdecompr); pRETURN_ERRORvoid("could not get substring");}
 		char* token = getCodeItem(tree, curr_substr , cmpByEncodings); //tries to find token associated with encoding
 		
-			
 		//IF TOKEN ASSOCIATED WITH SUBSTRING DOES NOT EXIST, add another byte to it
 		if (token==NULL){
 			substr_length += 1;
@@ -421,7 +446,6 @@ void runFlag(char* pathfile_name){
 						buildFrequencyAVL( currf_name ); //adds onto the tree for every file
 						break;
 					case 'c':
-						if( endsWithHCZ(currf_name) ){ printf("can't compress an already compressed file %s\n", currf_name); continue; }
 						compress ( currf_name );
 						break;
 					case 'd':

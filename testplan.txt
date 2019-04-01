@@ -381,20 +381,7 @@ TEST CASE 14e: Codebook does not contain all tokens in file flag: -d
 
 
 
-TEST CASE 15e: Compress a compressed file (ends with .hcz).
-	Run: ./fileCompressor -c  /ilab/users/mwz7/Desktop/testCases/test.txt.hcz ./HuffmanCodebook
-	
-	Output:
-		file:/ilab/users/mwz7/Desktop/testCases/test.txt.hcz
-		ERROR: cannot compress already compressed file. file can't end with hcz
-		Program:fileCompressor.c in Function:compress() on Line:190
-		return: Success
-	Result:
-		does not compress.
-
-
-
-TEST CASE 16e: Try to decompress a non-compressed file (does not end with .hcz)
+TEST CASE 15e: Try to decompress a non-compressed file (does not end with .hcz)
 	Run: ./fileCompressor -d /ilab/users/mwz7/Desktop/testCases/test.txt ./HuffmanCodebook
 	
 	Output:
@@ -416,7 +403,11 @@ REGULAR TEST CASES
 TEST CASE 0: run -b, -c, and -d on an empty file
 	Run:
 		./fileCompressor -b ./empty.txt
+		
 		./fileCompressor -c ./empty.txt ./HuffmanCodebook
+		
+		now move the original empty.txt to a different directory (to avoid being overwritten by decompress)
+		
 		./fileCompressor -d ./empty.hcz ./HuffmanCodebook
 	
 	Files/Directories:
@@ -438,7 +429,7 @@ TEST CASE 0: run -b, -c, and -d on an empty file
 		[empty.txt.hcz] (empty):
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		[empty.txt] (empty):
+		[empty.txt](decompressed version): (empty):
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	Remarks:
@@ -451,7 +442,9 @@ TEST CASE 0: run -b, -c, and -d on an empty file
 TEST CASE 0.5: run all flags on an empty directory
 	Run: 
 		./fileCompressor -b /ilab/users/mwz7/Desktop/empty_dir/
+		
 		./fileCompressor -c /ilab/users/mwz7/Desktop/empty_dir/ ./HuffmanCodebook				
+		
 		./fileCompressor -d /ilab/users/mwz7/Desktop/empty_dir/ ./HuffmanCodebook
 
 
@@ -496,7 +489,11 @@ TEST CASE 1: run flags on a random file in any order
 TEST CASE 2: run all flags on a file with a single word
 	Run: 
 		./fileCompressor -b /ilab/users/mwz7/Desktop/k/single_word.pdf
-		./fileCompressor -c /ilab/users/mwz7/Desktop/k/single_word.pdf ./HuffmanCodebook				
+		
+		./fileCompressor -c /ilab/users/mwz7/Desktop/k/single_word.pdf ./HuffmanCodebook
+		
+		now move the original single_word.pdf to a  different directory (to avoid being overwritten by decompress)				
+		
 		./fileCompressor -d /ilab/users/mwz7/Desktop/k/single_word.hcz ./HuffmanCodebook
 
 
@@ -529,24 +526,63 @@ TEST CASE 2: run all flags on a file with a single word
 		Note: the Huffman Codebook accounts for the \n at the end of a file from the text editor. The decompressed file is still exactly the same.
 
 
-TEST CASE 2.5: run all flags on a FILE but pass in -R flag
+TEST CASE 3: run all flags on a file with NO delimiters. Also testing compressing a .hcz file
+	Run: 
+		./fileCompressor -b ./testCases/test3.hcz
+		
+		./fileCompressor -c ./testCases/test3.hcz ./HuffmanCodebook
+		
+		now move the original file test.txt.hcz  to a  different directory (to avoid being overwritten by decompress)				
+		
+		./fileCompressor -d ./testCases/test3.hcz.hcz ./HuffmanCodebook
+		
+	Files/Directories:
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[test.txt.hcz] (in  DIR ./testCases/)
+		11001001011000010111101000001011111001111001101110010110110101100010100001101001100010110101001110101111010010111110111111001100010110100100011111101000001001101011101111001011011001101011101000111100001010011100010
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	Results:
+		Even without a delimiter, it compresses and decompresses as expected. The decompressed file has a 100% match with the original file.
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[HuffmanCodebook](created in executable directory):
+		\
+		0	11001001011000010111101000001011111001111001101110010110110101100010100001101001100010110101001110101111010010111110111111001100010110100100011111101000001001101011101111001011011001101011101000111100001010011100010
+		<new line>
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[test.txt.hcz.hcz](created in ./testCases/):
+		0
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[test.txt.hcz] (new decompressed file created in ./testCases)
+		11001001011000010111101000001011111001111001101110010110110101100010100001101001100010110101001110101111010010111110111111001100010110100100011111101000001001101011101111001011011001101011101000111100001010011100010
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		
+		
+		
+TEST CASE 4: run all flags on a FILE but pass in -R flag
 	Run: 
 		./fileCompressor -b -R /ilab/users/mwz7/Desktop/k/single_word.pdf
 			Output:
 				passed in -R flag but only passed in a REGULAR file, will run flag as if NOT recursive
+		
 		./fileCompressor -R -c /ilab/users/mwz7/Desktop/k/single_word.pdf ./HuffmanCodebook
 			Output:
-				passed in -R flag but only passed in a REGULAR file, will run flag as if NOT recursive					
+				passed in -R flag but only passed in a REGULAR file, will run flag as if NOT recursive	
+			
+		now move the original single_word.pdf to a  different directory (to avoid being overwritten by decompress)	
+							
 		./fileCompressor -R -d /ilab/users/mwz7/Desktop/k/single_word.hcz ./HuffmanCodebook
 			Output:
 				passed in -R flag but only passed in a REGULAR file, will run flag as if NOT recursive
 					
 	Files: 
-		same as above
+		same as Test Case 2
 		
 	Results:
 		runs as expected.
-		same as above
+		same as Test Case 2
 		
 	Remarks:
 		If user passes in a single word but also the R flag, the program treats it as if no R flag in the first place.
@@ -554,11 +590,15 @@ TEST CASE 2.5: run all flags on a FILE but pass in -R flag
 
 
 
-TEST CASE 3: run all flags on a file of words with just a single delimiter (some words have duplicates). File has a large number of words.
+TEST CASE 5: run all flags on a file of words with just a single delimiter (some words have duplicates). File has a large number of words.
 	
 	Run:
 		./fileCompressor -b ./testCases/test.txt
+		
 		./fileCompressor -c ./testCases/test.txt ./HuffmanCodebook
+		
+		now move the original test.txt to a  different directory (to avoid being overwritten by decompress)	
+		
 		./fileCompressor -d ./testCases/test.hcz ./HuffmanCodebook
 			
 	Files:
@@ -665,10 +705,14 @@ TEST CASE 3: run all flags on a file of words with just a single delimiter (some
 		
 		
 
-TEST CASE 4: run all flags on a file with few words ad with multiple delimiters
+TEST CASE 6: run all flags on a file with few words ad with multiple delimiters
 	Run:
 		./fileCompressor -b ./testCases/test2.txt 
+		
 		./fileCompressor -c ./testCases/test2.txt ./HuffmanCodebook
+		
+		now move the original test2.txt to a  different directory (to avoid being overwritten by decompress)	
+		
 		./fileCompressor -d ./testCases/test2.hcz ./HuffmanCodebook
 		
 	Files:
@@ -726,10 +770,14 @@ TEST CASE 4: run all flags on a file with few words ad with multiple delimiters
 		
 		
 
-TEST CASE 5: run all flags on just a file of delimiters (no words)
+TEST CASE 7: run all flags on just a file of delimiters (no words)
 	Run:
 		./fileCompressor -b ./testCases/delims.txt
+		
 		./fileCompressor -c ./testCases/delims.txt ./HuffmanCodebook
+		
+		now move the original delims.txt to a  different directory (to avoid being overwritten by decompress)	
+		
 		./fileCompressor -d ./testCases/delims.txt ./HuffmanCodebook
 	
 	Files:
@@ -776,10 +824,14 @@ TEST CASE 5: run all flags on just a file of delimiters (no words)
 
 
 		
-TEST CASE 6: The first four pages of harry potter and the sorcerers stone (very large text file)
+TEST CASE 8: The first four pages of harry potter and the sorcerers stone (very large text file)
 	Run:
 		./fileCompressor -b ./testCases/test3.txt
+		
 		./fileCompressor -c ./testCases/test3.txt ./HuffmanCodebook
+		
+		now move the original test3.txt to a  different directory (to avoid being overwritten by decompress)	
+		
 		./fileCompressor -d ./testCases/test3.hcz ./HuffmanCodebook
 	
 	Files:
@@ -942,10 +994,14 @@ TEST CASE 6: The first four pages of harry potter and the sorcerers stone (very 
 
 
 
-TEST CASE 7: Runs all flags on a DIRECTORY with multiple files
+TEST CASE 9: Runs all flags on a DIRECTORY with multiple files
 	Run:
 		./fileCompressor -b /ilab/users/mwz7/Desktop/mult
+		
 		./fileCompressor -c ./HuffmanCodebook /ilab/users/mwz7/Desktop/mult
+		
+		now move all original txt files to a different directory (to avoid being overwritten by decompress)	
+		
 		./fileCompressor -d ./HuffmanCodebook /ilab/users/mwz7/Desktop/mult
 
 	Files:
@@ -999,10 +1055,14 @@ TEST CASE 7: Runs all flags on a DIRECTORY with multiple files
 
 
 
-TEST CASE 8: Tests recursive flag on a directory with each subdirectory holding a single file
+TEST CASE 10: Tests recursive flag on a directory with each subdirectory holding a single file
 	Run:
 		./fileCompressor -b -R ./Rec1
+		
 		./fileCompressor -c -R ./Rec1 ./HuffmanCodebook
+		
+		now move all original txt files to a different directory (to avoid being overwritten by decompress)
+		
 		./fileCompressor -R -d ./Rec1 ./HuffmanCodebook
 
 	Files:
@@ -1051,10 +1111,14 @@ TEST CASE 8: Tests recursive flag on a directory with each subdirectory holding 
 
 
 
-TEST CASE 9: Tests recursive flag on a directory with each directory having multiple subdirectories and each subdirectory having multiple files
+TEST CASE 11: Tests recursive flag on a directory with each directory having multiple subdirectories and each subdirectory having multiple files
 	Run:
 		./fileCompressor -b -R ./r1/
+		
 		./fileCompressor -R -c ./r1/ ./HuffmanCodebook
+		
+		now move all original txt files to a different directory (to avoid being overwritten by decompress)
+		
 		./fileCompressor -d -R ./r1/ ./HuffmanCodebook
 
 
