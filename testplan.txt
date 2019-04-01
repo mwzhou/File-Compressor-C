@@ -1207,7 +1207,73 @@ TEST CASE 11: Tests recursive flag on a directory with each directory having mul
 		
 		(Note: won't copy the rest of the results since it takes up a considerable amount of space, but it works)
 		
-TEST CASE 12: the entire ascii table and extended ascii table (to see if any printable characters cause an issue)
+		
+		
+		
+TEST CASE 12: test a sequence of nested files where there is a single file at the very end
+	Run:
+		./fileCompressor -b -R ./nest/
+		
+		./fileCompressor -R -c ./nest/ ./HuffmanCodebook
+		
+		now move all meow.txt to a different directory (to avoid being overwritten by decompress)
+		
+		./fileCompressor -R -d ./nest/ ./HuffmanCodebook
+
+
+	Files/Directories:
+			===================================================================================
+			[DIRECTORY]: ./nest/
+				> [dir] nest1
+			===================================================================================		
+			===================================================================================
+			[DIRECTORY]: ./nest/nest1
+				> [dir] nest2
+			===================================================================================				
+			===================================================================================
+			[DIRECTORY]: ./nest/nest1/nest2
+				> [dir] nest3
+			===================================================================================			
+			===================================================================================
+			[DIRECTORY]: ./nest/nest1/nest2/nest3
+				> [dir] nest4
+			===================================================================================						
+			===================================================================================
+			[DIRECTORY]: ./nest/nest1/nest2/nest3/nest4
+				> meow.txt
+					~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+					[meow.txt]
+					mwow
+					~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~					
+			===================================================================================				
+	
+	Results:
+		runs as expected. all files are written in their correct directory. 100% match with each original file.
+		It goes through all directories and reaches "meow.txt".
+		
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[HuffmanCodebook] (created in ./):
+		\
+		0	\n
+		1	mwow
+		<new line>
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[meow.txt.hcz] (created in ./nest/nest1/nest2/nest3/nest4):
+		10
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[meow.txt] (created in ./nest/nest1/nest2/nest3/nest4):
+		mwow
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		
+		(Note: won't copy the enitre directory since it takes up a considerable amount of space, but it works)		
+				
+
+
+
+
+TEST CASE 13: the entire ascii table and extended ascii table (to see if any printable characters cause an issue)
 	Run:
 		./fileCompressor -b ./tc/ascii2
 	
