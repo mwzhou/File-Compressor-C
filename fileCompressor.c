@@ -325,7 +325,6 @@ void decompress( char* file_name){
 	int substr_start = 0;
 	int substr_length = 1;
 	
-	
 	while(substr_start  <  file_len){	
 		//Find Substring and Token Associated (if Exists)
 		char* curr_substr = substr(fstr_hcz, substr_start , substr_length+1 ); 
@@ -437,7 +436,8 @@ void runFlag(char* pathfile_name){
 						buildFrequencyAVL( currf_name ); //adds onto the tree for every file
 						break;
 					case 'c':
-						compress ( currf_name );
+						if( !endsWithHCZ(currf_name) )//if compressed file - decompress
+							compress ( currf_name );
 						break;
 					case 'd':
 						if( endsWithHCZ(currf_name) )//if compressed file - decompress
