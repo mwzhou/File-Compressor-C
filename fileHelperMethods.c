@@ -22,7 +22,7 @@ returns -1 on error
 **/
 int sizeOfFile(char* file_name){
 	int file = open(file_name, O_RDONLY);
-		if( file < 0 ){ printf("file_name: %s\n",file_name); pRETURN_ERROR("error opening file (O_RDONLY)", -1); }
+		if( file < 0 ){ fprintf( stderr, "file_name: %s\n",file_name); pRETURN_ERROR("error opening file (O_RDONLY)", -1); }
 
 	int file_len = (int)lseek( file , 0, SEEK_END ); //gets file size in bytes by going to end of file_cpy
 		if ( file_len < 0 ){ pEXIT_ERROR("error getting file length with lseek()"); }//checking if file_len is a valid length
@@ -41,7 +41,7 @@ char* readFile(char* file_name){
 	//INITIALIZING VARIABLES AND OPENING THE FILE
 		//Opening files
 		int file = open(file_name, O_RDONLY);
-			 if( file < 0 ){ printf("file_name: %s\n",file_name); pRETURN_ERROR("error opening file (O_RDONLY)", NULL); }
+			 if( file < 0 ){ fprintf( stderr, "file_name: %s\n",file_name); pRETURN_ERROR("error opening file (O_RDONLY)", NULL); }
 
 		//Initializing file length in bytes
 		int file_len = sizeOfFile(file_name); //length of file in bytes
@@ -53,7 +53,7 @@ char* readFile(char* file_name){
 
 	//READING THE FILE
 	int bytes_read = read(file, fstr, file_len); //number of bytes read through read
-		if(bytes_read < 0){ printf("file_name: %s\n",file_name); pRETURN_ERROR("error reading file", NULL); }
+		if(bytes_read < 0){ fprintf( stderr, "file_name: %s\n",file_name); pRETURN_ERROR("error reading file", NULL); }
 
 	fstr[bytes_read] = '\0'; //mark end of string
 
@@ -72,7 +72,7 @@ int openFileW(char* file_name){
 	if(file_name ==NULL){ pRETURN_ERROR("null file path", -1); }
 	
 	int fd = open( file_name, O_WRONLY|O_CREAT|O_TRUNC, (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH) ); //creates a new file, overwrites old file if exists
-		if(fd < 0){ printf("file:%s\n",file_name ); pRETURN_ERROR("tried to open file flags: (O_WRONLY|O_CREAT|O_TRUNC)", -1); }
+		if(fd < 0){ fprintf( stderr, "file:%s\n",file_name ); pRETURN_ERROR("tried to open file flags: (O_WRONLY|O_CREAT|O_TRUNC)", -1); }
 	
 	return fd;
 }

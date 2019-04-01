@@ -367,7 +367,7 @@ CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode){
 			
 		//check if codebook matches correct format
 		int f_len = strlen(fstr);
-		if( f_len<3 || !(fstr[0]=='\\' && fstr[1]=='\n' && fstr[ f_len-1 ]=='\n') ){ free(fstr); printf("file:%s\n",codebook_name); pRETURN_ERROR("doesn't match the correct format of HuffmanCodebook", NULL); }
+		if( f_len<3 || !(fstr[0]=='\\' && fstr[1]=='\n' && fstr[ f_len-1 ]=='\n') ){ free(fstr); fprintf( stderr, "file:%s\n",codebook_name); pRETURN_ERROR("doesn't match the correct format of HuffmanCodebook", NULL); }
 		
 		
 	//edge case: if no tokens in codebook
@@ -409,7 +409,7 @@ CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode){
 
 			}else{ //if curr_token is a tok, insert into tree
 				tok = curr_cpy;
-				if(encoding==NULL){ free(fstr); freeCodeTreeAndTok(codetree); printf("file:%s\n",codebook_name); pRETURN_ERROR("invalid codebook", NULL); }
+				if(encoding==NULL){ free(fstr); freeCodeTreeAndTok(codetree); fprintf( stderr, "file:%s\n",codebook_name); pRETURN_ERROR("invalid codebook", NULL); }
 				
 				//insert and update root
 				codetree = insertCodeTreeRec( codetree, tok , encoding , mode); 
@@ -424,7 +424,7 @@ CodeNode* buildCodebookTree(char* codebook_name, CMPMode mode){
 		}
 
 	free(fstr);
-	if(isEncoding==false || codetree==NULL){ freeCodeTreeAndTok(codetree); printf("file:%s\n",codebook_name); pRETURN_ERROR("invalid codebook", NULL); }
+	if(isEncoding==false || codetree==NULL){ freeCodeTreeAndTok(codetree); fprintf( stderr, "file:%s\n",codebook_name); pRETURN_ERROR("invalid codebook", NULL); }
 	
 	return codetree;
 }

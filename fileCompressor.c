@@ -99,10 +99,11 @@ static void buildFrequencyAVL(char* file_name){
 	
 	//READ FILE
 		char* fstr = readFile(file_name); //file read into a string
-			if(fstr==NULL){ pRETURN_ERRORvoid("error reading file name"); }
-		
+			if(fstr==NULL){ pRETURN_ERRORvoid("read error"); }
+
 	//edge case: file has no delimiters
-		if( strcspn(fstr , DELIMS) >= strlen(fstr) ){
+		int lenfstr = strlen(fstr);
+		if( strcspn(fstr , DELIMS) >= lenfstr && lenfstr!=0  ){
 			insertOrUpdateAVL(&tree, fstr);
 			return;
 		}
@@ -197,7 +198,7 @@ void compress( char* file_name ){
 	
 	//file contents of fname read into fstr (readFile is a fileHelperMethods.c method)
 		char* fstr = readFile(file_name);
-			if(fstr==NULL){ pRETURN_ERRORvoid("error reading codebook_name"); }
+			if(fstr==NULL){ pRETURN_ERRORvoid("read error"); }
 			
 	//compressed file to write to:
 		char* fcompr_name = getNewExtensionAndPath( file_name, ".hcz" ); //replaces extension with .hcz and gets string
@@ -208,7 +209,8 @@ void compress( char* file_name ){
 			
 	
 	//edge case: file has no delimiters
-		if( strcspn(fstr , DELIMS) >= strlen(fstr) ){
+		int lenfstr = strlen(fstr);
+		if( strcspn(fstr , DELIMS) >= lenfstr && lenfstr!=0 ){
 			//get encoding associated with string
 			char* fcode = getCodeItem( tree, fstr, cmpByTokens);
 			
@@ -217,7 +219,7 @@ void compress( char* file_name ){
 				//free, delete, and remove
 				free(fstr); REMOVE_AND_CHECK(fcompr_name); free(fcompr_name); close(fcompr);
 				//error output
-					printf("file has no delimiters and is not a token:%s\n", file_name);
+					fprintf( stderr, "file has no delimiters and is not a token:%s\n", file_name);
 					pRETURN_ERRORvoid("token doesn't exist in codebook");
 			
 			//if file string is found in codebook
@@ -252,7 +254,7 @@ void compress( char* file_name ){
 							//free, delete, and remove
 								free(fstr); REMOVE_AND_CHECK(fcompr_name);free(fcompr_name); close(fcompr);
 							//error output
-								printf("token:\"%s\" in file:%s\n", tok1, file_name);
+								fprintf(stderr, "token:\"%s\" in file:%s\n", tok1, file_name);
 								pRETURN_ERRORvoid("token doesn't exist in codebook");
 					
 					//if token exists, write encoding into the file		
@@ -276,7 +278,7 @@ void compress( char* file_name ){
 						//free, delete, and remove
 							free(fstr); REMOVE_AND_CHECK(fcompr_name); free(fcompr_name); close(fcompr);
 						//error output
-							printf("token:\"%s\" in file:%s\n", tok2, file_name);
+							fprintf( stderr, "token:\"%s\" in file:%s\n", tok2, file_name);
 							pRETURN_ERRORvoid("token doesn't exist in codebook");
 				
 				//if Token exists in codebook, write the encoding into the file
@@ -305,7 +307,7 @@ decompresses given file_name.hcz given and writes decompressed file_name into th
 **/
 void decompress( char* file_name){
 	if( file_name==NULL ){ pRETURN_ERRORvoid("passed in NULL file name"); }
-	if( !endsWithHCZ(file_name) ) { printf("file:%s\n",file_name); pRETURN_ERRORvoid("file must end with .hcz"); }
+	if( !endsWithHCZ(file_name) ) { fprintf( stderr, "file:%s\n",file_name); pRETURN_ERRORvoid("file must end with .hcz"); }
 
 	//file contents of file_name read into fstr_hcz (readFile is a fileHelperMethods.c method)
 	char* fstr_hcz = readFile(file_name);
@@ -326,11 +328,20 @@ void decompress( char* file_name){
 	int substr_length = 1;
 	
 	while(substr_start  <  file_len){	
+		//edge case: substring length to find reached end of file
+		if( substr_start + substr_length > file_len){
+			REMOVE_AND_CHECK(fdec_name);
+			free(fdec_name); free(fstr_hcz);close(fdecompr); 
+			pRETURN_ERRORvoid("reached end of file, could not find token for encoding");
+		}
+		
+		
 		//Find Substring and Token Associated (if Exists)
 		char* curr_substr = substr(fstr_hcz, substr_start , substr_length+1 ); 
 			if(curr_substr == NULL){ REMOVE_AND_CHECK(fdec_name); free(fdec_name);free(fstr_hcz);close(fdecompr); pRETURN_ERRORvoid("could not get substring");}
 		char* token = getCodeItem(tree, curr_substr , cmpByEncodings); //tries to find token associated with encoding
-				
+		
+		
 		//IF TOKEN ASSOCIATED WITH SUBSTRING DOES NOT EXIST, add another byte to it
 		if (token==NULL){
 			substr_length += 1;
@@ -408,7 +419,7 @@ Runs a flag operation on a pathfile_name given.
 Note: does NOT build codebook in runFlag
 **/
 void runFlag(char* pathfile_name){
-	if( pathfile_name==NULL ){ printf("%s\n", pathfile_name); pEXIT_ERROR("path/file name passed in is NULL"); }
+	if( pathfile_name==NULL ){ fprintf( stderr, "%s\n", pathfile_name); pEXIT_ERROR("path/file name passed in is NULL"); }
 	
 	//RUNS FLAG BASED ON IF DIRECTORY OR FILE : Note: if -b, just populates frequencies
 	FileType type_pf = typeOfFile( pathfile_name ); //gets file type of path_file
@@ -508,20 +519,22 @@ void inputCheck(int argc, char** argv){
 
 		//CHECK IF IS PATH/FILE and that it exists - if it is, initialize it
 		}else{
-			if( flag=='\0' ){ pEXIT_ERROR("must specify flag(s) before specifying file arguments!"); }
-			if( typeOfFile(s) == isUNDEF ) { printf("argument:%s\n",s); pEXIT_ERROR("undefined file name"); } //checking if PATH/FILE exists , if not, exit
+			if( flag=='\0' ){ pEXIT_ERROR("must specify -b, -c, or -d flag before specifying file arguments!"); }
+			if( typeOfFile(s) == isUNDEF ) { fprintf( stderr, "argument:%s\n",s); pEXIT_ERROR("undefined file name"); } //checking if PATH/FILE exists , if not, exit
 				
 			//Path/File
 			if(orig_pathfile==NULL){
-				if( ( (flag=='c'||flag=='d')&& i!=argc-2)){ printf("argument:%s\n",s); pEXIT_ERROR("File must be specified as second to last argument if flag -c or -d. Last argument is reserved for the codebook."); }
-				else if( (flag=='b'&&i!=argc-1) ){ printf("argument:%s\n",s); pEXIT_ERROR("Just a single file must be specified as last argument if flag -b. Can't have multiple files/flags"); }
+				if( ( (flag=='c'||flag=='d')&& i!=argc-2)){ fprintf( stderr, "argument:%s\n",s); pEXIT_ERROR("File must be specified as second to last argument if flag -c or -d. Last argument is reserved for the codebook."); }
+				else if( (flag=='b'&&i!=argc-1) ){ fprintf( stderr, "argument:%s\n",s); pEXIT_ERROR("Just a single file must be specified as last argument if flag -b. Can't have multiple files for -b"); }
 				
 				orig_pathfile = realpath(s, NULL); //gets real path and initializes orig_pathfile
 			
 			//Codebook
 			}else{ 
-				if(i!=argc-1){ printf("argument:%s\n",s); pEXIT_ERROR("codebook must be specified as last argument"); }
+				if(i!=argc-1){ fprintf( stderr, "argument:%s\n",s); pEXIT_ERROR("codebook must be specified as last argument"); }
 				if(flag=='b'){ pEXIT_ERROR("no reason to pass in multiple files for -b flag"); }
+				if( typeOfFile(s) != isREG){ pEXIT_ERROR("codebook must be a regular file"); }
+				
 				codebook_name = s; //initializes codebook name
 			}
 		}
@@ -533,7 +546,12 @@ void inputCheck(int argc, char** argv){
 		if( orig_pathfile == NULL ){ pEXIT_ERROR("must give in a path or a file as an argument"); }
 		
 	//CHECK IF ARGUMENTS MATCH FLAG
-		if(isRecursive && typeOfFile(orig_pathfile) != isDIR ){ isRecursive=false; printf("passed in -R flag but only passed in a REGULAR file, will run flag as if NOT recursive\n"); } //'-R' flag called but path not handed in
+		//checking recursive flag arguments match
+		int type_orig = typeOfFile(orig_pathfile);
+		if(isRecursive && type_orig  != isDIR ){ isRecursive=false; fprintf( stderr, "Warning: passed in -R flag but only passed in a REGULAR file, will run flag as if NOT recursive\n"); } //'-R' flag called but path not handed in
+		else if( !isRecursive && type_orig != isREG ){ pEXIT_ERROR("if not passing -R flag, must pass in REGULAR file (no directories)"); } //if is not recursive, but user passed in a directory
+	
+		//checking -c or -d arguments match
 		if( (flag=='c'||flag=='d') && codebook_name == NULL ){ pEXIT_ERROR("must specify a codebook when running -c or -d flags"); }
 
 	//INITIALIZE TREE FOR ALL FLAGS
@@ -541,7 +559,7 @@ void inputCheck(int argc, char** argv){
 		if(flag=='c' || flag=='d'){
 			//creates tree based on flag: if c, then builds codebooktree based on tokens, if d, then builds codebooktree based on encodings
 			tree = (flag=='c')? buildCodebookTree(codebook_name, cmpByTokens) : buildCodebookTree( codebook_name, cmpByEncodings); 
-				if( tree==NULL ){  pEXIT_ERROR("tried to build tree from codebook"); }
+				if( tree==NULL ){  pEXIT_ERROR("tried to build tree from codebook but failed"); }
 		}
 		
 }
