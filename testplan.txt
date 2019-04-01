@@ -347,18 +347,20 @@ TEST CASE 13.5: Codebook does not contain the space token but file has a space i
 		The only aspect that really matters with the codebook is that each token has its own unique bit sequence.
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		
-	Output:
-		token:"\S" in file:/ilab/users/mwz7/Desktop/Asst2-master/test.txt
-		ERROR: token doesn't exist in codebook, will not create compressed file
-		Program:fileCompressor.c in Function:compress() on Line:254
+	Output:		
+		removed file:/ilab/users/mwz7/Desktop/Asst2/test.txt.hcz
+		token:"\S" in file:/ilab/users/mwz7/Desktop/Asst2/test.txt
+		ERROR: token doesn't exist in codebook
+		Program:fileCompressor.c in Function:compress() on Line:256
 		return: Success
+
 	Result:
 		file "test.txt.hcz" is deleted
 
 
 
 TEST CASE 14e: Codebook does not contain all tokens in file flag: -d
-	Run: ./fileCompressor -d ./test.hcz ./HuffmanCodebook
+	Run: ./fileCompressor -d ./a.hcz ./HuffmanCodebook
 	Files:
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		[HuffmanCodebook]:
@@ -367,17 +369,23 @@ TEST CASE 14e: Codebook does not contain all tokens in file flag: -d
 		<new line>
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		[test.txt.hcz]:
+		[a.txt.hcz]:
 		11100
 		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	Output:
-		file:/ilab/users/mwz7/Desktop/Asst2-master/test.hcz
-		ERROR: could not find token for all encodings in file, will delete decompressed file
-		Program:fileCompressor.c in Function:decompress() on Line:308
+		./fileCompressor -d ./a.hcz ./HuffmanCodebook
+		ERROR: start_ind+length cannot be larger than the string passed in
+		Program:fileHelperMethods.c in Function:substr() on Line:224
 		return: Success
+
+		removed file:/ilab/users/mwz7/Desktop/Asst2/a
+		ERROR: could not get substring
+		Program:fileCompressor.c in Function:decompress() on Line:332
+		return: Success
+
 	Result:
-		"test.txt" is deleted
+		/ilab/users/mwz7/Desktop/Asst2/a is deleted
 
 
 

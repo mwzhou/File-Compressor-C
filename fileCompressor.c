@@ -215,10 +215,10 @@ void compress( char* file_name ){
 			//if file string is not found in codebook
 			if( fcode == NULL){
 				//free, delete, and remove
-				free(fstr); remove(fcompr_name); free(fcompr_name); close(fcompr);
+				free(fstr); REMOVE_AND_CHECK(fcompr_name); free(fcompr_name); close(fcompr);
 				//error output
 					printf("file has no delimiters and is not a token:%s\n", file_name);
-					pRETURN_ERRORvoid("token doesn't exist in codebook, will now delete compressed file");
+					pRETURN_ERRORvoid("token doesn't exist in codebook");
 			
 			//if file string is found in codebook
 			}else{
@@ -250,10 +250,10 @@ void compress( char* file_name ){
 					//Error Check: if tok1 doesn't exist in codebook
 						if( tok1_encoding == NULL){ 
 							//free, delete, and remove
-								free(fstr); remove(fcompr_name); free(fcompr_name); close(fcompr);
+								free(fstr); REMOVE_AND_CHECK(fcompr_name);free(fcompr_name); close(fcompr);
 							//error output
 								printf("token:\"%s\" in file:%s\n", tok1, file_name);
-								pRETURN_ERRORvoid("token doesn't exist in codebook, will now delete compressed file");
+								pRETURN_ERRORvoid("token doesn't exist in codebook");
 					
 					//if token exists, write encoding into the file		
 						}else{ 
@@ -274,10 +274,10 @@ void compress( char* file_name ){
 				//Error Check: if token does not exist in codebook
 					if( tok2_encoding == NULL){ 
 						//free, delete, and remove
-							free(fstr); remove(fcompr_name); free(fcompr_name); close(fcompr);
+							free(fstr); REMOVE_AND_CHECK(fcompr_name); free(fcompr_name); close(fcompr);
 						//error output
 							printf("token:\"%s\" in file:%s\n", tok2, file_name);
-							pRETURN_ERRORvoid("token doesn't exist in codebook, will now delete compressed file");
+							pRETURN_ERRORvoid("token doesn't exist in codebook");
 				
 				//if Token exists in codebook, write the encoding into the file
 					}else{ 
@@ -324,23 +324,14 @@ void decompress( char* file_name){
 	int file_len = strlen(fstr_hcz);
 	int substr_start = 0;
 	int substr_length = 1;
-	while(substr_start  <  file_len){
-		
-		//ERROR CHECK: if reached end of file and could not find substring
-		if( substr_length > file_len){ 
-			//delete, free, and close
-				remove(fdec_name); free(fdec_name); free(fstr_hcz); close(fdecompr);
-			//Output Error
-				printf("file:%s\n",file_name);
-				pRETURN_ERRORvoid("could not find token for all encodings in file, will delete decompressed file");
-		}
-		
-		
+	
+	
+	while(substr_start  <  file_len){	
 		//Find Substring and Token Associated (if Exists)
 		char* curr_substr = substr(fstr_hcz, substr_start , substr_length+1 ); 
-			if(curr_substr == NULL){ remove(fdec_name); free(fdec_name);free(fstr_hcz);close(fdecompr); pRETURN_ERRORvoid("could not get substring");}
+			if(curr_substr == NULL){ REMOVE_AND_CHECK(fdec_name); free(fdec_name);free(fstr_hcz);close(fdecompr); pRETURN_ERRORvoid("could not get substring");}
 		char* token = getCodeItem(tree, curr_substr , cmpByEncodings); //tries to find token associated with encoding
-		
+				
 		//IF TOKEN ASSOCIATED WITH SUBSTRING DOES NOT EXIST, add another byte to it
 		if (token==NULL){
 			substr_length += 1;
@@ -350,7 +341,7 @@ void decompress( char* file_name){
 			//If the token is a Delimiter, get the Delimiter Representation and write the actual character to the file
 			if(isDELIMStr(token)){
 				char* insert = getCharRepOfDELIM(token);
-					if(insert == NULL){ remove(fdec_name); free(fdec_name);free(fstr_hcz);close(fdecompr); pRETURN_ERRORvoid("entered in a non-delimiter");}
+					if(insert == NULL){ REMOVE_AND_CHECK(fdec_name); free(fdec_name);free(fstr_hcz);close(fdecompr); pRETURN_ERRORvoid("entered in a non-delimiter"); }
 				WRITE_AND_CHECKv(fdecompr, insert, strlen(insert));
 			}
 

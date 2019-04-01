@@ -10,7 +10,7 @@
 //MACROS FOR READABILITY
 	#define DELIMS " \a\b\t\n\v\f\r\'\"\?\\\0" //string of control characters as well as the space char to separate a file into tokens
 	#define WRITE_AND_CHECKv(file, buf, nbytes) do{  if( write(file, buf , nbytes) < 0 ) { pRETURN_ERRORvoid("write()"); } }while(0) //writes to file, if failed, prints out error and returns void
-
+	#define REMOVE_AND_CHECK(file_name) do{ int rm = remove(file_name); if(rm == 0)printf("removed file:%s\n",file_name); else printf("couldn't remove file:%s",file_name);  }while(0) //removes file and prints if successful
 
 //ENUMS
 	//enum to differentiate between FileTypes

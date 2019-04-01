@@ -21,7 +21,7 @@ returns size of file in bytes
 returns -1 on error
 **/
 int sizeOfFile(char* file_name){
-	int file = open(file_name, O_RDONLY, S_IRUSR);
+	int file = open(file_name, O_RDONLY);
 		if( file < 0 ){ printf("file_name: %s\n",file_name); pRETURN_ERROR("error opening file (O_RDONLY)", -1); }
 
 	int file_len = (int)lseek( file , 0, SEEK_END ); //gets file size in bytes by going to end of file_cpy
@@ -40,7 +40,7 @@ reads a file given a filename.
 char* readFile(char* file_name){
 	//INITIALIZING VARIABLES AND OPENING THE FILE
 		//Opening files
-		int file = open(file_name, O_RDONLY, S_IRUSR);
+		int file = open(file_name, O_RDONLY);
 			 if( file < 0 ){ printf("file_name: %s\n",file_name); pRETURN_ERROR("error opening file (O_RDONLY)", NULL); }
 
 		//Initializing file length in bytes
@@ -216,12 +216,12 @@ char* appendCharToString( char* prev_str , char add_c){
 
 /**
 To be used in fileCompressor.c for decompress.
-returns a subtring of s from the start_index to desired length of substring
-returns NULL if length>strlen(s) or could not get a substring
+returns a subtring of s from the start_index to start_index+length of substring
+returns NULL if start_ind+length>strlen(s) or could not get a substring
 **/
 char* substr(char* s, size_t start_ind, size_t length){
 	if( s==NULL||start_ind<0||length<0 ){ pRETURN_ERROR("faulty parameters", NULL); }
-	if( length-1 > strlen(s) ){ pRETURN_ERROR("length-1 cannot be larger than the string passed in",NULL); }
+	if( start_ind+length > strlen(s) ){ pRETURN_ERROR("start_ind+length cannot be larger than the string passed in",NULL); }
 		
 	char* ret = (char*)malloc(length); //malloc string to return
 		if(ret==NULL){ pEXIT_ERROR("malloc"); }
